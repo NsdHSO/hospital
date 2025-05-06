@@ -40,10 +40,8 @@ impl From<DieselError> for CustomError {
 
 impl ResponseError for CustomError {
     fn error_response(&self) -> HttpResponse {
-        let status_code = match StatusCode::from_u16(self.error_status_code) {
-            Ok(status_code) => status_code,
-            Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        };
+        let status_code = StatusCode::from_u16(self.error_status_code)
+            .unwrap_or_else(|_| StatusCode::INTERNAL_SERVER_ERROR);
 
         let error_message = match status_code.as_u16() < 500 {
             true => self.error_message.clone(),
