@@ -16,3 +16,19 @@ pub struct Emergency {
     pub emergencyLatitude: BigDecimal,
 }
 impl Emergency {}
+
+
+#[derive(Deserialize)]
+pub struct PaginationParams {
+    #[serde(default = "page")]
+    pub page: i64,
+    #[serde(default = "per_page")]
+    pub per_page: i64,
+}
+
+fn page() -> i64 {
+    1
+}
+fn per_page() -> i64 {
+    10
+}

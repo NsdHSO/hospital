@@ -1,22 +1,7 @@
 use crate::emergency::services::EmergencyService;
+use crate::emergency::PaginationParams;
 use crate::error_handler::CustomError;
 use actix_web::{get, web, HttpResponse};
-use serde::Deserialize;
-
-#[derive(Deserialize)]
-pub struct PaginationParams {
-    #[serde(default = "default_page")]
-    page: i64,
-    #[serde(default = "default_per_page")]
-    per_page: i64,
-}
-
-fn default_page() -> i64 {
-    1
-}
-fn default_per_page() -> i64 {
-    10
-}
 
 #[get("/emergency/{id}")]
 async fn find(id: web::Path<String>) -> Result<HttpResponse, CustomError> {
