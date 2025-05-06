@@ -32,3 +32,19 @@ fn page() -> i64 {
 fn per_page() -> i64 {
     10
 }
+
+#[derive(Serialize)]
+pub struct PaginatedResponse<T> {
+    pub data: T,
+    pub pagination: PaginationInfo,
+}
+
+#[derive(Serialize)]
+pub struct PaginationInfo {
+    pub current_page: i64,
+    pub page_size: i64,
+    pub total_items: i64,
+    pub total_pages: i64,
+    pub has_next_page: bool,
+    pub has_previous_page: bool,
+}
