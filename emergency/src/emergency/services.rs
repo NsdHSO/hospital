@@ -1,12 +1,14 @@
-use diesel::dsl::sql;
 use crate::db::config;
+use crate::db::config::DbConnection;
 use crate::emergency::{Emergency, PaginatedResponse, PaginationInfo};
 use crate::error_handler::CustomError;
 use crate::schema::emergency::dsl::emergency;
+use crate::schema::emergency::dsl::*;
 use crate::schema::emergency::emergencyIc;
+use diesel::dsl::sql;
 use diesel::prelude::*;
 use diesel::sql_types::BigInt;
-use crate::db::config::DbConnection;
+
 pub struct EmergencyService {
     conn: DbConnection,
 }
@@ -15,6 +17,17 @@ impl EmergencyService {
     pub fn new() -> Result<Self, CustomError> {
         let conn = config::connection()?;
         Ok(EmergencyService { conn })
+    }
+    
+    pub fn create(&mut self, mut new_emergency: Emergency) -> Result<Emergency, CustomError> {
+        new_emergency.generate_id();        
+
+        let result = diesel::insert_into(emergency)
+            .values(&new_emergency)
+            .returning(Emergency::as_select())
+            .get_result(&mut self.conn)?;
+
+        Ok(result)
     }
 
     pub fn find_one(&mut self, emergency_ic: &str) -> Result<Option<Emergency>, CustomError> {
