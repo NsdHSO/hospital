@@ -1,9 +1,9 @@
+use crate::db::config;
 use crate::emergency::Emergency;
 use crate::error_handler::CustomError;
 use crate::schema::emergency::dsl::emergency;
 use crate::schema::emergency::emergencyIc;
 use diesel::prelude::*;
-use crate::db::config;
 
 pub struct EmergencyService;
 
@@ -35,6 +35,4 @@ impl EmergencyService {
 
         Ok(records)
     }
-
 }
-
