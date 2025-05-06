@@ -12,6 +12,7 @@ pub struct Emergency {
     pub notes: Option<String>,
     pub idAmbulance: Option<uuid::Uuid>,
     pub additional_info: Option<String>,
+    pub emergencyLongitude: BigDecimal,
     pub emergencyLatitude: BigDecimal,
 }
 impl Emergency {}
