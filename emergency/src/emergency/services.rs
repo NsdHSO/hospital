@@ -21,4 +21,20 @@ impl EmergencyService {
 
         Ok(record)
     }
+
+    pub fn find_all(page: i64, per_page: i64) -> Result<Vec<Emergency>, CustomError> {
+        let mut conn = config::connection()?;
+
+        let offset = (page - 1) * per_page;
+
+        let records = emergency
+            .limit(per_page)
+            .offset(offset)
+            .select(Emergency::as_select())
+            .load(&mut conn)?;
+
+        Ok(records)
+    }
+
 }
+
