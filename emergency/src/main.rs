@@ -10,10 +10,9 @@ use std::env;
 
 mod db;
 mod emergency;
-mod enums;
 mod error_handler;
-mod schema;
 mod http_response;
+mod schema;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -24,8 +23,8 @@ async fn main() -> std::io::Result<()> {
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(|| {
         App::new()
-            .configure(emergency::init_routes)
             .wrap(Logger::default())
+            .configure(emergency::init_routes)
     });
 
     server = match listenfd.take_tcp_listener(0)? {

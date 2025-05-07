@@ -1,3 +1,4 @@
+use crate::emergency::enums::enum_emergency::EmergencyStatus;
 use crate::schema::emergency;
 use bigdecimal::BigDecimal;
 use nanoid::nanoid;
@@ -22,6 +23,7 @@ impl From<NewEmergencyRequest> for Emergency {
             description: req.description,
             reportedBy: req.reportedBy,
             notes: req.notes,
+            status: EmergencyStatus::Pending,
             idAmbulance: req.idAmbulance,
             additional_info: req.additional_info,
             emergencyLongitude: req.emergencyLongitude,
@@ -32,7 +34,7 @@ impl From<NewEmergencyRequest> for Emergency {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Insertable, Queryable, Selectable)]
+#[derive(Debug, Serialize, Deserialize, Insertable, Queryable, Selectable, QueryId)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[table_name = "emergency"]
 pub struct Emergency {
@@ -40,11 +42,13 @@ pub struct Emergency {
     pub description: String,
     pub reportedBy: Option<i32>,
     pub notes: Option<String>,
+    pub status: EmergencyStatus,  // Add this
     pub idAmbulance: Option<uuid::Uuid>,
     pub additional_info: Option<String>,
     pub emergencyLongitude: BigDecimal,
     pub emergencyLatitude: BigDecimal,
 }
+
 impl Emergency {
     pub fn generate_id(&mut self) {
         self.emergencyIc = nanoid!(10, &['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);

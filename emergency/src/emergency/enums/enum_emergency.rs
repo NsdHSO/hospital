@@ -1,8 +1,9 @@
+use diesel::deserialize::FromSql;
 use diesel_derive_enum::DbEnum;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DbEnum, Serialize, Deserialize)]
-#[DieselType = "Emergency_status"]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, DbEnum)]
+#[ExistingTypePath = "crate::schema::sql_types::EmergencyStatusEnum"]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EmergencyStatus {
     Pending,
@@ -21,26 +22,26 @@ pub enum EmergencyStatus {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, DbEnum)]
-#[DieselType = "Emergency_severity"]
+#[ExistingTypePath = "crate::schema::sql_types::EmergencySeverityEnum"]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[repr(i32)]
 pub enum EmergencySeverity {
-    Low,           // Minor injury or discomfort, no immediate danger
-    Medium,        // Requires attention but not life-threatening
-    High,          // Serious emergency needing fast response
-    Critical,      // Life-threatening situation
-    Severe,        // Mass casualty or widespread crisis
-    Extreme,       // Catastrophic emergency (e.g., natural disaster)
-    Unknown,       // Severity is not yet determined
+    Low,      // Minor injury or discomfort, no immediate danger
+    Medium,   // Requires attention but not life-threatening
+    High,     // Serious emergency needing fast response
+    Critical, // Life-threatening situation
+    Severe,   // Mass casualty or widespread crisis
+    Extreme,  // Catastrophic emergency (e.g., natural disaster)
+    Unknown,  // Severity is not yet determined
 
     // Special Cases
-    Stable,        // Condition is under control, but still being monitored
-    Unstable,      // Condition is deteriorating, requiring urgent care
-    Deceased,      // Fatality recorded in the emergency case
+    Stable,   // Condition is under control, but still being monitored
+    Unstable, // Condition is deteriorating, requiring urgent care
+    Deceased, // Fatality recorded in the emergency case
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, DbEnum, Serialize, Deserialize)]
-#[DieselType = "Emergency_type"]
+#[ExistingTypePath = "crate::schema::sql_types::EmergencyIncidenttypeEnum"]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EmergencyType {
     // Traffic & Transport
@@ -107,8 +108,7 @@ pub enum EmergencyType {
     Other,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DbEnum, Serialize, Deserialize)]
-#[DieselType = "Reported_by"]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ReportedBy {
     User,
