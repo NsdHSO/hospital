@@ -13,6 +13,8 @@ mod emergency;
 mod error_handler;
 mod http_response;
 mod schema;
+mod ambulance;
+mod shared;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

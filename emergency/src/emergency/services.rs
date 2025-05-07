@@ -1,9 +1,10 @@
 use crate::db::config;
 use crate::db::config::DbConnection;
-use crate::emergency::{Emergency, PaginatedResponse, PaginationInfo};
+use crate::emergency::Emergency;
 use crate::error_handler::CustomError;
 use crate::schema::emergency::dsl::*;
 use crate::schema::emergency::emergencyIc;
+use crate::shared::{PaginatedResponse, PaginationInfo};
 use diesel::dsl::sql;
 use diesel::prelude::*;
 use diesel::sql_types::{BigInt, Bool};
@@ -96,5 +97,4 @@ impl EmergencyService {
 
         Ok(results)
     }
-    
 }

@@ -1,10 +1,11 @@
 use crate::emergency::services::EmergencyService;
-use crate::emergency::{Emergency, NewEmergencyRequest, PaginationParams};
+use crate::emergency::{Emergency, NewEmergencyRequest};
 use crate::error_handler::CustomError;
-
 use crate::http_response::http_response_builder;
 use crate::http_response::ResponseObject;
+use crate::shared::PaginationParams;
 use actix_web::{get, post, web, HttpResponse};
+
 #[get("/emergency/{id}")]
 async fn find(id: web::Path<String>) -> Result<HttpResponse, CustomError> {
     let mut service = EmergencyService::new()?;
