@@ -5,19 +5,33 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, DbEnum)]
 #[ExistingTypePath = "crate::schema::sql_types::EmergencyStatusEnum"]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[DbValueStyle = "SCREAMING_SNAKE_CASE"]  // Add this line
 pub enum EmergencyStatus {
+    #[db_rename = "PENDING"]
     Pending,
+    #[db_rename = "IN_PROGRESS"]
     InProgress,
+    #[db_rename = "RESOLVED"]
     Resolved,
+    #[db_rename = "CANCELLED"]
     Cancelled,
+    #[db_rename = "ESCALATED"]
     Escalated,
+    #[db_rename = "WAITING_FOR_RESPONSE"]
     WaitingForResponse,
+    #[db_rename = "ON_HOLD"]
     OnHold,
+    #[db_rename = "FAILED"]
     Failed,
+    #[db_rename = "AT_SCENE"]
     AtScene,
+    #[db_rename = "IN_AMBULANCE"]
     InAmbulance,
+    #[db_rename = "IN_TRANSIT_TO_HOSPITAL"]
     InTransitToHospital,
+    #[db_rename = "ARRIVED_AT_HOSPITAL"]
     ArrivedAtHospital,
+    #[db_rename = "TREATED_AT_HOME"]
     TreatedAtHome,
 }
 

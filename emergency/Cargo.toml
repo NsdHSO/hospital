@@ -7,7 +7,7 @@ edition = "2024"
 [dependencies]
 actix-rt = "2.10.0"
 actix-web = "4.10.2"
-chrono = "0.4.41"
+chrono = { version = "0.4.41", features = ["serde"] }
 dotenv = "0.15.0"
 bigdecimal = { version = "0.4", features = ["serde"] }
 diesel = { version = "2.2.10", features = ["postgres", "r2d2", "uuid", "chrono", "numeric", "serde_json"] }

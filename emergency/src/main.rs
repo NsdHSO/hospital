@@ -2,18 +2,18 @@
 extern crate diesel;
 
 use actix_web::middleware::Logger;
-use actix_web::{App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
 use env_logger::Env;
 use listenfd::ListenFd;
 use std::env;
 
+mod ambulance;
 mod db;
 mod emergency;
 mod error_handler;
 mod http_response;
 mod schema;
-mod ambulance;
 mod shared;
 
 #[actix_rt::main]
@@ -24,9 +24,11 @@ async fn main() -> std::io::Result<()> {
 
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(|| {
-        App::new()
-            .wrap(Logger::default())
-            .configure(emergency::init_routes)
+        App::new().wrap(Logger::default()).service(
+            web::scope("/v1")
+                .configure(ambulance::init_routes)
+                .configure(emergency::init_routes),
+        )
     });
 
     server = match listenfd.take_tcp_listener(0)? {

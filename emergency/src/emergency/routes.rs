@@ -31,10 +31,10 @@ async fn find_all(query: web::Query<PaginationParams>) -> Result<HttpResponse, C
 }
 
 pub fn init_routes(config: &mut web::ServiceConfig) {
-    config.service(
-        web::scope("v1")
-            .service(find)
-            .service(find_all)
-            .service(create),
-    );
+    config
+        .service(find)
+        .service(find_all)
+        .service(create);
+
+
 }
