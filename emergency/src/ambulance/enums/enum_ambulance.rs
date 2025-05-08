@@ -1,6 +1,8 @@
 use diesel_derive_enum::DbEnum;
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Serialize, Deserialize, DbEnum)]
+use utoipa::ToSchema;
+
+#[derive(Debug, Serialize, Deserialize, DbEnum, ToSchema)]
 #[ExistingTypePath = "crate::schema::sql_types::AmbulanceTypeEnum"]
 pub enum AmbulanceType {
     #[db_rename = "BASIC_LIFE_SUPPORT"]
@@ -47,7 +49,7 @@ pub enum AmbulanceType {
     TrainingAmbulance,
 }
 
-#[derive(Debug, Serialize, Deserialize, DbEnum)]
+#[derive(Debug, Serialize, Deserialize, DbEnum, ToSchema)]
 #[ExistingTypePath = "crate::schema::sql_types::AmbulanceStatusEnum"]
 pub enum AmbulanceStatus {
     #[db_rename = "AVAILABLE"]
@@ -112,7 +114,7 @@ pub enum AmbulanceCarDetailsMake {
     Iveco,
 }
 
-#[derive(Debug, Serialize, Deserialize, DbEnum)]
+#[derive(Debug, Serialize, Deserialize, DbEnum, ToSchema)]
 #[ExistingTypePath = "crate::schema::sql_types::AmbulanceCardetailsmodelEnum"]
 pub enum AmbulanceCarDetailsModel {
     #[db_rename = "Sprinter"]

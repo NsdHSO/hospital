@@ -1,6 +1,6 @@
 mod models;
-mod routes;
+pub mod routes;
 mod services;
 mod enums;
 
-pub use routes::init_routes;
+pub use routes::*;
