@@ -3,16 +3,18 @@ use crate::schema::emergency;
 use bigdecimal::BigDecimal;
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
+use utoipa::{PartialSchema, ToSchema};
+use utoipa::openapi::{RefOr, Schema};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize,ToSchema)]
 pub struct NewEmergencyRequest {
     pub description: String,
     pub reportedBy: Option<i32>,
     pub notes: Option<String>,
     pub idAmbulance: Option<uuid::Uuid>,
     pub additional_info: Option<String>,
-    pub emergencyLongitude: BigDecimal,
-    pub emergencyLatitude: BigDecimal,
+    pub emergencyLongitude: String,
+    pub emergencyLatitude: String,
 }
 
 
@@ -26,8 +28,8 @@ impl From<NewEmergencyRequest> for Emergency {
             status: EmergencyStatus::Pending,
             idAmbulance: req.idAmbulance,
             additional_info: req.additional_info,
-            emergencyLongitude: req.emergencyLongitude,
-            emergencyLatitude: req.emergencyLatitude,
+            emergencyLongitude: req.emergencyLongitude.parse().unwrap(),
+            emergencyLatitude: req.emergencyLatitude.parse().unwrap(),
         };
         emergency.generate_id();
         emergency

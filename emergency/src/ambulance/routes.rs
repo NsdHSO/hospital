@@ -6,15 +6,6 @@ use actix_web::{get, web, HttpResponse};
 use utoipa::ToSchema;
 
 #[get("/ambulance")]
-#[utoipa::path(
-    get,
-    path = "/v1/ambulance",
-    tag = "ambulance",
-    responses(
-        (status = 200, description = "List of ambulances retrieved successfully", body = String),
-        (status = 500, description = "Internal Server Error", body = String)
-    )
-)]
 pub async fn find_all(query: web::Query<PaginationParams>) -> Result<HttpResponse, CustomError> {
     let mut service = AmbulanceService::new()?;
     let ambulance = service.find_all(query.page, query.per_page)?;
