@@ -13,7 +13,12 @@ async fn find(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
 }
 #[get("/ambulance")]
 pub async fn find_all(query: web::Query<PaginationParams>) -> Result<HttpResponse, CustomError> {
-    let service = AmbulanceService::new().await?;
+    let service_instance = AmbulanceService::new().await;
+    let service = match service_instance {
+        Ok(service) => service,
+        Err(_) => return Ok(HttpResponse::InternalServerError().finish()),
+    };
+
     let emergency = service
         .find_all(
             query.page.try_into().unwrap(),
