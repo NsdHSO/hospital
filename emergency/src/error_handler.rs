@@ -1,6 +1,6 @@
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
-use diesel::result::Error as DieselError;
+use sea_orm::DbErr; // Import SeaORM's database error type
 use serde::Deserialize;
 use serde_json::json;
 use std::fmt;
@@ -26,17 +26,22 @@ impl fmt::Display for CustomError {
     }
 }
 
-impl From<DieselError> for CustomError {
-    fn from(error: DieselError) -> CustomError {
+// Implement From for SeaORM's DbErr
+impl From<DbErr> for CustomError {
+    fn from(error: DbErr) -> CustomError {
         match error {
-            DieselError::DatabaseError(_, err) => CustomError::new(409, err.message().to_string()),
-            DieselError::NotFound => {
-                CustomError::new(404, "The employee record not found".to_string())
-            }
-            err => CustomError::new(500, format!("Unknown Diesel error: {}", err)),
+            DbErr::Conn(e) => CustomError::new(500, format!("Database connection error: {}", e)),
+            DbErr::Exec(e) => CustomError::new(500, format!("Database execution error: {}", e)),
+            DbErr::Query(e) => CustomError::new(500, format!("Database query error: {}", e)),
+            DbErr::Json(e) => CustomError::new(500, format!("JSON error: {}", e)),
+            DbErr::ConvertFromU64(e) => CustomError::new(500, format!("Conversion error: {}", e)),
+            DbErr::RecordNotFound(_) => CustomError::new(404, "Record not found".to_string()),
+            DbErr::Custom(e) => CustomError::new(500, format!("Custom database error: {}", e)),
+            _ => CustomError::new(500, format!("Unknown database error: {:?}", error)), // Catch any other DbErr variants
         }
     }
 }
+
 
 impl ResponseError for CustomError {
     fn error_response(&self) -> HttpResponse {

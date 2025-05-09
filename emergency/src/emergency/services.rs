@@ -1,100 +1,14 @@
-use crate::db::config;
-use crate::db::config::DbConnection;
-use crate::emergency::Emergency;
+use crate::db::config::connection;
 use crate::error_handler::CustomError;
-use crate::schema::emergency::dsl::*;
-use crate::schema::emergency::emergencyIc;
-use crate::shared::{PaginatedResponse, PaginationInfo};
-use diesel::dsl::sql;
-use diesel::prelude::*;
-use diesel::sql_types::{BigInt, Bool};
+use sea_orm::DatabaseConnection;
 
 pub struct EmergencyService {
-    conn: DbConnection,
+    conn: DatabaseConnection,
 }
 
 impl EmergencyService {
-    pub fn new() -> Result<Self, CustomError> {
-        let conn = config::connection()?;
-        Ok(EmergencyService { conn })
-    }
-
-    pub fn create(&mut self, mut new_emergency: Emergency) -> Result<Emergency, CustomError> {
-        new_emergency.generate_id();
-
-        let result = diesel::insert_into(emergency)
-            .values(&new_emergency)
-            .returning(Emergency::as_select())
-            .get_result(&mut self.conn);
-        match result {
-            Ok(result) => Ok(result),
-            Err(e) => {
-                let mut custom = CustomError::from(e);
-                custom.error_message = format!("You have some error: {}", custom.error_message);
-                Err(custom)
-            }
-        }
-    }
-
-    pub fn find_one(&mut self, emergency_ic: &str) -> Result<Option<Emergency>, CustomError> {
-        let record = emergency
-            .filter(emergencyIc.eq(emergency_ic))
-            .select(Emergency::as_select())
-            .first(&mut self.conn)
-            .optional()?;
-
-        println!("Query result: {:?}", record);
-
-        Ok(record)
-    }
-
-    pub fn find_all(
-        &mut self,
-        page: i64,
-        per_page: i64,
-    ) -> Result<PaginatedResponse<Vec<Emergency>>, CustomError> {
-        let offset = (page - 1) * per_page;
-
-        // Single query that gets both count and records
-        let records_with_count: Vec<(Emergency, i64)> = emergency
-            .limit(per_page)
-            .offset(offset)
-            .select((Emergency::as_select(), sql::<BigInt>("COUNT(*) OVER()")))
-            .load(&mut self.conn)?;
-
-        let total = records_with_count
-            .first()
-            .map(|(_, count)| count)
-            .unwrap_or(&0)
-            .to_owned();
-        let records = records_with_count
-            .into_iter()
-            .map(|(record, _)| record)
-            .collect();
-        let total_pages = (total as f64 / per_page as f64).ceil() as i64;
-
-        let pagination = PaginationInfo {
-            current_page: page,
-            page_size: per_page,
-            total_items: total,
-            total_pages,
-            has_next_page: page < total_pages,
-            has_previous_page: page > 1,
-        };
-
-        Ok(PaginatedResponse {
-            data: records,
-            pagination,
-        })
-    }
-    pub fn pending_without_ambulance(&mut self) -> Result<Vec<Emergency>, CustomError> {
-        let results = emergency
-            .filter(sql::<Bool>("status = 'PENDING'::emergency_status_enum"))
-            .filter(idAmbulance.is_null())
-            .order_by((severity.desc(), createdAt.asc()))
-            .select(Emergency::as_select())
-            .load::<Emergency>(&mut self.conn)?;
-
-        Ok(results)
+    pub async fn new() -> Result<Self, CustomError> {
+        let conn = connection().await?; // Changed connection handling
+        Ok(EmergencyService { conn: conn.clone() })
     }
 }

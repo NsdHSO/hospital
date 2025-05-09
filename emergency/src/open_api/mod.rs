@@ -2,8 +2,6 @@ use utoipa::OpenApi;
 use utoipa::openapi::{self, HttpMethod, Response};
 
 // Import necessary types for schema components
-use crate::emergency::NewEmergencyRequest;
-use crate::schema::guard::name;
 
 /// API Documentation
 #[derive(OpenApi)]
@@ -12,9 +10,6 @@ use crate::schema::guard::name;
         title = "Emergency Service API",
         version = "1.0.0",
         description = "API for managing emergencies and ambulances"
-    ),
-    components(
-        schemas(NewEmergencyRequest)
     ),
     tags(
         (name = "ambulance", description = "Ambulance management endpoints"),

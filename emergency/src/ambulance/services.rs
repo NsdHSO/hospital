@@ -1,66 +1,51 @@
-use crate::ambulance::models::Ambulance;
-use crate::db::config;
-use crate::db::config::DbConnection;
+use crate::db::config::connection;
+use crate::entity::ambulance;
 use crate::error_handler::CustomError;
-use crate::schema::ambulance::dsl::*;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use diesel::dsl::sql;
-use diesel::prelude::*;
-use diesel::sql_types::{BigInt, Bool};
+use sea_orm::QueryFilter;
+use sea_orm::{ColumnTrait, PaginatorTrait};
+use sea_orm::{DatabaseConnection, EntityTrait};
 
 pub struct AmbulanceService {
-    conn: DbConnection,
+    conn: DatabaseConnection,
 }
 
 impl AmbulanceService {
-    pub fn new() -> Result<Self, CustomError> {
-        let conn = config::connection()?;
+    pub async fn new() -> Result<Self, CustomError> {
+        let conn = connection().await?.clone(); // Changed connection handling
         Ok(AmbulanceService { conn })
     }
-    pub fn find_one(&mut self, ic: i32) -> Result<Option<Ambulance>, CustomError> {
-        let condition = sql::<Bool>(&format!("\"ambulanceIc\" = {}", ic));
 
-        let result = ambulance
-            .filter(condition)
-            .select(Ambulance::as_select())
-            .first(&mut self.conn)
-            .optional()?;
-
-        println!("Query result: {:?}", result);
-
-        Ok(result)
+    pub async fn find_by_ic(
+        &self,
+        ambulance_ic: i32,
+    ) -> Result<Option<ambulance::Model>, CustomError> {
+        ambulance::Entity::find()
+            .filter(ambulance::Column::AmbulanceIc.eq(ambulance_ic))
+            .one(&self.conn)
+            .await
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))
     }
 
-    pub fn find_all(
-        &mut self,
-        page: i64,
-        per_page: i64,
-    ) -> Result<PaginatedResponse<Vec<Ambulance>>, CustomError> {
-        let offset = (page - 1) * per_page;
+    pub async fn find_all(
+        &self,         // Changed to &self as we're not modifying the service state
+        page: u64,     // Use u64 for pagination
+        per_page: u64, // Use u64 for pagination
+    ) -> Result<PaginatedResponse<Vec<ambulance::Model>>, CustomError> {
+        let paginator = ambulance::Entity::find().paginate(&self.conn, per_page);
 
-        // Single query that gets both count and records
-        let records_with_count: Vec<(Ambulance, i64)> = ambulance
-            .limit(per_page)
-            .offset(offset)
-            .select((Ambulance::as_select(), sql::<BigInt>("COUNT(*) OVER()")))
-            .load(&mut self.conn)?;
+        let total_items = paginator.num_items().await?;
+        let total_pages = paginator.num_pages().await?;
 
-        let total = records_with_count
-            .first()
-            .map(|(_, count)| count)
-            .unwrap_or(&0)
-            .to_owned();
-        let records = records_with_count
-            .into_iter()
-            .map(|(record, _)| record)
-            .collect();
-        let total_pages = (total as f64 / per_page as f64).ceil() as i64;
+        let records = paginator
+            .fetch_page(page - 1) // Page is 0-indexed in SeaORM
+            .await?;
 
         let pagination = PaginationInfo {
-            current_page: page,
-            page_size: per_page,
-            total_items: total,
-            total_pages,
+            current_page: page as i64, // Convert back to i64 if needed for your PaginatedResponse
+            page_size: per_page as i64, // Convert back to i64
+            total_items: total_items as i64, // Convert back to i64
+            total_pages: total_pages as i64, // Convert back to i64
             has_next_page: page < total_pages,
             has_previous_page: page > 1,
         };
