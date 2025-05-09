@@ -8,7 +8,7 @@ use diesel::pg::Pg;
 use diesel::prelude::*;
 use diesel::prelude::*;
 use diesel::serialize::ToSql;
-use diesel::sql_types::Jsonb;
+use diesel::sql_types::{Integer, Jsonb, Text};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -18,6 +18,7 @@ pub struct Json<T>(pub T);
 
 #[derive(Debug, Serialize, Deserialize, Queryable, Insertable, Selectable)]
 #[diesel(table_name = crate::schema::ambulance)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Ambulance {
     pub createdAt: NaiveDateTime,
     pub updatedAt: NaiveDateTime,

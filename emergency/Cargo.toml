@@ -2,6 +2,7 @@
 name = "emergency"
 authors = ["Nechiforel David-Samuel (nsdHSO)<nechiforelsamuel@gmail.com>"]
 version = "0.1.0"
+license = "MIT"
 edition = "2024"
 
 [dependencies]

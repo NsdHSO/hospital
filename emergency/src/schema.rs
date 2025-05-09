@@ -53,7 +53,7 @@ pub mod sql_types {
     #[diesel(postgres_type(name = "emergency_severity_enum"))]
     pub struct EmergencySeverityEnum;
 
-    #[derive(diesel::sql_types::SqlType, QueryId)]
+    #[derive(diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "emergency_status_enum"))]
     pub struct EmergencyStatusEnum;
 

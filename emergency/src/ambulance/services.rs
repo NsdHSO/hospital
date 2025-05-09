@@ -2,11 +2,11 @@ use crate::ambulance::models::Ambulance;
 use crate::db::config;
 use crate::db::config::DbConnection;
 use crate::error_handler::CustomError;
+use crate::schema::ambulance::dsl::*;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use diesel::dsl::sql;
-use diesel::sql_types::BigInt;
-use diesel::RunQueryDsl;
-use diesel::{QueryDsl, SelectableHelper};
+use diesel::prelude::*;
+use diesel::sql_types::{BigInt, Bool};
 
 pub struct AmbulanceService {
     conn: DbConnection,
@@ -17,13 +17,25 @@ impl AmbulanceService {
         let conn = config::connection()?;
         Ok(AmbulanceService { conn })
     }
+    pub fn find_one(&mut self, ic: i32) -> Result<Option<Ambulance>, CustomError> {
+        let condition = sql::<Bool>(&format!("\"ambulanceIc\" = {}", ic));
+
+        let result = ambulance
+            .filter(condition)
+            .select(Ambulance::as_select())
+            .first(&mut self.conn)
+            .optional()?;
+
+        println!("Query result: {:?}", result);
+
+        Ok(result)
+    }
+
     pub fn find_all(
         &mut self,
         page: i64,
         per_page: i64,
     ) -> Result<PaginatedResponse<Vec<Ambulance>>, CustomError> {
-        use crate::schema::ambulance::dsl::*;
-
         let offset = (page - 1) * per_page;
 
         // Single query that gets both count and records

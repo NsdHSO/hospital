@@ -5,6 +5,14 @@ use crate::shared::PaginationParams;
 use actix_web::{get, web, HttpResponse};
 use utoipa::ToSchema;
 
+#[get("/ambulance/{id}")]
+async fn find(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
+    let mut service = AmbulanceService::new()?;
+    let emergency = service.find_one(*id)?;
+    let response = http_response_builder::ok(emergency);
+    Ok(HttpResponse::Ok().json(response))
+}
+
 #[get("/ambulance")]
 pub async fn find_all(query: web::Query<PaginationParams>) -> Result<HttpResponse, CustomError> {
     let mut service = AmbulanceService::new()?;
@@ -15,4 +23,5 @@ pub async fn find_all(query: web::Query<PaginationParams>) -> Result<HttpRespons
 }
 pub fn init_routes(config: &mut web::ServiceConfig) {
     config.service(find_all);
+    config.service(find);
 }
