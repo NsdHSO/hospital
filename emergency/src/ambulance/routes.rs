@@ -7,8 +7,8 @@ use actix_web::{get, web, HttpResponse};
 #[get("/ambulance/{id}")]
 async fn find(id: web::Path<i32>) -> Result<HttpResponse, CustomError> {
     let service = AmbulanceService::new().await?;
-    let emergency = service.find_by_ic(*id).await?;
-    let response = http_response_builder::ok(emergency);
+    let ambulance = service.find_by_ic(*id).await?;
+    let response = http_response_builder::ok(ambulance);
     Ok(HttpResponse::Ok().json(response))
 }
 #[get("/ambulance")]
@@ -19,13 +19,13 @@ pub async fn find_all(query: web::Query<PaginationParams>) -> Result<HttpRespons
         Err(_) => return Ok(HttpResponse::InternalServerError().finish()),
     };
 
-    let emergency = service
+    let ambulance = service
         .find_all(
             query.page.try_into().unwrap(),
             query.per_page.try_into().unwrap(),
         )
         .await?;
-    let response = http_response_builder::ok(emergency);
+    let response = http_response_builder::ok(ambulance);
     Ok(HttpResponse::Ok().json(response))
 }
 pub fn init_routes(config: &mut web::ServiceConfig) {
