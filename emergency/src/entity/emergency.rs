@@ -69,7 +69,7 @@ impl Related<super::ambulance::Entity> for Entity {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize,Clone)]
 pub struct EmergencyRequestBody {
     pub notes: Option<String>,
     #[serde(rename = "emergencyLatitude")]

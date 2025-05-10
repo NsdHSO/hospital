@@ -1,9 +1,14 @@
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
-use sea_orm::DbErr; // Import SeaORM's database error type
+use sea_orm::DbErr;
+// Import SeaORM's database error type
 use serde::Deserialize;
 use serde_json::json;
 use std::fmt;
+
+use crate::http_response::{create_response, HttpCodeW};
+use log::{error, info};
+// Import logging macros
 
 #[derive(Debug, Deserialize)]
 pub struct CustomError {
@@ -30,32 +35,83 @@ impl fmt::Display for CustomError {
 impl From<DbErr> for CustomError {
     fn from(error: DbErr) -> CustomError {
         match error {
-            DbErr::Conn(e) => CustomError::new(500, format!("Database connection error: {}", e)),
-            DbErr::Exec(e) => CustomError::new(500, format!("Database execution error: {}", e)),
-            DbErr::Query(e) => CustomError::new(500, format!("Database query error: {}", e)),
-            DbErr::Json(e) => CustomError::new(500, format!("JSON error: {}", e)),
-            DbErr::ConvertFromU64(e) => CustomError::new(500, format!("Conversion error: {}", e)),
-            DbErr::RecordNotFound(_) => CustomError::new(404, "Record not found".to_string()),
-            DbErr::Custom(e) => CustomError::new(500, format!("Custom database error: {}", e)),
-            _ => CustomError::new(500, format!("Unknown database error: {:?}", error)), // Catch any other DbErr variants
+            DbErr::Conn(e) => {
+                let msg = format!("Database connection error: {}", e);
+                print!("{}", msg); // Log the error
+                CustomError::new(500, msg)
+            }
+            DbErr::Exec(e) => {
+                let msg = format!("Database execution error: {}", e);
+                print!("{}", msg); // Log the error
+                CustomError::new(500, msg)
+            }
+            DbErr::Query(e) => {
+                let msg = format!("Database query error: {}", e);
+                print!("{}", msg); // Log the error
+                CustomError::new(500, msg)
+            }
+            DbErr::Json(e) => {
+                let msg = format!("JSON error: {}", e);
+                print!("{}", msg); // Log the error
+                CustomError::new(500, msg)
+            }
+            DbErr::ConvertFromU64(e) => {
+                let msg = format!("Conversion error: {}", e);
+                print!("{}", msg); // Log the error
+                CustomError::new(500, msg)
+            }
+            DbErr::RecordNotFound(_) => CustomError::new(404, "Record not found".to_string()), // Not an error that needs logging at ERROR level
+            DbErr::Custom(e) => {
+                let msg = format!("Custom database error: {}", e);
+                print!("{}", msg); // Log the error
+                CustomError::new(500, msg)
+            }
+            _ => {
+                let msg = format!("Unknown database error: {:?}", error);
+                print!("{}", msg); // Log the error
+                CustomError::new(500, msg)
+            }
         }
     }
 }
 
-
 impl ResponseError for CustomError {
     fn error_response(&self) -> HttpResponse {
-        let status_code = StatusCode::from_u16(self.error_status_code)
-            .unwrap_or_else(|_| StatusCode::INTERNAL_SERVER_ERROR);
+        // Log the error when it's being converted to an HTTP response
+        print!(
+            "Responding with error: Status={}, Message={}",
+            self.error_status_code, self.error_message
+        );
 
-        let error_message = match status_code.as_u16() < 500 {
-            true => self.error_message.clone(),
-            false => json!({
-                "message": "Internal server error",
-                "error": self.error_message.clone()
-            }).to_string(),
+        // Map the CustomError status code to HttpCodeW
+        let http_code = match self.error_status_code {
+            200 => HttpCodeW::OK,
+            201 => HttpCodeW::Created,
+            204 => HttpCodeW::NoContent,
+
+            400 => HttpCodeW::BadRequest,
+            401 => HttpCodeW::Unauthorized,
+            403 => HttpCodeW::Forbidden,
+            404 => HttpCodeW::NotFound,
+            409 => HttpCodeW::Conflict,
+            422 => HttpCodeW::UnprocessableEntity,
+
+            500 => HttpCodeW::InternalServerError,
+            501 => HttpCodeW::NotImplemented,
+            502 => HttpCodeW::BadGateway,
+            503 => HttpCodeW::ServiceUnavailable,
+            504 => HttpCodeW::GatewayTimeout,
+
+            _ => HttpCodeW::InternalServerError,
         };
 
-        HttpResponse::build(status_code).json(json!({ "message": error_message }))
+        // Create a ResponseObject using the error message and mapped HttpCodeW
+        let response_object = create_response(self.error_message.clone(), http_code);
+        println!("ResponseObject: {:?}", response_object);
+        // Build the HttpResponse based on the HttpCodeW
+        let status_code = StatusCode::from_u16(http_code as u16)
+            .unwrap_or_else(|_| StatusCode::INTERNAL_SERVER_ERROR);
+
+        HttpResponse::build(status_code).json(response_object)
     }
 }

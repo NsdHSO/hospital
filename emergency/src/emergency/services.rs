@@ -1,18 +1,15 @@
 use crate::db::config::connection;
 use crate::entity::emergency;
-use crate::entity::emergency::{EmergencyRequestBody, Model};
+use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use chrono::Utc;
+use chrono::{NaiveDateTime, Utc};
 use nanoid::nanoid;
-use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
 
-// Import SeaORM's Json type
 use crate::entity::sea_orm_active_enums::{EmergencySeverityEnum, EmergencyStatusEnum};
-use uuid::Uuid;
-use crate::entity::emergency::Column::ReportedBy;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -67,39 +64,69 @@ impl EmergencyService {
         emergency_data: EmergencyRequestBody,
     ) -> Result<emergency::Model, CustomError> {
         // Generate unique emergency_ic (using nanoid for a short, unique string)
-        let emergency_ic = nanoid!();
-
-        // Generate a new UUID for the id
-        let id = Uuid::new_v4();
-
-        // Get current timestamps
+        let emergency_ic = nanoid!(30, &['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
         let now = Utc::now().naive_utc();
+        let mut attempts = 0;
+        const MAX_ATTEMPTS: usize = 5; 
 
-        let active_model = emergency::ActiveModel {
+        loop {
+            if attempts >= MAX_ATTEMPTS {
+                return Err(CustomError::new(
+                    500,
+                    "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
+                ));
+            }
+
+            // Generate a unique emergency_ic (using nanoid for a short, unique string)
+            let emergency_ic = nanoid!(30, &['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
+
+            let active_model = Self::generate_model(emergency_data.clone(), now, emergency_ic);
+
+            // Insert the record into the database
+            let result = active_model.insert(&self.conn).await;
+
+            match result {
+                Ok(model) => return Ok(model), // Successfully inserted, return the model
+                Err(DbErr::Exec(e)) => {
+                    // Check if the error is a unique constraint violation
+                    // The exact string to check for might vary slightly depending on the database
+                    if e.to_string()
+                        .contains("duplicate key value violates unique constraint")
+                    {
+                        // It's a unique constraint violation, retry with a new IC
+                        attempts += 1;
+                        // Continue the loop to generate a new IC and retry
+                    } else {
+                        // Some other execution error, return it
+                        return Err(CustomError::from(DbErr::Exec(e)));
+                    }
+                }
+                Err(e) => {
+                    // Other types of database errors, return them
+                    return Err(CustomError::from(e));
+                }
+            }
+        }
+    }
+
+    fn generate_model(emergency_data: EmergencyRequestBody, now: NaiveDateTime, emergency_ic: String) -> ActiveModel {
+        emergency::ActiveModel {
             id: NotSet,
             emergency_ic: Set(emergency_ic),
             created_at: Set(now),
             updated_at: Set(now),
             reported_by: Set(Some(1)),
-            notes: Set(emergency_data.notes),
+            notes: Set(emergency_data.notes.clone()), // Clone notes if needed for retries
             resolved_at: Set(now),
             // Handle the modification_attempts field
             modification_attempts: Set(None),
             id_ambulance: NotSet,
-            emergency_latitude: Set(emergency_data.emergency_latitude),
-            emergency_longitude: Set(emergency_data.emergency_longitude),
+            emergency_latitude: Set(emergency_data.emergency_latitude.clone()), // Clone if needed
+            emergency_longitude: Set(emergency_data.emergency_longitude.clone()), // Clone if needed
             status: Set(EmergencyStatusEnum::Pending),
             severity: Set(EmergencySeverityEnum::Unknown),
-            incident_type: Set(emergency_data.incident_type),
-            description: Set(emergency_data.description),
-        };
-
-        // Insert the record into the database
-        let result = active_model
-            .insert(&self.conn)
-            .await
-            .map_err(|e| CustomError::from(e))?; // Use the From<DbErr> implementation
-
-        Ok(result)
+            incident_type: Set(emergency_data.incident_type.clone()), // Clone if needed
+            description: Set(emergency_data.description.clone()),     // Clone if needed
+        }
     }
 }
