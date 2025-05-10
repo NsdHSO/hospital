@@ -5,10 +5,15 @@ use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use chrono::Utc;
 use nanoid::nanoid;
-use sea_orm::{ColumnTrait, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
+
+// Import SeaORM's Json type
+use crate::entity::sea_orm_active_enums::{EmergencySeverityEnum, EmergencyStatusEnum};
 use uuid::Uuid;
+use crate::entity::emergency::Column::ReportedBy;
+// Adjust the path if needed
 
 pub struct EmergencyService {
     conn: DatabaseConnection,
@@ -71,20 +76,20 @@ impl EmergencyService {
         let now = Utc::now().naive_utc();
 
         let active_model = emergency::ActiveModel {
-            id: Set(id),
+            id: NotSet,
             emergency_ic: Set(emergency_ic),
             created_at: Set(now),
             updated_at: Set(now),
-            reported_by: Set(emergency_data.reported_by),
+            reported_by: Set(Some(1)),
             notes: Set(emergency_data.notes),
-            resolved_at: Set(emergency_data.resolved_at),
+            resolved_at: Set(now),
             // Handle the modification_attempts field
-            modification_attempts: Set(emergency_data.modification_attempts.map(|p| SeaOrmJson(p))),
-            id_ambulance: Set(emergency_data.id_ambulance),
+            modification_attempts: Set(None),
+            id_ambulance: NotSet,
             emergency_latitude: Set(emergency_data.emergency_latitude),
             emergency_longitude: Set(emergency_data.emergency_longitude),
-            status: Set(emergency_data.status),
-            severity: Set(emergency_data.severity),
+            status: Set(EmergencyStatusEnum::Pending),
+            severity: Set(EmergencySeverityEnum::Unknown),
             incident_type: Set(emergency_data.incident_type),
             description: Set(emergency_data.description),
         };

@@ -14,7 +14,7 @@ pub struct Model {
     pub created_at: DateTime,
     #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
-    #[sea_orm(primary_key, auto_increment = false)]
+    #[sea_orm(primary_key, auto_increment = true)]
     pub id: Uuid,
     #[sea_orm(column_name = "emergencyIc", column_type = "Text")]
     pub emergency_ic: String,
@@ -23,7 +23,7 @@ pub struct Model {
     #[sea_orm(column_type = "Text", nullable)]
     pub notes: Option<String>,
     #[sea_orm(column_name = "resolvedAt")]
-    pub resolved_at: Option<DateTime>,
+    pub resolved_at: DateTime,
     #[sea_orm(
         column_name = "modificationAttempts",
         column_type = "JsonBinary",
@@ -71,21 +71,11 @@ impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EmergencyRequestBody {
-    #[serde(rename = "reportedBy")]
-    pub reported_by: Option<i32>,
     pub notes: Option<String>,
-    #[serde(rename = "resolvedAt")]
-    pub resolved_at: Option<NaiveDateTime>,
-    #[serde(rename = "modificationAttempts")]
-    pub modification_attempts: Option<serde_json::Value>, // Use serde_json::Value for flexibility
-    #[serde(rename = "idAmbulance")]
-    pub id_ambulance: Option<uuid::Uuid>,
     #[serde(rename = "emergencyLatitude")]
     pub emergency_latitude: Decimal,
     #[serde(rename = "emergencyLongitude")]
     pub emergency_longitude: Decimal,
-    pub status: EmergencyStatusEnum,
-    pub severity: EmergencySeverityEnum,
     #[serde(rename = "incidentType")]
     pub incident_type: EmergencyIncidenttypeEnum,
     pub description: Option<String>,
