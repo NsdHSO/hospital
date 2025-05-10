@@ -1,11 +1,14 @@
 use crate::db::config::connection;
 use crate::entity::emergency;
-use crate::entity::emergency::Model;
+use crate::entity::emergency::{EmergencyRequestBody, Model};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use sea_orm::QueryFilter;
+use chrono::Utc;
+use nanoid::nanoid;
 use sea_orm::{ColumnTrait, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
+use sea_orm::{QueryFilter, Set};
+use uuid::Uuid;
 
 pub struct EmergencyService {
     conn: DatabaseConnection,
@@ -52,5 +55,46 @@ impl EmergencyService {
             data: records,
             pagination,
         })
+    }
+
+    pub async fn create_emergency(
+        &self,
+        emergency_data: EmergencyRequestBody,
+    ) -> Result<emergency::Model, CustomError> {
+        // Generate unique emergency_ic (using nanoid for a short, unique string)
+        let emergency_ic = nanoid!();
+
+        // Generate a new UUID for the id
+        let id = Uuid::new_v4();
+
+        // Get current timestamps
+        let now = Utc::now().naive_utc();
+
+        let active_model = emergency::ActiveModel {
+            id: Set(id),
+            emergency_ic: Set(emergency_ic),
+            created_at: Set(now),
+            updated_at: Set(now),
+            reported_by: Set(emergency_data.reported_by),
+            notes: Set(emergency_data.notes),
+            resolved_at: Set(emergency_data.resolved_at),
+            // Handle the modification_attempts field
+            modification_attempts: Set(emergency_data.modification_attempts.map(|p| SeaOrmJson(p))),
+            id_ambulance: Set(emergency_data.id_ambulance),
+            emergency_latitude: Set(emergency_data.emergency_latitude),
+            emergency_longitude: Set(emergency_data.emergency_longitude),
+            status: Set(emergency_data.status),
+            severity: Set(emergency_data.severity),
+            incident_type: Set(emergency_data.incident_type),
+            description: Set(emergency_data.description),
+        };
+
+        // Insert the record into the database
+        let result = active_model
+            .insert(&self.conn)
+            .await
+            .map_err(|e| CustomError::from(e))?; // Use the From<DbErr> implementation
+
+        Ok(result)
     }
 }

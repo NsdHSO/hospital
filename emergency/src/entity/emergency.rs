@@ -3,6 +3,7 @@
 use super::sea_orm_active_enums::EmergencyIncidenttypeEnum;
 use super::sea_orm_active_enums::EmergencySeverityEnum;
 use super::sea_orm_active_enums::EmergencyStatusEnum;
+use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -67,3 +68,25 @@ impl Related<super::ambulance::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EmergencyRequestBody {
+    #[serde(rename = "reportedBy")]
+    pub reported_by: Option<i32>,
+    pub notes: Option<String>,
+    #[serde(rename = "resolvedAt")]
+    pub resolved_at: Option<NaiveDateTime>,
+    #[serde(rename = "modificationAttempts")]
+    pub modification_attempts: Option<serde_json::Value>, // Use serde_json::Value for flexibility
+    #[serde(rename = "idAmbulance")]
+    pub id_ambulance: Option<uuid::Uuid>,
+    #[serde(rename = "emergencyLatitude")]
+    pub emergency_latitude: Decimal,
+    #[serde(rename = "emergencyLongitude")]
+    pub emergency_longitude: Decimal,
+    pub status: EmergencyStatusEnum,
+    pub severity: EmergencySeverityEnum,
+    #[serde(rename = "incidentType")]
+    pub incident_type: EmergencyIncidenttypeEnum,
+    pub description: Option<String>,
+}
