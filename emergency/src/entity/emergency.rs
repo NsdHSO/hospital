@@ -4,8 +4,9 @@ use super::sea_orm_active_enums::EmergencyIncidenttypeEnum;
 use super::sea_orm_active_enums::EmergencySeverityEnum;
 use super::sea_orm_active_enums::EmergencyStatusEnum;
 use sea_orm::entity::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "emergency")]
 pub struct Model {
     #[sea_orm(column_name = "createdAt")]

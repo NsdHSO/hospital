@@ -290,7 +290,7 @@ pub enum DepartmentNameEnum {
     Urology,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
@@ -393,7 +393,7 @@ pub enum EmergencyIncidenttypeEnum {
     Other,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
@@ -422,7 +422,7 @@ pub enum EmergencySeverityEnum {
     Deceased,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
@@ -455,7 +455,8 @@ pub enum EmergencyStatusEnum {
     ArrivedAtHospital,
     #[sea_orm(string_value = "TREATED_AT_HOME")]
     TreatedAtHome,
-}#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+}
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "guard_area_enum")]
 pub enum GuardAreaEnum {
     #[sea_orm(string_value = "MAIN_ENTRANCE")]
