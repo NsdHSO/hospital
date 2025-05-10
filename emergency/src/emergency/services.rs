@@ -64,7 +64,6 @@ impl EmergencyService {
         emergency_data: EmergencyRequestBody,
     ) -> Result<emergency::Model, CustomError> {
         // Generate unique emergency_ic (using nanoid for a short, unique string)
-        let emergency_ic = nanoid!(30, &['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5; 
@@ -110,7 +109,7 @@ impl EmergencyService {
     }
 
     fn generate_model(emergency_data: EmergencyRequestBody, now: NaiveDateTime, emergency_ic: String) -> ActiveModel {
-        emergency::ActiveModel {
+        ActiveModel {
             id: NotSet,
             emergency_ic: Set(emergency_ic),
             created_at: Set(now),
