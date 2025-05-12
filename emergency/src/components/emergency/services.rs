@@ -1,6 +1,6 @@
-use crate::db::config::connection;
 use crate::entity::emergency;
 use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
+use crate::entity::sea_orm_active_enums::{EmergencySeverityEnum, EmergencyStatusEnum};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use chrono::{NaiveDateTime, Utc};
@@ -8,8 +8,6 @@ use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
-
-use crate::entity::sea_orm_active_enums::{EmergencySeverityEnum, EmergencyStatusEnum};
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -17,9 +15,8 @@ pub struct EmergencyService {
 }
 
 impl EmergencyService {
-    pub async fn new() -> Result<Self, CustomError> {
-        let conn = connection().await?; // Changed connection handling
-        Ok(EmergencyService { conn: conn.clone() })
+    pub async fn new(conn: DatabaseConnection) -> Result<Self, CustomError> {
+        Ok(EmergencyService { conn })
     }
 
     pub async fn find_by_ic(&self, ambulance_ic: &str) -> Result<Option<Model>, CustomError> {
@@ -66,7 +63,7 @@ impl EmergencyService {
         // Generate unique emergency_ic (using nanoid for a short, unique string)
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
-        const MAX_ATTEMPTS: usize = 5; 
+        const MAX_ATTEMPTS: usize = 5;
 
         loop {
             if attempts >= MAX_ATTEMPTS {
@@ -108,7 +105,11 @@ impl EmergencyService {
         }
     }
 
-    fn generate_model(emergency_data: EmergencyRequestBody, now: NaiveDateTime, emergency_ic: String) -> ActiveModel {
+    fn generate_model(
+        emergency_data: EmergencyRequestBody,
+        now: NaiveDateTime,
+        emergency_ic: String,
+    ) -> ActiveModel {
         ActiveModel {
             id: NotSet,
             emergency_ic: Set(emergency_ic),

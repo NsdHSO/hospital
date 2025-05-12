@@ -11,8 +11,7 @@ pub struct AmbulanceService {
 }
 
 impl AmbulanceService {
-    pub async fn new() -> Result<Self, CustomError> {
-        let conn = connection().await?.clone(); // Changed connection handling
+    pub async fn new(conn:DatabaseConnection) -> Result<Self, CustomError> {
         Ok(AmbulanceService { conn })
     }
 

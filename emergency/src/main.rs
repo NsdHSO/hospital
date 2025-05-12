@@ -1,3 +1,4 @@
+use crate::components::emergency::start_scheduler;
 #[macro_use]
 use crate::open_api::init;
 use actix_web::middleware::Logger;
@@ -9,9 +10,8 @@ use std::env;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-mod ambulance;
+mod components;
 mod db;
-mod emergency;
 mod entity;
 mod error_handler;
 mod http_response;
@@ -21,18 +21,22 @@ mod shared;
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    db::config::init().await.expect("TODO: panic message");
+    let conn = db::config::init().await.expect("Failed to initialize database connection"); // Initialize connection here
     env_logger::init_from_env(Env::default().default_filter_or("info"));
     // Create the OpenAPI document and add paths manually
+    tokio::spawn(async move {
+        start_scheduler().await.expect("Failed to start scheduler");
+    });
 
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
         App::new()
+            .app_data(web::Data::new(conn)) // Pass the connection as app data
             .wrap(Logger::default())
             .service(
                 web::scope("/v1")
-                    .configure(ambulance::init_routes)
-                    .configure(emergency::init_routes),
+                    .configure(components::ambulance::init_routes)
+                    .configure(components::emergency::init_routes),
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))
     });
