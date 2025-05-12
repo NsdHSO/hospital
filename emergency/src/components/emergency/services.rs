@@ -15,8 +15,8 @@ pub struct EmergencyService {
 }
 
 impl EmergencyService {
-    pub async fn new(conn: DatabaseConnection) -> Result<Self, CustomError> {
-        Ok(EmergencyService { conn })
+    pub fn new(conn: &DatabaseConnection) -> Self {
+        EmergencyService { conn: conn.clone() }
     }
 
     pub async fn find_by_ic(&self, ambulance_ic: &str) -> Result<Option<Model>, CustomError> {
@@ -117,7 +117,7 @@ impl EmergencyService {
             updated_at: Set(now),
             reported_by: Set(Some(1)),
             notes: Set(emergency_data.notes.clone()), // Clone notes if needed for retries
-            resolved_at: Set(now),
+            resolved_at: Set(Option::from(now)),
             // Handle the modification_attempts field
             modification_attempts: Set(None),
             id_ambulance: NotSet,

@@ -12,7 +12,7 @@ async fn find(
     id: Path<String>,
     db_conn: web::Data<DatabaseConnection>,
 ) -> Result<HttpResponse, CustomError> {
-    let service = EmergencyService::new(db_conn.get_ref().clone()).await?;
+    let service = EmergencyService::new(db_conn.get_ref());
     let ambulance = service.find_by_ic(&**id).await?;
     let response = http_response_builder::ok(ambulance);
     Ok(HttpResponse::Ok().json(response))
@@ -22,13 +22,9 @@ pub async fn find_all(
     query: web::Query<PaginationParams>,
     db_conn: web::Data<DatabaseConnection>,
 ) -> Result<HttpResponse, CustomError> {
-    let service_instance = EmergencyService::new(db_conn.get_ref().clone()).await;
-    let service = match service_instance {
-        Ok(service) => service,
-        Err(_) => return Ok(HttpResponse::InternalServerError().finish()),
-    };
+    let service_instance = EmergencyService::new(db_conn.get_ref());
 
-    let ambulance = service
+    let ambulance = service_instance
         .find_all(
             query.page.try_into().unwrap(),
             query.per_page.try_into().unwrap(),
@@ -42,7 +38,7 @@ async fn create(
     emergency: web::Json<EmergencyRequestBody>,
     db_conn: web::Data<DatabaseConnection>,
 ) -> Result<HttpResponse, CustomError> {
-    let service = EmergencyService::new(db_conn.get_ref().clone()).await?;
+    let service = EmergencyService::new(db_conn.get_ref());
     let created_emergency = service.create_emergency(emergency.into_inner()).await?;
     Ok(HttpResponse::Created().json(serde_json::json!({
         "message": "Emergency created successfully",

@@ -22,8 +22,8 @@ pub struct Model {
     pub reported_by: Option<i32>,
     #[sea_orm(column_type = "Text", nullable)]
     pub notes: Option<String>,
-    #[sea_orm(column_name = "resolvedAt")]
-    pub resolved_at: DateTime,
+    #[sea_orm(column_name = "resolvedAt", nullable)]
+    pub resolved_at: Option<NaiveDateTime>,
     #[sea_orm(
         column_name = "modificationAttempts",
         column_type = "JsonBinary",

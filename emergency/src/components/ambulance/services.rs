@@ -1,4 +1,3 @@
-use crate::db::config::connection;
 use crate::entity::ambulance;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
@@ -11,8 +10,8 @@ pub struct AmbulanceService {
 }
 
 impl AmbulanceService {
-    pub async fn new(conn:DatabaseConnection) -> Result<Self, CustomError> {
-        Ok(AmbulanceService { conn })
+    pub fn new(conn: &DatabaseConnection) -> Self {
+        AmbulanceService { conn: conn.clone() }
     }
 
     pub async fn find_by_ic(

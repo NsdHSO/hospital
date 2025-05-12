@@ -7,6 +7,7 @@ use dotenv::dotenv;
 use env_logger::Env;
 use listenfd::ListenFd;
 use std::env;
+use std::sync::Arc; // Import Arc
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -21,8 +22,8 @@ mod shared;
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let conn = db::config::init().await.expect("Failed to initialize database connection"); // Initialize connection here
-    env_logger::init_from_env(Env::default().default_filter_or("info"));
+    let conn: sea_orm::DatabaseConnection = db::config::init().await.expect("Failed to initialize database connection"); // Initialize connection here
+    env_logger::init_from_env(Env::default().default_filter_or("debug"));
     // Create the OpenAPI document and add paths manually
     tokio::spawn(async move {
         start_scheduler().await.expect("Failed to start scheduler");
@@ -31,7 +32,7 @@ async fn main() -> std::io::Result<()> {
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(conn)) // Pass the connection as app data
+            .app_data(web::Data::new(conn.clone()))
             .wrap(Logger::default())
             .service(
                 web::scope("/v1")
