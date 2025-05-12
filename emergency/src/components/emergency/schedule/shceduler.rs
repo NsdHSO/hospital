@@ -1,22 +1,13 @@
-use tokio::time::Duration;
-use tokio_cron_scheduler::{Job, JobScheduler};
+use tokio::time::{interval, Duration};
+// Remove the import for Job and JobScheduler
 
 pub async fn start_scheduler() -> Result<(), Box<dyn std::error::Error>> {
-    let sched = JobScheduler::new().await?;
+    // Define the interval at which the task should run (e.g., every 10 minute)
+    let mut interval = interval(Duration::from_secs(600));
 
-    // Add a job that runs every minute
-    sched.add(
-        Job::new("* */10 * * * *", |uuid, mut l| {
-            println!("Emergency check triggered at {:?}", chrono::Local::now());
-       
-        })
-        ?,
-    ).await?;
+    loop {
+        interval.tick().await;
 
-    sched.start().await?;
-
-    // Keep the scheduler running
-    tokio::time::sleep(Duration::MAX).await;
-
-    Ok(())
+        println!("Emergency check triggered at {:?}", chrono::Local::now());
+    }
 }
