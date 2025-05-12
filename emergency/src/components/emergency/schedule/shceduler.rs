@@ -6,7 +6,7 @@ pub async fn start_scheduler() -> Result<(), Box<dyn std::error::Error>> {
 
     // Add a job that runs every minute
     sched.add(
-        Job::new("*/1 * * * * *", |uuid, mut l| {
+        Job::new("* */10 * * * *", |uuid, mut l| {
             println!("Emergency check triggered at {:?}", chrono::Local::now());
        
         })
