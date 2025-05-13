@@ -283,6 +283,5 @@ async fn dispatch_ambulance(
         "dispatch_ambulance function COMPLETED SUCCESSFULLY for emergency: {} and ambulance: {}",
         emergency.id, ambulance.id
     );
-
     Ok(())
 }
