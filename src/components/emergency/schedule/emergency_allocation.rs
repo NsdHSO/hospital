@@ -209,6 +209,7 @@ async fn dispatch_ambulance(
         ambulance.id, ambulance.status
     );
 
+    // Create the emergency active model for updating
     let mut emergency_active_model: emergency::ActiveModel = emergency.clone().into();
     emergency_active_model.status = Set(EmergencyStatusEnum::InProgress);
     emergency_active_model.id_ambulance = Set(Some(ambulance.id));
