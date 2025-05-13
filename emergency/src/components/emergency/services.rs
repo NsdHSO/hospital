@@ -1,9 +1,13 @@
+use crate::entity;
 use crate::entity::emergency;
 use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
-use crate::entity::sea_orm_active_enums::{EmergencySeverityEnum, EmergencyStatusEnum};
+use crate::entity::sea_orm_active_enums::{
+    AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
+};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use chrono::{NaiveDateTime, Utc};
+use entity::ambulance;
 use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
@@ -103,6 +107,41 @@ impl EmergencyService {
                 }
             }
         }
+    }
+
+    pub async fn schedule_emergency(self) -> Result<(), CustomError> {
+        let available_ambulances = ambulance::Entity::find()
+            .filter(ambulance::Column::Status.eq(AmbulanceStatusEnum::Available)) // Assuming AmbulanceStatusEnum::Available exists
+            .all(&self.conn)
+            .await
+            .map_err(|e| {
+                CustomError::new(500, format!("Failed to fetch available ambulances: {}", e))
+            })?;
+
+        if available_ambulances.is_empty() {
+            println!("No available ambulances to schedule the emergency.");
+            return Ok(());
+        }
+
+        let assigned_ambulance = &available_ambulances[0];
+
+        let mut ambulance_active_model: ambulance::ActiveModel = assigned_ambulance.clone().into(); // Convert to ActiveModel
+        ambulance_active_model.status = Set(AmbulanceStatusEnum::Dispatched); // Assuming AmbulanceStatusEnum::EnRoute exists
+        ambulance_active_model.updated_at = Set(Utc::now().naive_utc());
+        let updated_ambulance = ambulance_active_model
+            .update(&self.conn)
+            .await // Save the changes to the database
+            .map_err(|e| {
+                CustomError::new(500, format!("Failed to update ambulance status: {}", e))
+            })?; // This returns the updated Model
+
+        println!(
+            "Emergency scheduled and ambulance assigned. {:?}",
+            updated_ambulance
+        );
+
+
+        Ok(())
     }
 
     fn generate_model(

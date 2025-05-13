@@ -18,6 +18,7 @@ mod error_handler;
 mod http_response;
 mod open_api;
 mod shared;
+mod utils;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -25,14 +26,16 @@ async fn main() -> std::io::Result<()> {
     let conn: sea_orm::DatabaseConnection = db::config::init().await.expect("Failed to initialize database connection"); // Initialize connection here
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
     // Create the OpenAPI document and add paths manually
+    let scheduler_conn = conn.clone();
     tokio::spawn(async move {
-        start_scheduler().await.expect("Failed to start scheduler");
+        start_scheduler(&scheduler_conn).await.expect("Failed to start scheduler");
     });
+    let server_conn = conn.clone();
 
     let mut listenfd = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(conn.clone()))
+            .app_data(web::Data::new(server_conn.clone()))
             .wrap(Logger::default())
             .service(
                 web::scope("/v1")

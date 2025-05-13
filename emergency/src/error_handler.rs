@@ -5,6 +5,7 @@ use sea_orm::DbErr;
 use serde::Deserialize;
 use serde_json::json;
 use std::fmt;
+use std::error::Error as StdError; // Import this
 
 use crate::http_response::{create_response, HttpCodeW};
 use log::{error, info};
@@ -30,6 +31,9 @@ impl fmt::Display for CustomError {
         f.write_str(self.error_message.as_str())
     }
 }
+
+// Implement std::error::Error for CustomError
+impl StdError for CustomError {}
 
 // Implement From for SeaORM's DbErr
 impl From<DbErr> for CustomError {

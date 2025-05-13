@@ -103,7 +103,7 @@ pub enum AmbulanceStatusEnum {
     #[sea_orm(string_value = "PREPARING_FOR_MISSION")]
     PreparingForMission,
     #[sea_orm(string_value = "UNDER_REPAIR")]
-    UnderRepair,
+    UnderRepair
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
