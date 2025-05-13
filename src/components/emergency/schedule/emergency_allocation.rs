@@ -279,8 +279,6 @@ async fn dispatch_ambulance(
             ));
         }
     }
-
-    // Final success message
     println!(
         "dispatch_ambulance function COMPLETED SUCCESSFULLY for emergency: {} and ambulance: {}",
         emergency.id, ambulance.id
