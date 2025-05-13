@@ -23,7 +23,7 @@ impl EmergencyAllocationService {
         }
     }
 
-    pub async fn run_allocation_process(&self) -> Result<(), CustomError> {
+    pub async fn run_allocation_process(&self) -> Result<String, CustomError> {
         println!("Starting emergency allocation process");
 
         let this = self.clone();
@@ -41,11 +41,11 @@ impl EmergencyAllocationService {
     async fn allocate_emergencies_in_transaction(
         &self,
         txn: &DatabaseTransaction,
-    ) -> Result<(), CustomError> {
+    ) -> Result<String, CustomError> {
         let pending_emergencies = Self::fetch_pending_emergencies(txn).await?;
         if pending_emergencies.is_empty() {
             println!("No pending emergencies found for allocation");
-            return Ok(());
+            return Ok("No pending emergencies found for allocation".to_string());
         }
 
         println!(
@@ -56,7 +56,7 @@ impl EmergencyAllocationService {
         let available_ambulances = Self::fetch_available_ambulances(txn).await?;
         if available_ambulances.is_empty() {
             warn!("No available ambulances found for allocation");
-            return Ok(());
+            return Ok("No available ambulances found for allocation".to_string());
         }
 
         println!("Found {} available ambulances", available_ambulances.len());
@@ -111,7 +111,7 @@ impl EmergencyAllocationService {
         }
 
         println!("Emergency allocation process completed within transaction");
-        Ok(())
+        Ok("Emergency allocation process completed within transaction".to_string())
     }
 
     async fn fetch_pending_emergencies(
@@ -193,7 +193,7 @@ async fn dispatch_ambulance(
     txn: &DatabaseTransaction,
     ambulance: &ambulance::Model,
     emergency: &emergency::Model,
-) -> Result<(), CustomError> {
+) -> Result<String, CustomError> {
     println!(
         "Starting dispatch_ambulance function for emergency: {} and ambulance: {}",
         emergency.id, ambulance.id
@@ -279,5 +279,5 @@ async fn dispatch_ambulance(
         "dispatch_ambulance function COMPLETED SUCCESSFULLY for emergency: {} and ambulance: {}",
         emergency.id, ambulance.id
     );
-    Ok(())
+    Ok("You are done!".to_string())
 }
