@@ -18,15 +18,19 @@ impl EmergencyAllocationService {
     }
 
     fn clone(&self) -> Self {
-        Self { conn: self.conn.clone() }
+        Self {
+            conn: self.conn.clone(),
+        }
     }
 
     pub async fn run_allocation_process(&self) -> Result<(), CustomError> {
-        info!("Starting emergency allocation process");
+        println!("Starting emergency allocation process");
 
         let this = self.clone();
         self.conn
-            .transaction(|txn| Box::pin(async move { this.allocate_emergencies_in_transaction(txn).await }))
+            .transaction(|txn| {
+                Box::pin(async move { this.allocate_emergencies_in_transaction(txn).await })
+            })
             .await
             .map_err(|e| {
                 error!("Error during emergency allocation transaction: {}", e);
@@ -40,11 +44,11 @@ impl EmergencyAllocationService {
     ) -> Result<(), CustomError> {
         let pending_emergencies = Self::fetch_pending_emergencies(txn).await?;
         if pending_emergencies.is_empty() {
-            info!("No pending emergencies found for allocation");
+            println!("No pending emergencies found for allocation");
             return Ok(());
         }
 
-        info!(
+        println!(
             "Found {} pending emergencies for allocation",
             pending_emergencies.len()
         );
@@ -55,14 +59,14 @@ impl EmergencyAllocationService {
             return Ok(());
         }
 
-        info!("Found {} available ambulances", available_ambulances.len());
+        println!("Found {} available ambulances", available_ambulances.len());
 
         let mut available_ambulance_ids: Vec<Uuid> =
             available_ambulances.iter().map(|a| a.id).collect();
         let emergency_count = pending_emergencies.len();
         for (index, emergency) in pending_emergencies.into_iter().enumerate() {
             if available_ambulance_ids.is_empty() {
-                info!(
+                println!(
                     "No more ambulances available for allocation. Remaining pending emergencies: {}",
                     emergency_count - index
                 );
@@ -91,7 +95,7 @@ impl EmergencyAllocationService {
 
                     match dispatch_ambulance(txn, ambulance, &emergency).await {
                         Ok(_) => {
-                            info!(
+                            println!(
                                 "Successfully dispatched ambulance {} to emergency {}",
                                 ambulance.id, emergency.id
                             );
@@ -106,7 +110,7 @@ impl EmergencyAllocationService {
             }
         }
 
-        info!("Emergency allocation process completed within transaction");
+        println!("Emergency allocation process completed within transaction");
         Ok(())
     }
 
@@ -190,37 +194,96 @@ async fn dispatch_ambulance(
     ambulance: &ambulance::Model,
     emergency: &emergency::Model,
 ) -> Result<(), CustomError> {
+    println!(
+        "Starting dispatch_ambulance function for emergency: {} and ambulance: {}",
+        emergency.id, ambulance.id
+    );
+
+    // Log the initial state
+    println!(
+        "Initial Emergency State - ID: {}, Status: {:?}, Ambulance ID: {:?}",
+        emergency.id, emergency.status, emergency.id_ambulance
+    );
+    println!(
+        "Initial Ambulance State - ID: {}, Status: {:?}",
+        ambulance.id, ambulance.status
+    );
+
+    // Create the emergency active model for updating
     let mut emergency_active_model: emergency::ActiveModel = emergency.clone().into();
     emergency_active_model.status = Set(EmergencyStatusEnum::InProgress);
     emergency_active_model.id_ambulance = Set(Some(ambulance.id));
     emergency_active_model.updated_at = Set(Utc::now().naive_utc());
-    emergency_active_model.update(txn).await.map_err(|e| {
-        CustomError::new(
-            500,
-            format!(
-                "Failed to update emergency status for {}: {}",
-                emergency.id, e
-            ),
-        )
-    })?;
 
+    println!(
+        "Attempting to update emergency with status: {:?} and ambulance_id: {:?}",
+        EmergencyStatusEnum::InProgress,
+        ambulance.id
+    );
+
+    // Update emergency and log the result
+    match emergency_active_model.update(txn).await {
+        Ok(updated) => {
+            println!(
+                "Emergency update SUCCESS - ID: {}, New Status: {:?}, Ambulance ID: {:?}",
+                emergency.id,
+                updated.status.clone(),
+                updated.id_ambulance.clone().unwrap_or_default()
+            );
+        }
+        Err(e) => {
+            error!(
+                "Emergency update FAILED - ID: {}, Error: {}",
+                emergency.id, e
+            );
+            return Err(CustomError::new(
+                500,
+                format!(
+                    "Failed to update emergency status for {}: {}",
+                    emergency.id, e
+                ),
+            ));
+        }
+    }
+
+    // Create the ambulance active model for updating
     let mut ambulance_active_model: ambulance::ActiveModel = ambulance.clone().into();
     ambulance_active_model.status = Set(AmbulanceStatusEnum::Dispatched);
     ambulance_active_model.updated_at = Set(Utc::now().naive_utc());
 
-    ambulance_active_model.update(txn).await.map_err(|e| {
-        CustomError::new(
-            500,
-            format!(
-                "Failed to update ambulance status for {}: {}",
-                ambulance.id, e
-            ),
-        )
-    })?;
+    println!(
+        "Attempting to update ambulance with status: {:?}",
+        AmbulanceStatusEnum::Dispatched
+    );
 
-    info!(
-        "Assigned ambulance {} to emergency {:?}",
-        ambulance.id, emergency.id
+    // Update ambulance and log the result
+    match ambulance_active_model.update(txn).await {
+        Ok(updated) => {
+            println!(
+                "Ambulance update SUCCESS - ID: {}, New Status: {:?}",
+                ambulance.id,
+                updated.status.clone()
+            );
+        }
+        Err(e) => {
+            error!(
+                "Ambulance update FAILED - ID: {}, Error: {}",
+                ambulance.id, e
+            );
+            return Err(CustomError::new(
+                500,
+                format!(
+                    "Failed to update ambulance status for {}: {}",
+                    ambulance.id, e
+                ),
+            ));
+        }
+    }
+
+    // Final success message
+    println!(
+        "dispatch_ambulance function COMPLETED SUCCESSFULLY for emergency: {} and ambulance: {}",
+        emergency.id, ambulance.id
     );
 
     Ok(())
