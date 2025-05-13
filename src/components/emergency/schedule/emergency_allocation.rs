@@ -221,7 +221,6 @@ async fn dispatch_ambulance(
         ambulance.id
     );
 
-    // Update emergency and log the result
     match emergency_active_model.update(txn).await {
         Ok(updated) => {
             println!(
