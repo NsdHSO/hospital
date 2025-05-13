@@ -246,7 +246,6 @@ async fn dispatch_ambulance(
         }
     }
 
-    // Create the ambulance active model for updating
     let mut ambulance_active_model: ambulance::ActiveModel = ambulance.clone().into();
     ambulance_active_model.status = Set(AmbulanceStatusEnum::Dispatched);
     ambulance_active_model.updated_at = Set(Utc::now().naive_utc());
