@@ -32,7 +32,7 @@ async fn main() -> std::io::Result<()> {
     });
     let server_conn = conn.clone();
 
-    let mut listenfd = ListenFd::from_env();
+    let mut listened = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(server_conn.clone()))
@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))
     });
 
-    server = match listenfd.take_tcp_listener(0)? {
+    server = match listened.take_tcp_listener(0)? {
         Some(listener) => server.listen(listener)?,
         None => {
             let host = env::var("HOST").expect("Please set host in .env");
