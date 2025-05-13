@@ -11,7 +11,7 @@ pub async fn start_scheduler(
     db_conn: &DatabaseConnection,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Define the interval at which the task should run
-    let mut interval = interval(Duration::from_secs(3));
+    let mut interval = interval(Duration::from_secs(30*10));
 
     println!("Emergency allocation scheduler started");
 
