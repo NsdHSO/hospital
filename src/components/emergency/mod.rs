@@ -1,6 +1,5 @@
 mod routes;
 mod services;
-mod allocation_emergency;
 mod enums;
 mod schedule;
 
