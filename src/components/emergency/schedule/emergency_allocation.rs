@@ -256,7 +256,6 @@ async fn dispatch_ambulance(
         AmbulanceStatusEnum::Dispatched
     );
 
-    // Update ambulance and log the result
     match ambulance_active_model.update(txn).await {
         Ok(updated) => {
             println!(
