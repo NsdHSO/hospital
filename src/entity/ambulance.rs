@@ -87,3 +87,35 @@ impl Related<super::emergency::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct AmbulancePayload {
+    pub ambulance_ic: Option<i32>,
+    pub vehicle_number: Option<String>,
+    pub make: Option<String>,
+    pub year: Option<i32>,
+    pub capacity: Option<i32>,
+    pub mission: Option<String>,
+    pub passengers: Option<Json>,
+    pub driver_name: Option<String>,
+    pub driver_license: Option<String>,
+    pub last_service_date: Option<DateTime>,
+    pub next_service_date: Option<DateTime>,
+    pub mileage: Option<i32>,
+    pub fuel_type: Option<String>,
+    pub registration_number: Option<String>,
+    pub insurance_provider: Option<String>,
+    pub insurance_expiry_date: Option<DateTime>,
+    pub notes: Option<String>,
+    pub car_details_year: Option<i32>,
+    pub car_details_color: Option<String>,
+    pub car_details_isambulance: Option<bool>,
+    pub car_details_licenseplate: Option<String>,
+    pub car_details_mileage: Option<f64>,
+    pub location_latitude: Option<Decimal>,
+    pub location_longitude: Option<Decimal>,
+    pub r#type: Option<AmbulanceTypeEnum>,
+    pub status: Option<AmbulanceStatusEnum>,
+    pub car_details_make: Option<AmbulanceCarDetailsMakeEnum>,
+    pub car_details_model: Option<AmbulanceCarDetailsModelEnum>,
+}
