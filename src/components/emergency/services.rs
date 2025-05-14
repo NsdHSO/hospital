@@ -81,7 +81,7 @@ impl EmergencyService {
             // Generate a unique emergency_ic (using nanoid for a short, unique string)
             let emergency_ic = generate_ic();
 
-            let active_model = Self::generate_model(emergency_data.clone(), now, emergency_ic);
+            let active_model = Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
