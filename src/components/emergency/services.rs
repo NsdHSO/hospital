@@ -12,6 +12,7 @@ use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
+use crate::utils::utils::generate_ic;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -63,7 +64,7 @@ impl EmergencyService {
     pub async fn create_emergency(
         &self,
         emergency_data: EmergencyRequestBody,
-    ) -> Result<emergency::Model, CustomError> {
+    ) -> Result<Model, CustomError> {
         // Generate unique emergency_ic (using nanoid for a short, unique string)
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
@@ -78,7 +79,7 @@ impl EmergencyService {
             }
 
             // Generate a unique emergency_ic (using nanoid for a short, unique string)
-            let emergency_ic = nanoid!(30, &['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
+            let emergency_ic = generate_ic();
 
             let active_model = Self::generate_model(emergency_data.clone(), now, emergency_ic);
 
