@@ -1,9 +1,23 @@
 use crate::components::ambulance::services::AmbulanceService;
+use crate::entity::ambulance::AmbulancePayload;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, web, HttpResponse};
+use actix_web::{get, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
+
+#[post("/ambulance")]
+async fn create(
+    ambulance: web::Json<AmbulancePayload>,
+    db_conn: web::Data<DatabaseConnection>, // Inject the database connection
+) -> Result<HttpResponse, CustomError> {
+    let service = AmbulanceService::new(db_conn.get_ref());
+    let ambulance = service
+        .create_ambulance(Option::from(ambulance.into_inner()))
+        .await?;
+    let response = http_response_builder::ok(ambulance);
+    Ok(HttpResponse::Ok().json(response))
+}
 
 #[get("/ambulance/{id}")]
 async fn find(
@@ -34,4 +48,5 @@ pub async fn find_all(
 pub fn init_routes(config: &mut web::ServiceConfig) {
     config.service(find);
     config.service(find_all);
+    config.service(create);
 }

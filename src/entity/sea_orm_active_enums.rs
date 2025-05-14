@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
     db_type = "Enum",
     enum_name = "ambulance_car_details_make_enum"
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AmbulanceCarDetailsMakeEnum {
     #[sea_orm(string_value = "Mercedes-Benz")]
     MercedesBenz,
@@ -38,6 +39,7 @@ pub enum AmbulanceCarDetailsMakeEnum {
     db_type = "Enum",
     enum_name = "ambulance_car_details_model_enum"
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AmbulanceCarDetailsModelEnum {
     #[sea_orm(string_value = "Sprinter")]
     Sprinter,
@@ -67,6 +69,7 @@ pub enum AmbulanceCarDetailsModelEnum {
     db_type = "Enum",
     enum_name = "ambulance_status_enum"
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AmbulanceStatusEnum {
     #[sea_orm(string_value = "AVAILABLE")]
     Available,
@@ -112,6 +115,7 @@ pub enum AmbulanceStatusEnum {
     db_type = "Enum",
     enum_name = "ambulance_type_enum"
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AmbulanceTypeEnum {
     #[sea_orm(string_value = "BASIC_LIFE_SUPPORT")]
     BasicLifeSupport,
@@ -296,6 +300,7 @@ pub enum DepartmentNameEnum {
     db_type = "Enum",
     enum_name = "emergency_incidenttype_enum"
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EmergencyIncidenttypeEnum {
     #[sea_orm(string_value = "CAR_ACCIDENT")]
     CarAccident,
@@ -399,6 +404,7 @@ pub enum EmergencyIncidenttypeEnum {
     db_type = "Enum",
     enum_name = "emergency_severity_enum"
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EmergencySeverityEnum {
     #[sea_orm(string_value = "LOW")]
     Low,

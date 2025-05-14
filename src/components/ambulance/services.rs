@@ -1,17 +1,19 @@
-use crate::entity::ambulance;
 use crate::entity::ambulance::AmbulancePayload;
-use crate::entity::emergency::Model;
+use crate::entity::ambulance::Model;
 use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
     AmbulanceTypeEnum,
 };
+use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::utils::generate_ic;
 use sea_orm::prelude::Decimal;
-use sea_orm::{ColumnTrait, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
+use hospital::Column::Name as HospitalName;
+use hospital::Entity as HospitalEntity;
 
 pub struct AmbulanceService {
     conn: DatabaseConnection,
@@ -22,7 +24,10 @@ impl AmbulanceService {
         AmbulanceService { conn: conn.clone() }
     }
 
-    pub async fn create_ambulance(payload: Option<AmbulancePayload>) -> Result<Model, CustomError> {
+    pub async fn create_ambulance(
+        self,
+        payload: Option<AmbulancePayload>,
+    ) -> Result<Model, CustomError> {
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
 
@@ -33,7 +38,34 @@ impl AmbulanceService {
                     "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
                 ));
             }
-            let payload = generate_payload_to_create_ambulance(payload.clone());
+            let active_model = generate_payload_to_create_ambulance(payload.clone());
+            let hospital_name = payload.as_ref().and_then(|p| p.hospital_name.as_deref()).ok_or(CustomError::new(500, "hospital_name is required".to_string()))?;
+
+            let hospital = HospitalEntity::find().filter(HospitalName.eq(hospital_name)).one(&self.conn).await;
+            println!("{:?}", hospital);
+            
+            let result = active_model.insert(&self.conn).await;
+            match result {
+                Ok(model) => return Ok(model),
+                Err(DbErr::Exec(e)) => {
+                    // Check if the error is a unique constraint violation
+                    // The exact string to check for might vary slightly depending on the database
+                    if e.to_string()
+                        .contains("duplicate key value violates unique constraint")
+                    {
+                        // It's a unique constraint violation, retry with a new IC
+                        attempts += 1;
+                        // Continue the loop to generate a new IC and retry
+                    } else {
+                        // Some other execution error, return it
+                        return Err(CustomError::from(DbErr::Exec(e)));
+                    }
+                }
+                Err(e) => {
+                    // Other types of database errors, return them
+                    return Err(CustomError::from(e));
+                }
+            }
         }
     }
     pub async fn find_by_ic(
@@ -185,9 +217,6 @@ pub fn generate_payload_to_create_ambulance(
         } else {
             Set(AmbulanceCarDetailsModelEnum::HiAce) // Default value
         },
-
-        // Set hospital_id with a sensible default since you mentioned excluding it from the payload
-        // but it's likely required
-        hospital_id: Set("DEFAULT_HOSPITAL".to_string()),
+        hospital_id: Default::default(),
     }
 }
