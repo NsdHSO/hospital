@@ -197,7 +197,7 @@ pub fn generate_payload_to_create_ambulance(
         r#type: if let Some(val) = payload.r#type {
             Set(val)
         } else {
-            Set(AmbulanceTypeEnum::BasicLifeSupport) // Default value
+            Set(AmbulanceTypeEnum::BasicLifeSupport) 
         },
 
         status: if let Some(val) = payload.status {
