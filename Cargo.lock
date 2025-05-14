@@ -794,6 +794,7 @@ dependencies = [
  "log",
  "nanoid",
  "once_cell",
+ "percent-encoding",
  "sea-orm",
  "serde",
  "serde_json",
