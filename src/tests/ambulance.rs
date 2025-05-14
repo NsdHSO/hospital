@@ -39,8 +39,7 @@ mod ambulance {
             car_details_model: None,
         };
 
-        // Create active model from payload and set hospital name
-        let mut active_model = generate_payload_to_create_ambulance(Some(payload.clone()));
+        let active_model = generate_payload_to_create_ambulance(Some(payload.clone()));
 
         assert_eq!(active_model.year.unwrap(), Some(2023));
     }
