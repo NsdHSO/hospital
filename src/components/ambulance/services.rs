@@ -191,7 +191,7 @@ pub fn generate_payload_to_create_ambulance(
         location_longitude: if let Some(val) = payload.location_longitude {
             Set(val)
         } else {
-            Set(Decimal::new(0, 6)) // Default value
+            Set(Decimal::new(0, 6)) 
         },
 
         r#type: if let Some(val) = payload.r#type {
