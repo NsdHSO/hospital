@@ -241,7 +241,7 @@ pub enum BillStatusEnum {
     Refunded,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "card_cardtype_enum")]
 pub enum CardCardtypeEnum {
     #[sea_orm(string_value = "text")]
@@ -254,7 +254,7 @@ pub enum CardCardtypeEnum {
     Image,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "card_size_enum")]
 pub enum CardSizeEnum {
     #[sea_orm(string_value = "small")]

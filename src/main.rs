@@ -3,9 +3,10 @@ use crate::open_api::init;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
-use env_logger::Env;
+use env_logger::{Builder, Env};
 use listenfd::ListenFd;
 use std::env;
+use chrono::Local;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod components;
@@ -17,14 +18,25 @@ mod open_api;
 mod shared;
 mod utils;
 
-#[cfg(test)]
-mod tests;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let conn: sea_orm::DatabaseConnection = db::config::init().await.expect("Failed to initialize database connection"); // Initialize connection here
-    env_logger::init_from_env(Env::default().default_filter_or("debug"));
+    Builder::from_env(Env::default().default_filter_or("debug"))
+        .format(|buf, record| {
+            use std::io::Write;
+            let timestamp = Local::now().format("%Y-%m-%dT%H:%M:%S%.3f");
+            writeln!(
+                buf,
+                "[{}] {} {} - {}",
+                timestamp,
+                record.level(),
+                record.target(),
+                record.args()
+            )
+        })
+        .init();
     let scheduler_conn = conn.clone();
     tokio::spawn(async move {
         start_scheduler(&scheduler_conn).await.expect("Failed to start scheduler");
@@ -39,7 +51,9 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/v1")
                     .configure(components::ambulance::init_routes)
-                    .configure(components::emergency::init_routes),
+                    .configure(components::emergency::init_routes)
+                    .configure(components::dashboard::init_routes)
+                    .configure(components::card::init_routes),
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))
     });
