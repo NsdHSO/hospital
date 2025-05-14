@@ -209,7 +209,7 @@ pub fn generate_payload_to_create_ambulance(
         car_details_make: if let Some(val) = payload.car_details_make {
             Set(val)
         } else {
-            Set(AmbulanceCarDetailsMakeEnum::Toyota) // Default value
+            Set(AmbulanceCarDetailsMakeEnum::Toyota)
         },
 
         car_details_model: if let Some(val) = payload.car_details_model {
