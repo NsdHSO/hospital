@@ -91,7 +91,7 @@ impl ActiveModelBehavior for ActiveModel {}
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct AmbulancePayload {
     pub ambulance_ic: Option<i32>,
-    pub vehicle_number: Option<String>,
+    pub vehicleNumber: Option<String>,
     pub make: Option<String>,
     pub year: Option<i32>,
     pub capacity: Option<i32>,

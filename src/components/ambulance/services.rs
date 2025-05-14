@@ -8,12 +8,12 @@ use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::utils::generate_ic;
+use hospital::Column::Name as HospitalName;
+use hospital::Entity as HospitalEntity;
 use sea_orm::prelude::Decimal;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
-use hospital::Column::Name as HospitalName;
-use hospital::Entity as HospitalEntity;
 
 pub struct AmbulanceService {
     conn: DatabaseConnection,
@@ -38,11 +38,24 @@ impl AmbulanceService {
                     "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
                 ));
             }
-            let active_model = generate_payload_to_create_ambulance(payload.clone());
-            let hospital_name = payload.as_ref().and_then(|p| p.hospital_name.as_deref()).ok_or(CustomError::new(500, "hospital_name is required".to_string()))?;
+            let mut active_model = generate_payload_to_create_ambulance(payload.clone());
+            let hospital_name = payload
+                .as_ref()
+                .and_then(|p| p.hospital_name.as_deref())
+                .ok_or(CustomError::new(
+                    500,
+                    "hospital_name is required".to_string(),
+                ))?;
 
-            let hospital = HospitalEntity::find().filter(HospitalName.eq(hospital_name)).one(&self.conn).await;
-            println!("{:?}", hospital);
+            let hospital = HospitalEntity::find()
+                .filter(HospitalName.eq(hospital_name))
+                .one(&self.conn)
+                .await;
+            if let Ok(Some(hospital_model)) = &hospital {
+                active_model.hospital_id = Set(hospital_model.id.clone().to_string());
+            } else {
+                return Err(CustomError::new(500, "hospital not found".to_string()));
+            }
 
             let result = active_model.insert(&self.conn).await;
             match result {
@@ -124,7 +137,7 @@ pub fn generate_payload_to_create_ambulance(
         // Fields from payload or default values
         ambulance_ic: Set(generate_ic()),
 
-        vehicle_number: if let Some(val) = payload.vehicle_number {
+        vehicle_number: if let Some(val) = payload.vehicleNumber {
             Set(val)
         } else {
             NotSet
@@ -191,19 +204,19 @@ pub fn generate_payload_to_create_ambulance(
         location_longitude: if let Some(val) = payload.location_longitude {
             Set(val)
         } else {
-            Set(Decimal::new(0, 6)) 
+            Set(Decimal::new(0, 6))
         },
 
         r#type: if let Some(val) = payload.r#type {
             Set(val)
         } else {
-            Set(AmbulanceTypeEnum::BasicLifeSupport) 
+            Set(AmbulanceTypeEnum::BasicLifeSupport)
         },
 
         status: if let Some(val) = payload.status {
             Set(val)
         } else {
-            Set(AmbulanceStatusEnum::Available) 
+            Set(AmbulanceStatusEnum::Available)
         },
 
         car_details_make: if let Some(val) = payload.car_details_make {
