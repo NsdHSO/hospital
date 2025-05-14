@@ -203,7 +203,7 @@ pub fn generate_payload_to_create_ambulance(
         status: if let Some(val) = payload.status {
             Set(val)
         } else {
-            Set(AmbulanceStatusEnum::Available) // Default value
+            Set(AmbulanceStatusEnum::Available) 
         },
 
         car_details_make: if let Some(val) = payload.car_details_make {
