@@ -15,8 +15,9 @@ pub fn calculate_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
 pub fn generate_ic() -> i32 {
     generate_ic_with_length(Some(30)) // Default to 6 digits
 }
+
 pub fn generate_ic_with_length(length: Option<usize>) -> i32 {
-    let length = length.unwrap_or(30);
+    let length = length.unwrap_or(9);
     // Generate numeric string using nanoid
     let numeric_string = nanoid!(length, &['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
 

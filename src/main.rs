@@ -1,5 +1,4 @@
 use crate::components::emergency::start_scheduler;
-#[macro_use]
 use crate::open_api::init;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
@@ -7,8 +6,6 @@ use dotenv::dotenv;
 use env_logger::Env;
 use listenfd::ListenFd;
 use std::env;
-use std::sync::Arc; // Import Arc
-use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod components;
@@ -28,7 +25,6 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let conn: sea_orm::DatabaseConnection = db::config::init().await.expect("Failed to initialize database connection"); // Initialize connection here
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
-    // Create the OpenAPI document and add paths manually
     let scheduler_conn = conn.clone();
     tokio::spawn(async move {
         start_scheduler(&scheduler_conn).await.expect("Failed to start scheduler");
