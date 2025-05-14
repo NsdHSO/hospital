@@ -43,7 +43,7 @@ impl AmbulanceService {
 
             let hospital = HospitalEntity::find().filter(HospitalName.eq(hospital_name)).one(&self.conn).await;
             println!("{:?}", hospital);
-            
+
             let result = active_model.insert(&self.conn).await;
             match result {
                 Ok(model) => return Ok(model),
@@ -215,7 +215,7 @@ pub fn generate_payload_to_create_ambulance(
         car_details_model: if let Some(val) = payload.car_details_model {
             Set(val)
         } else {
-            Set(AmbulanceCarDetailsModelEnum::HiAce) // Default value
+            Set(AmbulanceCarDetailsModelEnum::Nv350)
         },
         hospital_id: Default::default(),
     }
