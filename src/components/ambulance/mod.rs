@@ -3,3 +3,4 @@ mod services;
 mod enums;
 
 pub use routes::*;
+pub use services::*;

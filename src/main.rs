@@ -20,6 +20,9 @@ mod open_api;
 mod shared;
 mod utils;
 
+#[cfg(test)]
+mod tests;
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
