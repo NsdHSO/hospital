@@ -61,11 +61,13 @@ impl EmergencyAllocationService {
 
         println!("Found {} available ambulances", available_ambulances.len());
 
-        let mut available_ambulance_ids: Vec<Uuid> =
-            available_ambulances.iter().map(|a| a.id).collect();
+        // Create a mutable copy of ambulances that we can modify
+        let mut available_ambulances = available_ambulances;
         let emergency_count = pending_emergencies.len();
+        let mut dispatched_count = 0;
+
         for (index, emergency) in pending_emergencies.into_iter().enumerate() {
-            if available_ambulance_ids.is_empty() {
+            if available_ambulances.is_empty() {
                 println!(
                     "No more ambulances available for allocation. Remaining pending emergencies: {}",
                     emergency_count - index
@@ -85,34 +87,42 @@ impl EmergencyAllocationService {
                 .unwrap_or(0.0);
 
             if let Some(idx) = Self::find_closest_ambulance_index(lat, lon, &available_ambulances) {
-                let ambulance_id = available_ambulances[idx].id;
+                let ambulance = available_ambulances[idx].clone();
 
-                if let Some(_) = available_ambulance_ids
-                    .iter()
-                    .position(|id| *id == ambulance_id)
-                {
-                    let ambulance = &available_ambulances[idx];
+                match dispatch_ambulance(txn, &ambulance, &emergency).await {
+                    Ok(_) => {
+                        println!(
+                            "Successfully dispatched ambulance {} to emergency {}",
+                            ambulance.id, emergency.id
+                        );
 
-                    match dispatch_ambulance(txn, ambulance, &emergency).await {
-                        Ok(_) => {
-                            println!(
-                                "Successfully dispatched ambulance {} to emergency {}",
-                                ambulance.id, emergency.id
-                            );
-                            available_ambulance_ids.retain(|id| *id != ambulance_id);
-                        }
-                        Err(e) => {
-                            error!("Failed to dispatch ambulance: {}", e);
-                            return Err(e);
-                        }
+                        // Remove the dispatched ambulance from our working list
+                        available_ambulances.swap_remove(idx);
+                        dispatched_count += 1;
+
+                        println!(
+                            "Removed ambulance {} from available list. Remaining ambulances: {}",
+                            ambulance.id,
+                            available_ambulances.len()
+                        );
+                    }
+                    Err(e) => {
+                        error!("Failed to dispatch ambulance: {}", e);
+                        return Err(e);
                     }
                 }
+            } else {
+                println!("Could not find a closest ambulance for emergency {}", emergency.id);
             }
         }
 
-        println!("Emergency allocation process completed within transaction");
-        Ok("Emergency allocation process completed within transaction".to_string())
+        println!(
+            "Emergency allocation process completed within transaction. Dispatched {} ambulances.",
+            dispatched_count
+        );
+        Ok(format!("Emergency allocation process completed successfully. Dispatched {} ambulances.", dispatched_count))
     }
+
 
     async fn fetch_pending_emergencies(
         txn: &DatabaseTransaction,
