@@ -17,7 +17,7 @@ mod http_response;
 mod open_api;
 mod shared;
 mod utils;
-
+mod tests;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
