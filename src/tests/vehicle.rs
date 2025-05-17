@@ -3,7 +3,7 @@ mod vehicle {
     use crate::tests::vehicle::Vehicle;
 
     #[tokio::test]
-    pub async fn checkName() {
+    pub async fn check_name() {
         let vehicle = Vehicle::new(
             None,
             None,
@@ -12,11 +12,11 @@ mod vehicle {
             Some("UPGRADE".to_string()),
         );
 
-        assert_eq!(vehicle.productName(), Some("TErmin".to_string()));
+        assert_eq!(vehicle.product_name(), Some("TErmin".to_string()));
     }
 
     #[tokio::test]
-    pub async fn checkName_rec() {
+    pub async fn check_name_rec() {
         let vehicle = Vehicle::new(
             Some("Term".to_string()),
             Some("TErmin".to_string()),
@@ -25,11 +25,11 @@ mod vehicle {
             Some("MIGRATED".to_string()),
         );
 
-        assert_eq!(vehicle.productName(), Some("TErmin".to_string()));
+        assert_eq!(vehicle.product_name(), Some("TErmin".to_string()));
     }
 
     #[tokio::test]
-    pub async fn checkName_simple() {
+    pub async fn check_name_simple() {
         let vehicle = Vehicle::new(
             Some("product_code".to_string()),
             Some("product_description".to_string()),
@@ -39,7 +39,7 @@ mod vehicle {
         );
 
         assert_eq!(
-            vehicle.productName(),
+            vehicle.product_name(),
             Some("category_description".to_string())
         );
     }
@@ -55,22 +55,22 @@ struct Vehicle {
 
 impl Vehicle {
     pub fn new(
-        productCode: Option<String>,
-        productDescription: Option<String>,
-        categoryCode: Option<String>,
-        categoryDescription: Option<String>,
-        tierEvolution: Option<String>,
+        product_code: Option<String>,
+        product_description: Option<String>,
+        category_code: Option<String>,
+        category_description: Option<String>,
+        tier_evolution: Option<String>,
     ) -> Self {
         Self {
-            product_code: Some(productCode).unwrap(),
-            product_description: Some(productDescription).unwrap(),
-            category_code: Some(categoryCode).unwrap(),
-            category_description: Some(categoryDescription).unwrap(),
-            tier_evolution: Some(tierEvolution).unwrap(),
+            product_code: Some(product_code).unwrap(),
+            product_description: Some(product_description).unwrap(),
+            category_code: Some(category_code).unwrap(),
+            category_description: Some(category_description).unwrap(),
+            tier_evolution: Some(tier_evolution).unwrap(),
         }
     }
 
-    pub fn productName(&self) -> Option<String> {
+    pub fn product_name(&self) -> Option<String> {
         match self.tier_evolution.clone().unwrap().as_str() {
             "NONE" => {
                 if self.category_code.clone().is_some() {

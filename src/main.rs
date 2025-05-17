@@ -2,11 +2,11 @@ use crate::components::emergency::start_scheduler;
 use crate::open_api::init;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
+use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
 use listenfd::ListenFd;
 use std::env;
-use chrono::Local;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod components;
@@ -53,7 +53,8 @@ async fn main() -> std::io::Result<()> {
                     .configure(components::ambulance::init_routes)
                     .configure(components::emergency::init_routes)
                     .configure(components::dashboard::init_routes)
-                    .configure(components::card::init_routes),
+                    .configure(components::card::init_routes)
+                    .configure(components::hospital::init_routes),
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))
     });
