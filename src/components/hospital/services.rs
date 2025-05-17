@@ -3,9 +3,9 @@ use crate::entity::hospital::Model;
 use crate::entity::hospital;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use sea_orm::{ActiveModelTrait, ColumnTrait, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, PaginatorTrait};
+use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
-use sea_orm::QueryFilter;
 
 pub struct HospitalService {
     conn: DatabaseConnection,
@@ -17,11 +17,20 @@ impl HospitalService {
     }
 
     pub async fn find_by_ic(&self, hospital_name: String) -> Result<Option<Model>, CustomError> {
-        hospital::Entity::find()
-            .filter(hospital::Column::Name.eq(hospital_name))
+        let hospital = hospital::Entity::find()
+            .filter(hospital::Column::Name.like(&format!("{}", hospital_name)))
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)));
+
+        match hospital {
+            Ok(Some(hospital_model)) => Ok(Option::from(hospital_model)),
+            Ok(None) => Err(CustomError::new(
+                404,
+                format!("Hospital with name '{}' not found", hospital_name),
+            )),
+            Err(e) => Err(CustomError::new(500, format!("Database error: {}", e))),
+        }
     }
 
     pub async fn find_all(
