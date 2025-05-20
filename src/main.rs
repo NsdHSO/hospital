@@ -7,6 +7,7 @@ use dotenv::dotenv;
 use env_logger::{Builder, Env};
 use listenfd::ListenFd;
 use std::env;
+use log::error;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod components;
@@ -39,14 +40,16 @@ async fn main() -> std::io::Result<()> {
         .init();
     let scheduler_conn = conn.clone();
     tokio::spawn(async move {
-        start_scheduler(&scheduler_conn).await.expect("Failed to start scheduler");
+        if let Err(e) = start_scheduler(&scheduler_conn).await {
+            error!("Scheduler crashed: {:?}", e);
+        }
     });
-    let server_conn = conn.clone();
+    let data_base_conn = conn.clone();
 
     let mut listened = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(server_conn.clone()))
+            .app_data(web::Data::new(data_base_conn.clone()))
             .wrap(Logger::default())
             .service(
                 web::scope("/v1")
