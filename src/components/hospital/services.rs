@@ -1,9 +1,10 @@
-use crate::entity::hospital::Model;
+use crate::entity::hospital::{ActiveModel, HospitalRequestBody, Model};
+use chrono::{NaiveDateTime, Utc};
 
 use crate::entity::hospital;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use sea_orm::{ActiveModelTrait, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, DbErr, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
 
@@ -15,7 +16,51 @@ impl HospitalService {
     pub fn new(conn: &DatabaseConnection) -> Self {
         HospitalService { conn: conn.clone() }
     }
+    pub async fn create_emergency(
+        &self,
+        emergency_data: Option<HospitalRequestBody>,
+    ) -> Result<Model, CustomError> {
+        // Generate unique emergency_ic (using nanoid for a short, unique string)
+        let now = Utc::now().naive_utc();
+        let mut attempts = 0;
+        const MAX_ATTEMPTS: usize = 5;
 
+        loop {
+            if attempts >= MAX_ATTEMPTS {
+                return Err(CustomError::new(
+                    500,
+                    "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
+                ));
+            }
+
+            let active_model = Self::generate_model(emergency_data.clone(), now);
+
+            // Insert the record into the database
+            let result = active_model.insert(&self.conn).await;
+
+            match result {
+                Ok(model) => return Ok(model), // Successfully inserted, return the model
+                Err(DbErr::Exec(e)) => {
+                    // Check if the error is a unique constraint violation
+                    // The exact string to check for might vary slightly depending on the database
+                    if e.to_string()
+                        .contains("duplicate key value violates unique constraint")
+                    {
+                        // It's a unique constraint violation, retry with a new IC
+                        attempts += 1;
+                        // Continue the loop to generate a new IC and retry
+                    } else {
+                        // Some other execution error, return it
+                        return Err(CustomError::from(DbErr::Exec(e)));
+                    }
+                }
+                Err(e) => {
+                    // Other types of database errors, return them
+                    return Err(CustomError::from(e));
+                }
+            }
+        }
+    }
     pub async fn find_by_ic(&self, hospital_name: String) -> Result<Option<Model>, CustomError> {
         let hospital = hospital::Entity::find()
             .filter(hospital::Column::Name.like(&format!("{}", hospital_name)))
@@ -60,5 +105,85 @@ impl HospitalService {
             data: records,
             pagination,
         })
+    }
+
+    fn generate_model(p0: Option<HospitalRequestBody>, p1: NaiveDateTime) -> ActiveModel {
+        let payload = p0.unwrap_or_default();
+        ActiveModel {
+            created_at: Set(p1),
+            updated_at: Set(p1),
+            id: Default::default(),
+            name: if let Some(value) = payload.name {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
+            address: if let Some(value) = payload.address {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
+            phone: Default::default(),
+            website: if let Some(value) = payload.website {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            description: if let Some(value) = payload.description {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            capacity: if let Some(value) = payload.capacity {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            established: Default::default(),
+            ceo: if let Some(value) = payload.ceo {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            trauma_level: if let Some(value) = payload.traumaLevel {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            revenue: Default::default(),
+            non_profit: if let Some(value) = payload.nonProfit {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            license_number: if let Some(value) = payload.licenseNumber {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            accreditation: if let Some(value) = payload.accreditation {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            patient_satisfaction_rating: Default::default(),
+            average_stay_length: Default::default(),
+            annual_budget: Default::default(),
+            owner: if let Some(value) = payload.owner {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            latitude: if let Some(value) = payload.latitude {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+            longitude: if let Some(value) = payload.longitude {
+                Set(Option::from(value))
+            } else {
+                Set(Default::default())
+            },
+        }
     }
 }

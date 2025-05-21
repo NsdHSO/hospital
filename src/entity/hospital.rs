@@ -47,3 +47,22 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Default,Debug, Serialize, Deserialize, Clone)]
+pub struct HospitalRequestBody {
+    pub name: Option<String>,
+    pub address: Option<String>,
+    pub website: Option<String>,
+    pub description: Option<String>,
+    pub capacity: Option<i32>,
+    pub ceo: Option<String>,
+    pub phone: Option<String>,
+    pub traumaLevel: Option<String>, 
+    pub nonProfit: Option<bool>,
+    pub licenseNumber: Option<String>,
+    pub accreditation: Option<String>,
+    pub owner: Option<String>,
+    pub latitude: Option<Decimal>,
+    pub longitude: Option<Decimal>,
+    
+}
