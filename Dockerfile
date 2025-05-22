@@ -1,47 +1,23 @@
-# Build stage
-FROM rustlang/rust:nightly-slim AS builder
+# 1. Build stage
+FROM rust:latest AS builder
 
 WORKDIR /usr/src/app
-
-# Environment variables for edition 2024 support
-ENV RUSTC_BOOTSTRAP=1
-ENV RUSTFLAGS="--cfg procmacro2_semver_exempt"
-
-# Copy manifests first for better caching
-COPY Cargo.toml Cargo.lock ./
-
-# Create a temporary dummy project to compile dependencies
-RUN mkdir -p src && \
-    echo 'fn main() { println!("Dummy implementation"); }' > src/main.rs && \
-    RUSTC_BOOTSTRAP=1 cargo build --release && \
-    rm -rf src
-
-# Copy the actual code
 COPY . .
 
-# Build the application
-RUN RUSTC_BOOTSTRAP=1 cargo build --release
+# Ensure OpenSSL headers are available at build time
+RUN apt-get update && apt-get install -y pkg-config libssl-dev
 
-# Runtime stage
+RUN cargo build --release
+
+# 2. Runtime stage (must support OpenSSL 3)
 FROM debian:bookworm-slim
 
-# Install runtime dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates libssl-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies (OpenSSL 3 is in libssl3)
+RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user
-RUN useradd -m appuser
-USER appuser
-WORKDIR /home/appuser
-
-# Copy binary and config from builder
+WORKDIR /app
 COPY --from=builder /usr/src/app/target/release/emergency .
-COPY --from=builder /usr/src/app/.env .
+COPY .env .  
 
-# Expose the application port
 EXPOSE 5000
-
-# Run the application
 CMD ["./emergency"]
