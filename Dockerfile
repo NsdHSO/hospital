@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/
 
 WORKDIR /app
 COPY --from=builder /usr/src/app/target/release/emergency .
-COPY .env .  
 
 EXPOSE 5000
 CMD ["./emergency"]
