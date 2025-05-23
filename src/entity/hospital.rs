@@ -63,6 +63,5 @@ pub struct HospitalRequestBody {
     pub accreditation: Option<String>,
     pub owner: Option<String>,
     pub latitude: Option<Decimal>,
-    pub longitude: Option<Decimal>,
-    
+    pub longitude: Option<Decimal>
 }
