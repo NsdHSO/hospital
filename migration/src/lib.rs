@@ -1,6 +1,6 @@
 pub use sea_orm_migration::prelude::*;
 
-mod first_24_05_2025;
+mod m20250524_000001_initial_setup;
 
 pub struct Migrator;
 
@@ -8,7 +8,7 @@ pub struct Migrator;
 impl MigratorTrait for Migrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
         vec![
-            Box::new(first_24_05_2025::Migration),
+            Box::new(m20250524_000001_initial_setup::Migration),
         ]
     }
 }

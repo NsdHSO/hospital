@@ -117,19 +117,19 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"CREATE TYPE emergency_incidenttype_enum AS ENUM (
-                'CAR_ACCIDENT', 'MOTORCYCLE_ACCIDENT', 'PEDESTRIAN_ACCIDENT',
-                'TRAIN_ACCIDENT', 'AIRPLANE_CRASH', 'SHIP_ACCIDENT', 'HEART_ATTACK',
-                'STROKE', 'SEIZURE', 'DIABETIC_EMERGENCY', 'ALLERGIC_REACTION',
-                'BREATHING_PROBLEM', 'SEVERE_BURNS', 'ELECTROCUTION', 'DROWNING',
-                'POISONING', 'FALL_INJURY', 'FRACTURE', 'BLEEDING', 'HOUSE_FIRE',
-                'FOREST_FIRE', 'GAS_LEAK', 'EXPLOSION', 'INDUSTRIAL_ACCIDENT',
-                'EARTHQUAKE', 'FLOOD', 'TORNADO', 'HURRICANE', 'LANDSLIDE',
-                'TSUNAMI', 'SHOOTING', 'STABBING', 'ROBBERY', 'DOMESTIC_VIOLENCE',
-                'KIDNAPPING', 'ASSAULT', 'HOSTAGE_SITUATION', 'PANDEMIC',
-                'INFECTIOUS_DISEASE_OUTBREAK', 'BIOLOGICAL_HAZARD', 'CHEMICAL_SPILL',
-                'RADIATION_EXPOSURE', 'BUILDING_COLLAPSE', 'BRIDGE_COLLAPSE',
-                'DAM_FAILURE', 'UNKNOWN', 'OTHER'
-            );"#,
+        'CAR_ACCIDENT', 'MOTORCYCLE_ACCIDENT', 'PEDESTRIAN_ACCIDENT',
+        'TRAIN_ACCIDENT', 'AIRPLANE_CRASH', 'SHIP_ACCIDENT', 'HEART_ATTACK',
+        'STROKE', 'SEIZURE', 'DIABETIC_EMERGENCY', 'ALLERGIC_REACTION',
+        'BREATHING_PROBLEM', 'SEVERE_BURNS', 'ELECTROCUTION', 'DROWNING',
+        'POISONING', 'FALL_INJURY', 'FRACTURE', 'BLEEDING', 'HOUSE_FIRE',
+        'FOREST_FIRE', 'GAS_LEAK', 'EXPLOSION', 'INDUSTRIAL_ACCIDENT',
+        'EARTHQUAKE', 'FLOOD', 'TORNADO', 'HURRICANE', 'LANDSLIDE',
+        'TSUNAMI', 'SHOOTING', 'STABBING', 'ROBBERY', 'DOMESTIC_VIOLENCE',
+        'KIDNAPPING', 'ASSAULT', 'HOSTAGE_SITUATION', 'PANDEMIC',
+        'INFECTIOUS_DISEASE_OUTBREAK', 'BIOLOGICAL_HAZARD', 'CHEMICAL_SPILL',
+        'RADIATION_EXPOSURE', 'BUILDING_COLLAPSE', 'BRIDGE_COLLAPSE',
+        'DAM_FAILURE', 'UNKNOWN', 'OTHER'  
+    );"#,
         ))
             .await?;
 
@@ -201,29 +201,44 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE hospital (
-                id UUID PRIMARY KEY,
-                name VARCHAR NOT NULL,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR NOT NULL UNIQUE,
                 address VARCHAR NOT NULL,
                 phone VARCHAR,
-                email VARCHAR,
                 website VARCHAR,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                description TEXT,
+                capacity INTEGER,
+                established INTEGER,
+                ceo VARCHAR,
+                "traumaLevel" VARCHAR,
+                revenue INTEGER,
+                "nonProfit" BOOLEAN,
+                "licenseNumber" VARCHAR,
+                accreditation VARCHAR,
+                "patientSatisfactionRating" INTEGER,
+                "averageStayLength" INTEGER,
+                "annualBudget" INTEGER,
+                owner VARCHAR,
+                latitude DECIMAL(10, 6),
+                longitude DECIMAL(10, 6)
             );
             "#,
         ))
             .await?;
 
+
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
             CREATE TABLE department (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name department_name_enum NOT NULL,
                 description VARCHAR,
                 "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -233,15 +248,15 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE staff (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL,
                 role staff_role_enum NOT NULL,
                 email VARCHAR,
                 phone VARCHAR,
                 "departmentId" UUID NOT NULL REFERENCES department(id) ON DELETE CASCADE,
                 "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -251,7 +266,7 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE patient (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL,
                 "dateOfBirth" DATE,
                 gender VARCHAR,
@@ -260,8 +275,8 @@ impl MigrationTrait for Migration {
                 email VARCHAR,
                 "bloodType" VARCHAR,
                 "emergencyContact" VARCHAR,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -271,15 +286,15 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE room (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 number VARCHAR NOT NULL,
                 floor INTEGER,
                 type room_type_enum NOT NULL,
                 capacity INTEGER NOT NULL,
                 "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
                 "departmentId" UUID NOT NULL REFERENCES department(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -289,13 +304,13 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE bed (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 number VARCHAR NOT NULL,
                 type bed_type_enum NOT NULL,
                 "isOccupied" BOOLEAN NOT NULL DEFAULT FALSE,
                 "roomId" UUID NOT NULL REFERENCES room(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -305,15 +320,15 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE admission (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 "bedId" UUID NOT NULL REFERENCES bed(id) ON DELETE CASCADE,
-                "admissionDate" TIMESTAMPTZ NOT NULL,
-                "dischargeDate" TIMESTAMPTZ,
+                "admissionDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "dischargeDate" TIMESTAMP WITHOUT TIME ZONE,
                 diagnosis VARCHAR,
                 notes VARCHAR,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -323,9 +338,9 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE ambulance (
-                id UUID PRIMARY KEY,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 "hospitalId" VARCHAR NOT NULL,
                 "ambulanceIc" INTEGER NOT NULL UNIQUE,
                 "vehicleNumber" VARCHAR NOT NULL UNIQUE,
@@ -336,13 +351,13 @@ impl MigrationTrait for Migration {
                 passengers JSONB,
                 "driverName" VARCHAR,
                 "driverLicense" VARCHAR,
-                "lastServiceDate" TIMESTAMPTZ,
-                "nextServiceDate" TIMESTAMPTZ,
+                "lastServiceDate" TIMESTAMP WITHOUT TIME ZONE,
+                "nextServiceDate" TIMESTAMP WITHOUT TIME ZONE,
                 mileage INTEGER,
                 "fuelType" VARCHAR,
                 "registrationNumber" VARCHAR,
                 "insuranceProvider" VARCHAR,
-                "insuranceExpiryDate" TIMESTAMPTZ,
+                "insuranceExpiryDate" TIMESTAMP WITHOUT TIME ZONE,
                 notes VARCHAR,
                 "carDetailsYear" INTEGER NOT NULL,
                 "carDetailsColor" VARCHAR NOT NULL,
@@ -364,12 +379,12 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE amenities (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name amenities_name_enum NOT NULL,
                 description VARCHAR,
                 "roomId" UUID NOT NULL REFERENCES room(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -379,14 +394,14 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE appointment (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 "staffId" UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
-                "appointmentDate" TIMESTAMPTZ NOT NULL,
+                "appointmentDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 status appointment_status_enum NOT NULL,
                 notes VARCHAR,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -396,15 +411,15 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE bill (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 amount DECIMAL(10,2) NOT NULL,
                 status bill_status_enum NOT NULL,
-                "billDate" TIMESTAMPTZ NOT NULL,
-                "dueDate" TIMESTAMPTZ NOT NULL,
+                "billDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "dueDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 "paidAmount" DECIMAL(10,2),
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -414,14 +429,14 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE card (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 title VARCHAR NOT NULL,
                 content VARCHAR,
                 "dashboardId" UUID NOT NULL,
                 "cardType" card_cardtype_enum NOT NULL,
                 size card_size_enum NOT NULL,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -431,12 +446,12 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE customers (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL,
                 email VARCHAR NOT NULL,
                 phone VARCHAR,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -446,12 +461,12 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE dashboard (
-                id UUID PRIMARY KEY,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 title VARCHAR NOT NULL,
                 description VARCHAR,
                 "userId" UUID NOT NULL,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -461,13 +476,13 @@ impl MigrationTrait for Migration {
             manager.get_database_backend(),
             r#"
             CREATE TABLE emergency (
-                id UUID PRIMARY KEY,
-                "createdAt" TIMESTAMPTZ NOT NULL,
-                "updatedAt" TIMESTAMPTZ NOT NULL,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 "emergencyIc" VARCHAR NOT NULL,
                 "reportedBy" INTEGER,
                 notes VARCHAR,
-                "resolvedAt" TIMESTAMPTZ,
+                "resolvedAt" TIMESTAMP WITHOUT TIME ZONE,
                 "modificationAttempts" JSONB,
                 "idAmbulance" UUID REFERENCES ambulance(id),
                 "emergencyLatitude" DECIMAL(9,6) NOT NULL,
