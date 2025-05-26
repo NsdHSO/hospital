@@ -240,7 +240,7 @@ async fn dispatch_ambulance(
                 "Emergency update SUCCESS - ID: {}, New Status: {:?}, Ambulance ID: {:?}",
                 emergency.id,
                 updated.status.clone(),
-                updated.id_ambulance.clone().unwrap_or_default()
+                updated.id_ambulance.unwrap_or_default()
             );
         }
         Err(e) => {

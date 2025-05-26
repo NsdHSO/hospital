@@ -44,7 +44,7 @@ impl CardService {
                 .one(&self.conn)
                 .await;
             if let Ok(Some(card_model)) = &dashboard_entity {
-                active_model.dashboard_id = Set(Some(card_model.id.clone()));
+                active_model.dashboard_id = Set(Some(card_model.id));
             } else {
                 return Err(CustomError::new(500, "Dashboard not found".to_string()));
             }

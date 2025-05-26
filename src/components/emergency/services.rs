@@ -160,8 +160,8 @@ impl EmergencyService {
             // Handle the modification_attempts field
             modification_attempts: Set(None),
             id_ambulance: NotSet,
-            emergency_latitude: Set(emergency_data.emergency_latitude.clone()), // Clone if needed
-            emergency_longitude: Set(emergency_data.emergency_longitude.clone()), // Clone if needed
+            emergency_latitude: Set(emergency_data.emergency_latitude), // Clone if needed
+            emergency_longitude: Set(emergency_data.emergency_longitude), // Clone if needed
             status: Set(EmergencyStatusEnum::Pending),
             severity: Set(EmergencySeverityEnum::Unknown),
             incident_type: Set(emergency_data.incident_type.clone()), // Clone if needed

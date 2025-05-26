@@ -13,7 +13,7 @@ async fn find(
     db_conn: web::Data<DatabaseConnection>,
 ) -> Result<HttpResponse, CustomError> {
     let service = EmergencyService::new(db_conn.get_ref());
-    let ambulance = service.find_by_ic(&**id).await?;
+    let ambulance = service.find_by_ic(&id).await?;
     let response = http_response_builder::ok(ambulance);
     Ok(HttpResponse::Ok().json(response))
 }
