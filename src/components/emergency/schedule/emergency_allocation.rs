@@ -1,7 +1,6 @@
 use chrono::Utc;
-use log::{error, info, warn};
+use log::{error, warn};
 use sea_orm::*;
-use uuid::Uuid;
 
 use crate::entity::sea_orm_active_enums::{AmbulanceStatusEnum, EmergencyStatusEnum};
 use crate::entity::{ambulance, emergency};

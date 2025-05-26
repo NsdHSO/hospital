@@ -48,7 +48,3 @@ pub async fn init() -> Result<DatabaseConnection, CustomError> {
     Ok(conn) // Return the connection
 }
 
-pub async fn connection() -> Result<&'static DatabaseConnection, CustomError> {
-    DB.get()
-        .ok_or_else(|| CustomError::new(500, "Database not initialized".to_string()))
-}

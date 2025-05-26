@@ -1,9 +1,8 @@
 use crate::components::emergency::schedule::emergency_allocation::EmergencyAllocationService;
-use actix_web::web;
 use log::{error, warn};
 use sea_orm::DatabaseConnection;
 use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::time::{Duration, interval};
+use tokio::time::{Duration};
 // Create a static flag to track if a process is running
 static ALLOCATION_RUNNING: AtomicBool = AtomicBool::new(false);
 pub async fn start_scheduler(

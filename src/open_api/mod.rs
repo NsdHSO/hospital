@@ -81,7 +81,7 @@ pub fn init() -> utoipa::openapi::OpenApi {
 
     // We need to merge the POST operation to the existing path
     // First, check if the path already exists
-    if let Some(existing_path) = doc.paths.paths.get_mut("/v1/emergency") {
+    if let Some(_) = doc.paths.paths.get_mut("/v1/emergency") {
         // Add the POST operation to the existing path
     } else {
         // If the path doesn't exist yet (which shouldn't happen), create it
