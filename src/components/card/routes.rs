@@ -27,9 +27,9 @@ pub async fn find_all(
 
     let card = service_instance
         .find_all(
-            query.page.try_into().unwrap(),
-            query.per_page.try_into().unwrap(),
-            query.filter.clone().try_into().unwrap(),
+            query.page.try_into().unwrap(),         // Add the page parameter
+            query.per_page.try_into().unwrap(),     // Keep the per_page parameter
+            query.filter.clone(),    // No need to unwrap and re-wrap in Some; it's already an Option<String>
         )
         .await?;
     let response = http_response_builder::ok(card);

@@ -44,6 +44,7 @@ mod vehicle {
         );
     }
 }
+#[allow(dead_code)]
 struct Vehicle {
     product_code: Option<String>,
     product_description: Option<String>,
@@ -52,6 +53,7 @@ struct Vehicle {
     tier_evolution: Option<String>,
 }
 
+#[allow(dead_code)]
 impl Vehicle {
     pub fn new(
         product_code: Option<String>,
