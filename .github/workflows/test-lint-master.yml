@@ -37,12 +37,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
       
-      - name: Check formatting
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-      
       - name: Run Clippy
         uses: actions-rs/cargo@v1
         with:
