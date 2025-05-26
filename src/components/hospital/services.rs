@@ -63,7 +63,7 @@ impl HospitalService {
     }
     pub async fn find_by_ic(&self, hospital_name: String) -> Result<Option<Model>, CustomError> {
         let hospital = hospital::Entity::find()
-            .filter(hospital::Column::Name.like(&format!("{}", hospital_name)))
+            .filter(hospital::Column::Name.like(&hospital_name))
             .one(&self.conn)
             .await
             .map_err(|e| CustomError::new(500, format!("Database error: {}", e)));
