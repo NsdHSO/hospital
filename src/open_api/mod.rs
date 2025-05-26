@@ -1,5 +1,5 @@
-use utoipa::openapi::{self, HttpMethod, Response};
 use utoipa::OpenApi;
+use utoipa::openapi::{self, HttpMethod, Response};
 
 // Import necessary types for schema components
 

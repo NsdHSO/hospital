@@ -7,7 +7,7 @@ use std::error::Error as StdError;
 use std::fmt;
 // Import this
 
-use crate::http_response::{create_response, HttpCodeW};
+use crate::http_response::{HttpCodeW, create_response};
 // Import logging macros
 
 #[derive(Debug, Deserialize)]

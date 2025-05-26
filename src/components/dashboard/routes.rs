@@ -3,7 +3,7 @@ use crate::entity::dashboard::PayloadBodyDashboard;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{HttpResponse, get, post, web};
 use sea_orm::DatabaseConnection;
 
 #[get("/dashboard")]
