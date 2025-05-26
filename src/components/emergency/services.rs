@@ -6,7 +6,7 @@ use crate::entity::sea_orm_active_enums::{
 };
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::utils::generate_ic;
+use crate::utils::helpers::generate_ic;
 use chrono::{NaiveDateTime, Utc};
 use entity::ambulance;
 use nanoid::nanoid;

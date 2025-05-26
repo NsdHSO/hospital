@@ -7,7 +7,7 @@ use crate::entity::sea_orm_active_enums::{
 use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::utils::generate_ic;
+use crate::utils::helpers::generate_ic;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use sea_orm::prelude::Decimal;

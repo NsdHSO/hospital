@@ -62,11 +62,11 @@ impl Vehicle {
         tier_evolution: Option<String>,
     ) -> Self {
         Self {
-            product_code: Some(product_code).unwrap(),
-            product_description: Some(product_description).unwrap(),
-            category_code: Some(category_code).unwrap(),
-            category_description: Some(category_description).unwrap(),
-            tier_evolution: Some(tier_evolution).unwrap(),
+            product_code,
+            product_description,
+            category_code,
+            category_description,
+            tier_evolution,
         }
     }
 

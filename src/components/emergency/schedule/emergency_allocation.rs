@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::entity::sea_orm_active_enums::{AmbulanceStatusEnum, EmergencyStatusEnum};
 use crate::entity::{ambulance, emergency};
 use crate::error_handler::CustomError;
-use crate::utils::utils::calculate_distance;
+use crate::utils::helpers::calculate_distance;
 
 pub struct EmergencyAllocationService {
     conn: DatabaseConnection,
