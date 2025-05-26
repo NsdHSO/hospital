@@ -1,7 +1,7 @@
 use crate::components::emergency::start_scheduler;
 use crate::open_api::init;
 use actix_web::middleware::Logger;
-use actix_web::{App, HttpServer, web};
+use actix_web::{web, App, HttpServer};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};

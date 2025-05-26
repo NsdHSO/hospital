@@ -3,12 +3,11 @@ use actix_web::{HttpResponse, ResponseError};
 use sea_orm::DbErr;
 // Import SeaORM's database error type
 use serde::Deserialize;
-use serde_json::json;
 use std::error::Error as StdError;
-use std::fmt; // Import this
+use std::fmt;
+// Import this
 
-use crate::http_response::{HttpCodeW, create_response};
-use log::{error, info};
+use crate::http_response::{create_response, HttpCodeW};
 // Import logging macros
 
 #[derive(Debug, Deserialize)]

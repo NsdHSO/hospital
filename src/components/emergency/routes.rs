@@ -3,8 +3,7 @@ use crate::entity::emergency::EmergencyRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::web::service;
-use actix_web::{HttpResponse, get, post, web};
+use actix_web::{get, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
 use web::Path;
 

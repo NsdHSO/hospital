@@ -9,7 +9,6 @@ use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::generate_ic;
 use chrono::{NaiveDateTime, Utc};
 use entity::ambulance;
-use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};

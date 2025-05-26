@@ -1,9 +1,7 @@
 use crate::entity::dashboard;
 use crate::entity::dashboard::{ActiveModel, Model, PayloadBodyDashboard};
-use crate::entity::prelude::Dashboard;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use chrono::Utc;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, DbErr, EntityTrait};
 use sea_orm::{PaginatorTrait, Set};
 use uuid::Uuid;

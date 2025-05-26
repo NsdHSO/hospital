@@ -1,10 +1,9 @@
 use crate::components::dashboard::DashboardService;
 use crate::entity::dashboard::PayloadBodyDashboard;
-use crate::entity::emergency::EmergencyRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{HttpResponse, get, post, web};
+use actix_web::{get, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
 
 #[get("/dashboard")]
