@@ -51,9 +51,9 @@ pub struct Model {
     #[sea_orm(column_name = "carDetailsColor")]
     pub car_details_color: String,
     #[sea_orm(column_name = "carDetailsIsambulance")]
-    pub car_details_isambulance: bool,
+    pub car_details_is_ambulance: bool,
     #[sea_orm(column_name = "carDetailsLicenseplate")]
-    pub car_details_licenseplate: Option<String>,
+    pub car_details_license_plate: Option<String>,
     #[sea_orm(column_name = "carDetailsMileage", column_type = "Double", nullable)]
     pub car_details_mileage: Option<f64>,
     #[sea_orm(
@@ -91,7 +91,7 @@ impl ActiveModelBehavior for ActiveModel {}
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct AmbulancePayload {
     pub ambulance_ic: Option<i32>,
-    pub vehicleNumber: Option<String>,
+    pub vehicle_number: Option<String>,
     pub make: Option<String>,
     pub year: Option<i32>,
     pub capacity: Option<i32>,
@@ -110,8 +110,8 @@ pub struct AmbulancePayload {
     pub notes: Option<String>,
     pub car_details_year: Option<i32>,
     pub car_details_color: Option<String>,
-    pub car_details_isambulance: Option<bool>,
-    pub car_details_licenseplate: Option<String>,
+    pub car_details_is_ambulance: Option<bool>,
+    pub car_details_license_plate: Option<String>,
     pub car_details_mileage: Option<f64>,
     pub location_latitude: Option<Decimal>,
     pub location_longitude: Option<Decimal>,

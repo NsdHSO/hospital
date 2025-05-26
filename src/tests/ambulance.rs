@@ -9,7 +9,7 @@ mod ambulance {
     async fn test_ambulance_with_hospital_name() {
         let payload = AmbulancePayload {
             ambulance_ic: None, // Will use generate_ic()
-            vehicleNumber: None,
+            vehicle_number: None,
             make: Some("Toyota".to_string()),
             year: Some(2023),
             capacity: Some(4),
@@ -28,8 +28,8 @@ mod ambulance {
             notes: Some("Test notes".to_string()),
             car_details_year: Some(2023),
             car_details_color: Some("White".to_string()),
-            car_details_isambulance: Some(true),
-            car_details_licenseplate: Some("AMB-123".to_string()),
+            car_details_is_ambulance: Some(true),
+            car_details_license_plate: Some("AMB-123".to_string()),
             car_details_mileage: Some(1000.0),
             location_latitude: None,
             location_longitude: None,

@@ -243,7 +243,7 @@ pub enum BillStatusEnum {
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "card_cardtype_enum")]
-pub enum CardCardtypeEnum {
+pub enum CardTypeEnum {
     #[sea_orm(string_value = "text")]
     Text,
     #[sea_orm(string_value = "chart")]
@@ -301,7 +301,7 @@ pub enum DepartmentNameEnum {
     enum_name = "emergency_incidenttype_enum"
 )]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum EmergencyIncidenttypeEnum {
+pub enum EmergencyIncidentEnum {
     #[sea_orm(string_value = "CAR_ACCIDENT")]
     CarAccident,
     #[sea_orm(string_value = "MOTORCYCLE_ACCIDENT")]

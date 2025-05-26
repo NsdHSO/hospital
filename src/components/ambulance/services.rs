@@ -137,7 +137,7 @@ pub fn generate_payload_to_create_ambulance(
         // Fields from payload or default values
         ambulance_ic: Set(generate_ic()),
 
-        vehicle_number: if let Some(val) = payload.vehicleNumber {
+        vehicle_number: if let Some(val) = payload.vehicle_number {
             Set(val)
         } else {
             NotSet
@@ -185,13 +185,13 @@ pub fn generate_payload_to_create_ambulance(
             Set("White".to_string()) // Default value
         },
 
-        car_details_isambulance: if let Some(val) = payload.car_details_isambulance {
+        car_details_is_ambulance: if let Some(val) = payload.car_details_is_ambulance {
             Set(val)
         } else {
             Set(true) // Default value
         },
 
-        car_details_licenseplate: Set(payload.car_details_licenseplate),
+        car_details_license_plate: Set(payload.car_details_license_plate),
 
         car_details_mileage: Set(payload.car_details_mileage),
 
