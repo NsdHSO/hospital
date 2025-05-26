@@ -16,6 +16,8 @@ pub struct Model {
     pub id: Uuid,
     pub title: String,
     pub content: String,
+    #[sea_orm(column_name = "cardIc", unique)]
+    pub card_ic: i32,
     pub icon: Option<String>,
     pub position: Option<i32>,
     #[sea_orm(column_name = "dataConfig", column_type = "JsonBinary", nullable)]
@@ -46,3 +48,15 @@ impl Related<super::dashboard::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct CardPayload {
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub icon: Option<String>,
+    pub position: Option<i32>,
+    pub data_config: Option<Json>,
+    pub dashboard_id: Option<Uuid>,
+    pub card_type: Option<CardCardtypeEnum>,
+    pub size: Option<CardSizeEnum>,
+}
