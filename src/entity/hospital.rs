@@ -58,11 +58,11 @@ pub struct HospitalRequestBody {
     pub ceo: Option<String>,
     pub phone: Option<String>,
     #[allow(non_snake_case)]
-    pub traumaLevel: Option<String>,
+    pub trauma_level: Option<String>,
     #[allow(non_snake_case)]
-    pub nonProfit: Option<bool>,
+    pub non_profit: Option<bool>,
     #[allow(non_snake_case)]
-    pub licenseNumber: Option<String>,
+    pub license_number: Option<String>,
     pub accreditation: Option<String>,
     pub owner: Option<String>,
     pub latitude: Option<Decimal>,

@@ -145,18 +145,18 @@ impl HospitalService {
             } else {
                 Set(Default::default())
             },
-            trauma_level: if let Some(value) = payload.traumaLevel {
+            trauma_level: if let Some(value) = payload.trauma_level {
                 Set(Option::from(value))
             } else {
                 Set(Default::default())
             },
             revenue: Default::default(),
-            non_profit: if let Some(value) = payload.nonProfit {
+            non_profit: if let Some(value) = payload.non_profit {
                 Set(Option::from(value))
             } else {
                 Set(Default::default())
             },
-            license_number: if let Some(value) = payload.licenseNumber {
+            license_number: if let Some(value) = payload.license_number {
                 Set(Option::from(value))
             } else {
                 Set(Default::default())
