@@ -3,7 +3,7 @@ use actix_web::web;
 use log::{error, warn};
 use sea_orm::DatabaseConnection;
 use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::time::{interval, Duration};
+use tokio::time::{Duration, interval};
 // Create a static flag to track if a process is running
 static ALLOCATION_RUNNING: AtomicBool = AtomicBool::new(false);
 pub async fn start_scheduler(
@@ -36,6 +36,6 @@ pub async fn start_scheduler(
         }
 
         println!("Sleeping for 1 hour...");
-        tokio::time::sleep(Duration::from_secs(60*60)).await;
+        tokio::time::sleep(Duration::from_secs(60 * 60)).await;
     }
 }

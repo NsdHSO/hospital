@@ -27,13 +27,16 @@ pub fn init() -> utoipa::openapi::OpenApi {
     let ambulance_get_op = openapi::path::OperationBuilder::new()
         .operation_id(Some("list_ambulances"))
         .tag("ambulance")
-        .response("200", Response::new("List of ambulances retrieved successfully"))
+        .response(
+            "200",
+            Response::new("List of ambulances retrieved successfully"),
+        )
         .response("500", Response::new("Internal Server Error"))
         .build();
 
     doc.paths.paths.insert(
         "/v1/ambulance".to_string(),
-        openapi::PathItem::new(HttpMethod::Get, ambulance_get_op)
+        openapi::PathItem::new(HttpMethod::Get, ambulance_get_op),
     );
 
     // Emergency endpoints - find by ID
@@ -47,21 +50,24 @@ pub fn init() -> utoipa::openapi::OpenApi {
 
     doc.paths.paths.insert(
         "/v1/emergency/{id}".to_string(),
-        openapi::PathItem::new(HttpMethod::Get, emergency_get_op)
+        openapi::PathItem::new(HttpMethod::Get, emergency_get_op),
     );
 
     // Emergency endpoints - Get all emergencies
     let emergency_get_all_op = openapi::path::OperationBuilder::new()
         .operation_id(Some("list_emergencies"))
         .tag("emergency")
-        .response("200", Response::new("List of emergencies retrieved successfully"))
+        .response(
+            "200",
+            Response::new("List of emergencies retrieved successfully"),
+        )
         .response("500", Response::new("Internal Server Error"))
         .build();
 
     // First, add the GET operation
     doc.paths.paths.insert(
         "/v1/emergency".to_string(),
-        openapi::PathItem::new(HttpMethod::Get, emergency_get_all_op)
+        openapi::PathItem::new(HttpMethod::Get, emergency_get_all_op),
     );
 
     // Emergency endpoints - Create emergency
@@ -81,7 +87,7 @@ pub fn init() -> utoipa::openapi::OpenApi {
         // If the path doesn't exist yet (which shouldn't happen), create it
         doc.paths.paths.insert(
             "/v1/emergency".to_string(),
-            openapi::PathItem::new(HttpMethod::Post, emergency_post_op)
+            openapi::PathItem::new(HttpMethod::Post, emergency_post_op),
         );
     }
 

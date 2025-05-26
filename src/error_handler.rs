@@ -4,10 +4,10 @@ use sea_orm::DbErr;
 // Import SeaORM's database error type
 use serde::Deserialize;
 use serde_json::json;
-use std::fmt;
-use std::error::Error as StdError; // Import this
+use std::error::Error as StdError;
+use std::fmt; // Import this
 
-use crate::http_response::{create_response, HttpCodeW};
+use crate::http_response::{HttpCodeW, create_response};
 use log::{error, info};
 // Import logging macros
 

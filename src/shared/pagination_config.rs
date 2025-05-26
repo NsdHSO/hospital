@@ -8,7 +8,6 @@ pub struct PaginationParams {
     pub per_page: i64,
     #[serde(default)]
     pub filter: Option<String>,
-
 }
 
 fn page() -> i64 {

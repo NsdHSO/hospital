@@ -45,15 +45,11 @@ impl DashboardService {
             pagination,
         })
     }
-    pub async fn create(
-        &self,
-        dashboard_data: PayloadBodyDashboard,
-    ) -> Result<Model, CustomError> {
+    pub async fn create(&self, dashboard_data: PayloadBodyDashboard) -> Result<Model, CustomError> {
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
 
         loop {
-           
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
                     500,

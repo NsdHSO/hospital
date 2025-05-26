@@ -6,13 +6,13 @@ use crate::entity::sea_orm_active_enums::{
 };
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
+use crate::utils::utils::generate_ic;
 use chrono::{NaiveDateTime, Utc};
 use entity::ambulance;
 use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
-use crate::utils::utils::generate_ic;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -81,7 +81,8 @@ impl EmergencyService {
             // Generate a unique emergency_ic (using nanoid for a short, unique string)
             let emergency_ic = generate_ic();
 
-            let active_model = Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
+            let active_model =
+                Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
@@ -140,7 +141,6 @@ impl EmergencyService {
             "Emergency scheduled and ambulance assigned. {:?}",
             updated_ambulance
         );
-
 
         Ok(())
     }

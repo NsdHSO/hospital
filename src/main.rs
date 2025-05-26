@@ -1,13 +1,13 @@
 use crate::components::emergency::start_scheduler;
 use crate::open_api::init;
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
 use listenfd::ListenFd;
-use std::env;
 use log::error;
+use std::env;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod components;
@@ -17,13 +17,15 @@ mod error_handler;
 mod http_response;
 mod open_api;
 mod shared;
-mod utils;
 mod tests;
+mod utils;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let conn: sea_orm::DatabaseConnection = db::config::init().await.expect("Failed to initialize database connection"); // Initialize connection here
+    let conn: sea_orm::DatabaseConnection = db::config::init()
+        .await
+        .expect("Failed to initialize database connection"); // Initialize connection here
     Builder::from_env(Env::default().default_filter_or("debug"))
         .format(|buf, record| {
             use std::io::Write;

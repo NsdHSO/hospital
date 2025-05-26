@@ -99,7 +99,7 @@ pub struct AmbulancePayload {
     pub passengers: Option<Json>,
     pub driver_name: Option<String>,
     pub driver_license: Option<String>,
-    pub hospital_name: Option<String>,   
+    pub hospital_name: Option<String>,
     pub last_service_date: Option<DateTime>,
     pub next_service_date: Option<DateTime>,
     pub mileage: Option<i32>,

@@ -1,11 +1,11 @@
 use crate::components::dashboard::DashboardService;
+use crate::entity::dashboard::PayloadBodyDashboard;
+use crate::entity::emergency::EmergencyRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{HttpResponse, get, post, web};
 use sea_orm::DatabaseConnection;
-use crate::entity::dashboard::PayloadBodyDashboard;
-use crate::entity::emergency::EmergencyRequestBody;
 
 #[get("/dashboard")]
 pub async fn find_all(
@@ -25,16 +25,12 @@ pub async fn find_all(
 }
 #[post("/dashboard")]
 pub async fn create(
-    payload:  web::Json<PayloadBodyDashboard>,
+    payload: web::Json<PayloadBodyDashboard>,
     db_conn: web::Data<DatabaseConnection>,
 ) -> Result<HttpResponse, CustomError> {
     let service_instance = DashboardService::new(db_conn.get_ref());
 
-    let dashboard = service_instance
-        .create(
-            payload.into_inner()
-        )
-        .await?;
+    let dashboard = service_instance.create(payload.into_inner()).await?;
     let response = http_response_builder::ok(dashboard);
     Ok(HttpResponse::Ok().json(response))
 }

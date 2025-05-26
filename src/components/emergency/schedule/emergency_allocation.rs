@@ -112,7 +112,10 @@ impl EmergencyAllocationService {
                     }
                 }
             } else {
-                println!("Could not find a closest ambulance for emergency {}", emergency.id);
+                println!(
+                    "Could not find a closest ambulance for emergency {}",
+                    emergency.id
+                );
             }
         }
 
@@ -120,9 +123,11 @@ impl EmergencyAllocationService {
             "Emergency allocation process completed within transaction. Dispatched {} ambulances.",
             dispatched_count
         );
-        Ok(format!("Emergency allocation process completed successfully. Dispatched {} ambulances.", dispatched_count))
+        Ok(format!(
+            "Emergency allocation process completed successfully. Dispatched {} ambulances.",
+            dispatched_count
+        ))
     }
-
 
     async fn fetch_pending_emergencies(
         txn: &DatabaseTransaction,

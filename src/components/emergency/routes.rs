@@ -3,8 +3,8 @@ use crate::entity::emergency::EmergencyRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, post, web, HttpResponse};
 use actix_web::web::service;
+use actix_web::{HttpResponse, get, post, web};
 use sea_orm::DatabaseConnection;
 use web::Path;
 
@@ -41,7 +41,10 @@ async fn create(
 ) -> Result<HttpResponse, CustomError> {
     let service = EmergencyService::new(db_conn.get_ref());
     let created_emergency = service.create_emergency(emergency.into_inner()).await?;
-    service.schedule_emergency().await.expect("TODO: panic message");
+    service
+        .schedule_emergency()
+        .await
+        .expect("TODO: panic message");
     Ok(HttpResponse::Created().json(serde_json::json!({
         "message": "Emergency created successfully",
         "data": created_emergency

@@ -1,11 +1,10 @@
-use sea_orm::{Database, DatabaseConnection};
+use crate::error_handler::CustomError;
 use once_cell::sync::OnceCell;
+use sea_orm::{Database, DatabaseConnection};
 use std::env;
 use std::io::Write;
-use crate::error_handler::CustomError;
 
 static DB: OnceCell<DatabaseConnection> = OnceCell::new();
-
 
 pub async fn init() -> Result<DatabaseConnection, CustomError> {
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -17,9 +16,11 @@ pub async fn init() -> Result<DatabaseConnection, CustomError> {
         let spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
         let mut count = 0;
         loop {
-            print!("\r{} Connection in progress... ({} seconds)",
-                   spinner[count % spinner.len()],
-                   count / 2);
+            print!(
+                "\r{} Connection in progress... ({} seconds)",
+                spinner[count % spinner.len()],
+                count / 2
+            );
             std::io::stdout().flush().unwrap();
             tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
             count += 1;
@@ -48,5 +49,6 @@ pub async fn init() -> Result<DatabaseConnection, CustomError> {
 }
 
 pub async fn connection() -> Result<&'static DatabaseConnection, CustomError> {
-    DB.get().ok_or_else(|| CustomError::new(500, "Database not initialized".to_string()))
+    DB.get()
+        .ok_or_else(|| CustomError::new(500, "Database not initialized".to_string()))
 }
