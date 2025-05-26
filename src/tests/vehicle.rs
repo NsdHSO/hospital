@@ -44,7 +44,6 @@ mod vehicle {
         );
     }
 }
-
 struct Vehicle {
     product_code: Option<String>,
     product_description: Option<String>,
