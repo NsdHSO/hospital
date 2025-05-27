@@ -1,7 +1,8 @@
 use crate::components::emergency::start_scheduler;
 use crate::open_api::init;
+use actix_cors::Cors;
 use actix_web::middleware::Logger;
-use actix_web::{App, HttpServer, web};
+use actix_web::{web, App, HttpServer};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
@@ -50,7 +51,12 @@ async fn main() -> std::io::Result<()> {
 
     let mut listened = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:4200")
+            .allowed_origin("https://tevet-troc-client.vercel.app/");
+
         App::new()
+            .wrap(cors)
             .app_data(web::Data::new(data_base_conn.clone()))
             .wrap(Logger::default())
             .service(
