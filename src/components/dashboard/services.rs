@@ -2,7 +2,8 @@ use crate::entity::dashboard;
 use crate::entity::dashboard::{ActiveModel, Model, PayloadBodyDashboard};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use sea_orm::{ActiveModelTrait, DatabaseConnection, DbErr, EntityTrait};
+use crate::utils::helpers::check_if_is_duplicate_key;
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
 use sea_orm::{PaginatorTrait, Set};
 use uuid::Uuid;
 
@@ -57,26 +58,8 @@ impl DashboardService {
 
             let active_model = Self::generate_payload(dashboard_data.clone());
             let result = active_model.insert(&self.conn).await;
-            match result {
-                Ok(model) => return Ok(model), // Successfully inserted, return the model
-                Err(DbErr::Exec(e)) => {
-                    // Check if the error is a unique constraint violation
-                    // The exact string to check for might vary slightly depending on the database
-                    if e.to_string()
-                        .contains("duplicate key value violates unique constraint")
-                    {
-                        // It's a unique constraint violation, retry with a new IC
-                        attempts += 1;
-                        // Continue the loop to generate a new IC and retry
-                    } else {
-                        // Some other execution error, return it
-                        return Err(CustomError::from(DbErr::Exec(e)));
-                    }
-                }
-                Err(e) => {
-                    // Other types of database errors, return them
-                    return Err(CustomError::from(e));
-                }
+            if let Some(value) = check_if_is_duplicate_key(&mut attempts, result) {
+                return value;
             }
         }
     }

@@ -7,7 +7,7 @@ use crate::entity::sea_orm_active_enums::{
 use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::generate_ic;
+use crate::utils::helpers::{check_if_is_duplicate_key, generate_ic};
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use sea_orm::prelude::Decimal;
@@ -58,26 +58,8 @@ impl AmbulanceService {
             }
 
             let result = active_model.insert(&self.conn).await;
-            match result {
-                Ok(model) => return Ok(model),
-                Err(DbErr::Exec(e)) => {
-                    // Check if the error is a unique constraint violation
-                    // The exact string to check for might vary slightly depending on the database
-                    if e.to_string()
-                        .contains("duplicate key value violates unique constraint")
-                    {
-                        // It's a unique constraint violation, retry with a new IC
-                        attempts += 1;
-                        // Continue the loop to generate a new IC and retry
-                    } else {
-                        // Some other execution error, return it
-                        return Err(CustomError::from(DbErr::Exec(e)));
-                    }
-                }
-                Err(e) => {
-                    // Other types of database errors, return them
-                    return Err(CustomError::from(e));
-                }
+            if let Some(value) = check_if_is_duplicate_key(&mut attempts, result) {
+                return value;
             }
         }
     }

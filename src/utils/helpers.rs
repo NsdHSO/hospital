@@ -1,4 +1,7 @@
 use nanoid::nanoid;
+use sea_orm::DbErr;
+use crate::entity::card::Model;
+use crate::error_handler::CustomError;
 
 pub fn calculate_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     const EARTH_RADIUS: f64 = 6371.0;
@@ -35,4 +38,63 @@ pub fn generate_ic_with_length(length: Option<usize>) -> i32 {
         let fallback = nanoid!(4, &['1', '2', '3', '4', '5', '6', '7', '8', '9']);
         fallback.parse::<i32>().unwrap_or(1000) // Final fallback value
     })
+}
+
+/// Checks if a database error is due to a duplicate key constraint violation.
+///
+/// This function examines the database operation result and determines if it failed
+/// due to a unique constraint violation. If so, it increments the attempts counter
+/// to facilitate retry logic. For other errors, it converts them to CustomError.
+///
+/// # Type Parameters
+///
+/// * `T`: The type of the successful result (e.g., database model, entity)
+///
+/// # Arguments 
+///
+/// * `attempts`: Mutable reference to the retry counter that gets incremented on duplicate key errors
+/// * `result`: The database operation result to examine (Result<T, DbErr>)
+///
+/// returns: Option<Result<T, CustomError>> - Some(Ok(value)) on success, Some(Err(error)) on non-duplicate errors, None on duplicate key (for retry)
+///
+/// # Examples 
+///
+/// ```rust
+/// let mut retry_count = 0;
+/// let db_result: Result<User, DbErr> = user_repository.create(new_user).await;
+///
+/// if let Some(final_result) = check_if_is_duplicate_key(&mut retry_count, db_result) {
+///     return final_result; // Either success or non-retryable error
+/// }
+/// // If None returned, it was a duplicate key - continue with retry logic
+///
+/// // Works with any type
+/// let product_result: Result<Product, DbErr> = product_repository.create(new_product).await;
+/// if let Some(final_result) = check_if_is_duplicate_key(&mut retry_count, product_result) {
+///     return final_result;
+/// }
+/// ```
+pub fn check_if_is_duplicate_key<T>(attempts: &mut usize, result: Result<T, DbErr>) -> Option<Result<T, CustomError>> {
+    match result {
+        Ok(value) => Some(Ok(value)),
+        Err(DbErr::Exec(e)) => {
+            // Check if the error is a unique constraint violation
+            // The exact string to check for might vary slightly depending on the database
+            if e.to_string()
+                .contains("duplicate key value violates unique constraint")
+            {
+                // It's a unique constraint violation, increment attempts for retry logic
+                *attempts += 1;
+                // Return None to indicate this is a retryable duplicate key error
+                None
+            } else {
+                // Some other execution error, return it
+                Some(Err(CustomError::from(DbErr::Exec(e))))
+            }
+        }
+        Err(e) => {
+            // Other types of database errors, return them
+            Some(Err(CustomError::from(e)))
+        }
+    }
 }
