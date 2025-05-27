@@ -12,187 +12,282 @@ impl MigrationTrait for Migration {
         // Create enum types - each CREATE TYPE must be a separate execute call
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE ambulance_car_details_make_enum AS ENUM (
-                'Mercedes-Benz', 'Ford', 'Chevrolet', 'Toyota', 'Volkswagen',
-                'Ram', 'Nissan', 'Peugeot', 'Fiat', 'Iveco'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ambulance_car_details_make_enum') THEN
+                    CREATE TYPE ambulance_car_details_make_enum AS ENUM (
+                        'Mercedes-Benz', 'Ford', 'Chevrolet', 'Toyota', 'Volkswagen',
+                        'Ram', 'Nissan', 'Peugeot', 'Fiat', 'Iveco'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE ambulance_car_details_model_enum AS ENUM (
-                'Sprinter', 'Transit', 'Express', 'HiAce', 'Crafter',
-                'ProMaster', 'NV350', 'Boxer', 'Ducato', 'Daily'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ambulance_car_details_model_enum') THEN
+                    CREATE TYPE ambulance_car_details_model_enum AS ENUM (
+                        'Sprinter', 'Transit', 'Express', 'HiAce', 'Crafter',
+                        'ProMaster', 'NV350', 'Boxer', 'Ducato', 'Daily'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE ambulance_status_enum AS ENUM (
-                'AVAILABLE', 'IN_SERVICE', 'MAINTENANCE', 'DISPATCHED',
-                'EN_ROUTE_TO_SCENE', 'AT_SCENE', 'TRANSPORTING_PATIENT',
-                'EN_ROUTE_TO_HOSPITAL', 'AT_HOSPITAL', 'RETURNING_TO_BASE',
-                'UNAVAILABLE', 'OUT_OF_SERVICE', 'ON_BREAK', 'FUELING',
-                'CLEANING', 'AWAITING_DISPATCH', 'PREPARING_FOR_MISSION',
-                'UNDER_REPAIR'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ambulance_status_enum') THEN
+                    CREATE TYPE ambulance_status_enum AS ENUM (
+                        'AVAILABLE', 'IN_SERVICE', 'MAINTENANCE', 'DISPATCHED',
+                        'EN_ROUTE_TO_SCENE', 'AT_SCENE', 'TRANSPORTING_PATIENT',
+                        'EN_ROUTE_TO_HOSPITAL', 'AT_HOSPITAL', 'RETURNING_TO_BASE',
+                        'UNAVAILABLE', 'OUT_OF_SERVICE', 'ON_BREAK', 'FUELING',
+                        'CLEANING', 'AWAITING_DISPATCH', 'PREPARING_FOR_MISSION',
+                        'UNDER_REPAIR'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE ambulance_type_enum AS ENUM (
-                'BASIC_LIFE_SUPPORT', 'ADVANCED_LIFE_SUPPORT', 'MOBILE_INTENSIVE_CARE_UNIT',
-                'PEDIATRIC_AMBULANCE', 'NEONATAL_AMBULANCE', 'RESCUE_AMBULANCE',
-                'BARIATRIC_AMBULANCE', 'WHEELCHAIR_VAN', 'AMBULATORY_TRANSPORT',
-                'PSYCHIATRIC_TRANSPORT', 'LONG_DISTANCE_TRANSPORT', 'AIR_AMBULANCE',
-                'WATER_AMBULANCE', 'HAZMAT_AMBULANCE', 'EVENT_MEDICAL_SERVICES',
-                'CRITICAL_CARE_TRANSPORT', 'RAPID_RESPONSE_VEHICLE', 'SUPERVISOR_VEHICLE',
-                'UTILITY_VEHICLE', 'COMMAND_VEHICLE', 'TRAINING_AMBULANCE'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ambulance_type_enum') THEN
+                    CREATE TYPE ambulance_type_enum AS ENUM (
+                        'BASIC_LIFE_SUPPORT', 'ADVANCED_LIFE_SUPPORT', 'MOBILE_INTENSIVE_CARE_UNIT',
+                        'PEDIATRIC_AMBULANCE', 'NEONATAL_AMBULANCE', 'RESCUE_AMBULANCE',
+                        'BARIATRIC_AMBULANCE', 'WHEELCHAIR_VAN', 'AMBULATORY_TRANSPORT',
+                        'PSYCHIATRIC_TRANSPORT', 'LONG_DISTANCE_TRANSPORT', 'AIR_AMBULANCE',
+                        'WATER_AMBULANCE', 'HAZMAT_AMBULANCE', 'EVENT_MEDICAL_SERVICES',
+                        'CRITICAL_CARE_TRANSPORT', 'RAPID_RESPONSE_VEHICLE', 'SUPERVISOR_VEHICLE',
+                        'UTILITY_VEHICLE', 'COMMAND_VEHICLE', 'TRAINING_AMBULANCE'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE amenities_name_enum AS ENUM (
-                'TV', 'WIFI', 'BATHROOM', 'FRIDGE', 'MICROWAVE',
-                'COFFEE_MAKER', 'SOFA', 'DESK', 'BALCONY', 'VIEW'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'amenities_name_enum') THEN
+                    CREATE TYPE amenities_name_enum AS ENUM (
+                        'TV', 'WIFI', 'BATHROOM', 'FRIDGE', 'MICROWAVE',
+                        'COFFEE_MAKER', 'SOFA', 'DESK', 'BALCONY', 'VIEW'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE appointment_status_enum AS ENUM (
-                'SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'appointment_status_enum') THEN
+                    CREATE TYPE appointment_status_enum AS ENUM (
+                        'SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE bed_type_enum AS ENUM (
-                'SINGLE', 'DOUBLE', 'KING', 'QUEEN', 'BUNK', 'CRIB', 'HOSPITAL'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'bed_type_enum') THEN
+                    CREATE TYPE bed_type_enum AS ENUM (
+                        'SINGLE', 'DOUBLE', 'KING', 'QUEEN', 'BUNK', 'CRIB', 'HOSPITAL'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE bill_status_enum AS ENUM (
-                'PENDING', 'PARTIAL', 'COMPLETED', 'REFUNDED'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'bill_status_enum') THEN
+                    CREATE TYPE bill_status_enum AS ENUM (
+                        'PENDING', 'PARTIAL', 'COMPLETED', 'REFUNDED'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE card_cardtype_enum AS ENUM (
-                'text', 'chart', 'table', 'image'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'card_cardtype_enum') THEN
+                    CREATE TYPE card_cardtype_enum AS ENUM (
+                        'text', 'chart', 'table', 'image'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE card_size_enum AS ENUM (
-                'small', 'medium', 'large'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'card_size_enum') THEN
+                    CREATE TYPE card_size_enum AS ENUM (
+                        'small', 'medium', 'large'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE department_name_enum AS ENUM (
-                'CARDIOLOGY', 'ONCOLOGY', 'NEUROLOGY', 'PEDIATRICS', 'SURGERY',
-                'INTERNAL_MEDICINE', 'OBSTETRICS_GYNECOLOGY', 'OPHTHALMOLOGY',
-                'DERMATOLOGY', 'UROLOGY'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'department_name_enum') THEN
+                    CREATE TYPE department_name_enum AS ENUM (
+                        'CARDIOLOGY', 'ONCOLOGY', 'NEUROLOGY', 'PEDIATRICS', 'SURGERY',
+                        'INTERNAL_MEDICINE', 'OBSTETRICS_GYNECOLOGY', 'OPHTHALMOLOGY',
+                        'DERMATOLOGY', 'UROLOGY'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE emergency_incidenttype_enum AS ENUM (
-        'CAR_ACCIDENT', 'MOTORCYCLE_ACCIDENT', 'PEDESTRIAN_ACCIDENT',
-        'TRAIN_ACCIDENT', 'AIRPLANE_CRASH', 'SHIP_ACCIDENT', 'HEART_ATTACK',
-        'STROKE', 'SEIZURE', 'DIABETIC_EMERGENCY', 'ALLERGIC_REACTION',
-        'BREATHING_PROBLEM', 'SEVERE_BURNS', 'ELECTROCUTION', 'DROWNING',
-        'POISONING', 'FALL_INJURY', 'FRACTURE', 'BLEEDING', 'HOUSE_FIRE',
-        'FOREST_FIRE', 'GAS_LEAK', 'EXPLOSION', 'INDUSTRIAL_ACCIDENT',
-        'EARTHQUAKE', 'FLOOD', 'TORNADO', 'HURRICANE', 'LANDSLIDE',
-        'TSUNAMI', 'SHOOTING', 'STABBING', 'ROBBERY', 'DOMESTIC_VIOLENCE',
-        'KIDNAPPING', 'ASSAULT', 'HOSTAGE_SITUATION', 'PANDEMIC',
-        'INFECTIOUS_DISEASE_OUTBREAK', 'BIOLOGICAL_HAZARD', 'CHEMICAL_SPILL',
-        'RADIATION_EXPOSURE', 'BUILDING_COLLAPSE', 'BRIDGE_COLLAPSE',
-        'DAM_FAILURE', 'UNKNOWN', 'OTHER'  
-    );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'emergency_incidenttype_enum') THEN
+                    CREATE TYPE emergency_incidenttype_enum AS ENUM (
+                        'CAR_ACCIDENT', 'MOTORCYCLE_ACCIDENT', 'PEDESTRIAN_ACCIDENT',
+                        'TRAIN_ACCIDENT', 'AIRPLANE_CRASH', 'SHIP_ACCIDENT', 'HEART_ATTACK',
+                        'STROKE', 'SEIZURE', 'DIABETIC_EMERGENCY', 'ALLERGIC_REACTION',
+                        'BREATHING_PROBLEM', 'SEVERE_BURNS', 'ELECTROCUTION', 'DROWNING',
+                        'POISONING', 'FALL_INJURY', 'FRACTURE', 'BLEEDING', 'HOUSE_FIRE',
+                        'FOREST_FIRE', 'GAS_LEAK', 'EXPLOSION', 'INDUSTRIAL_ACCIDENT',
+                        'EARTHQUAKE', 'FLOOD', 'TORNADO', 'HURRICANE', 'LANDSLIDE',
+                        'TSUNAMI', 'SHOOTING', 'STABBING', 'ROBBERY', 'DOMESTIC_VIOLENCE',
+                        'KIDNAPPING', 'ASSAULT', 'HOSTAGE_SITUATION', 'PANDEMIC',
+                        'INFECTIOUS_DISEASE_OUTBREAK', 'BIOLOGICAL_HAZARD', 'CHEMICAL_SPILL',
+                        'RADIATION_EXPOSURE', 'BUILDING_COLLAPSE', 'BRIDGE_COLLAPSE',
+                        'DAM_FAILURE', 'UNKNOWN', 'OTHER'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE emergency_severity_enum AS ENUM (
-                'LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'SEVERE', 'EXTREME',
-                'UNKNOWN', 'STABLE', 'UNSTABLE', 'DECEASED'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'emergency_severity_enum') THEN
+                    CREATE TYPE emergency_severity_enum AS ENUM (
+                        'LOW', 'MEDIUM', 'HIGH', 'CRITICAL', 'SEVERE', 'EXTREME',
+                        'UNKNOWN', 'STABLE', 'UNSTABLE', 'DECEASED'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE emergency_status_enum AS ENUM (
-                'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED', 'ESCALATED',
-                'WAITING_FOR_RESPONSE', 'ON_HOLD', 'FAILED', 'AT_SCENE',
-                'IN_AMBULANCE', 'IN_TRANSIT_TO_HOSPITAL', 'ARRIVED_AT_HOSPITAL',
-                'TREATED_AT_HOME'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'emergency_status_enum') THEN
+                    CREATE TYPE emergency_status_enum AS ENUM (
+                        'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED', 'ESCALATED',
+                        'WAITING_FOR_RESPONSE', 'ON_HOLD', 'FAILED', 'AT_SCENE',
+                        'IN_AMBULANCE', 'IN_TRANSIT_TO_HOSPITAL', 'ARRIVED_AT_HOSPITAL',
+                        'TREATED_AT_HOME'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE guard_area_enum AS ENUM (
-                'MAIN_ENTRANCE', 'ER', 'ICU', 'WARDS', 'PARKING_LOT',
-                'CAFETERIA', 'PHARMACY', 'HELIPAD', 'LAB', 'RADIOLOGY'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'guard_area_enum') THEN
+                    CREATE TYPE guard_area_enum AS ENUM (
+                        'MAIN_ENTRANCE', 'ER', 'ICU', 'WARDS', 'PARKING_LOT',
+                        'CAFETERIA', 'PHARMACY', 'HELIPAD', 'LAB', 'RADIOLOGY'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE guard_shift_enum AS ENUM (
-                'DAY', 'NIGHT', 'WEEKEND', 'EVENING', 'MORNING'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'guard_shift_enum') THEN
+                    CREATE TYPE guard_shift_enum AS ENUM (
+                        'DAY', 'NIGHT', 'WEEKEND', 'EVENING', 'MORNING'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE prescription_order_status_enum AS ENUM (
-                'PENDING', 'PROCESSING', 'SHIPPED', 'RECEIVED', 'CANCELLED'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'prescription_order_status_enum') THEN
+                    CREATE TYPE prescription_order_status_enum AS ENUM (
+                        'PENDING', 'PROCESSING', 'SHIPPED', 'RECEIVED', 'CANCELLED'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE room_type_enum AS ENUM (
-                'SINGLE', 'DOUBLE', 'SUITE', 'ICU', 'EMERGENCY', 'PEDIATRIC',
-                'MATERNITY', 'SURGICAL', 'RECOVERY', 'ISOLATION'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'room_type_enum') THEN
+                    CREATE TYPE room_type_enum AS ENUM (
+                        'SINGLE', 'DOUBLE', 'SUITE', 'ICU', 'EMERGENCY', 'PEDIATRIC',
+                        'MATERNITY', 'SURGICAL', 'RECOVERY', 'ISOLATION'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"CREATE TYPE staff_role_enum AS ENUM (
-                'DOCTOR', 'NURSE', 'ADMIN', 'TECHNICIAN', 'RECEPTIONIST',
-                'CLEANER', 'SECURITY'
-            );"#,
+            r#"DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'staff_role_enum') THEN
+                    CREATE TYPE staff_role_enum AS ENUM (
+                        'DOCTOR', 'NURSE', 'ADMIN', 'TECHNICIAN', 'RECEPTIONIST',
+                        'CLEANER', 'SECURITY'
+                    );
+                END IF;
+            END $$;"#,
         ))
             .await?;
 
@@ -200,7 +295,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE hospital (
+            CREATE TABLE IF NOT EXISTS hospital (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL UNIQUE,
                 address VARCHAR NOT NULL,
@@ -232,7 +327,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE department (
+            CREATE TABLE IF NOT EXISTS department (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name department_name_enum NOT NULL,
                 description VARCHAR,
@@ -247,7 +342,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE staff (
+            CREATE TABLE IF NOT EXISTS staff (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL,
                 role staff_role_enum NOT NULL,
@@ -265,7 +360,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE patient (
+            CREATE TABLE IF NOT EXISTS patient (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL,
                 "dateOfBirth" DATE,
@@ -285,7 +380,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE room (
+            CREATE TABLE IF NOT EXISTS room (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 number VARCHAR NOT NULL,
                 floor INTEGER,
@@ -303,7 +398,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE bed (
+            CREATE TABLE IF NOT EXISTS bed (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 number VARCHAR NOT NULL,
                 type bed_type_enum NOT NULL,
@@ -319,7 +414,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE admission (
+            CREATE TABLE IF NOT EXISTS admission (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 "bedId" UUID NOT NULL REFERENCES bed(id) ON DELETE CASCADE,
@@ -337,7 +432,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE ambulance (
+            CREATE TABLE IF NOT EXISTS ambulance (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
@@ -378,7 +473,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE amenities (
+            CREATE TABLE IF NOT EXISTS amenities (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name amenities_name_enum NOT NULL,
                 description VARCHAR,
@@ -393,7 +488,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE appointment (
+            CREATE TABLE IF NOT EXISTS appointment (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 "staffId" UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
@@ -410,7 +505,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE bill (
+            CREATE TABLE IF NOT EXISTS bill (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 amount DECIMAL(10,2) NOT NULL,
@@ -428,7 +523,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE card (
+            CREATE TABLE IF NOT EXISTS card (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 title VARCHAR NOT NULL,
                 content VARCHAR,
@@ -445,7 +540,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE customers (
+            CREATE TABLE IF NOT EXISTS customers (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL,
                 email VARCHAR NOT NULL,
@@ -460,7 +555,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE dashboard (
+            CREATE TABLE IF NOT EXISTS dashboard (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 title VARCHAR NOT NULL,
                 description VARCHAR,
@@ -475,7 +570,7 @@ impl MigrationTrait for Migration {
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"
-            CREATE TABLE emergency (
+            CREATE TABLE IF NOT EXISTS emergency (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
