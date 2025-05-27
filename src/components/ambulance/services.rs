@@ -7,11 +7,11 @@ use crate::entity::sea_orm_active_enums::{
 use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::{check_if_is_duplicate_key, generate_ic};
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use sea_orm::prelude::Decimal;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
 
@@ -58,7 +58,7 @@ impl AmbulanceService {
             }
 
             let result = active_model.insert(&self.conn).await;
-            if let Some(value) = check_if_is_duplicate_key(&mut attempts, result) {
+            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
                 return value;
             }
         }

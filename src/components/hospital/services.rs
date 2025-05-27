@@ -4,7 +4,7 @@ use chrono::{NaiveDateTime, Utc};
 use crate::entity::hospital;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::check_if_is_duplicate_key;
+use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
@@ -39,7 +39,7 @@ impl HospitalService {
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
 
-            if let Some(value) = check_if_is_duplicate_key(&mut attempts, result) {
+            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
                 return value;
             }
         }

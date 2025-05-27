@@ -74,7 +74,7 @@ pub fn generate_ic_with_length(length: Option<usize>) -> i32 {
 ///     return final_result;
 /// }
 /// ```
-pub fn check_if_is_duplicate_key<T>(attempts: &mut usize, result: Result<T, DbErr>) -> Option<Result<T, CustomError>> {
+pub fn check_if_is_duplicate_key_from_data_base<T>(attempts: &mut usize, result: Result<T, DbErr>) -> Option<Result<T, CustomError>> {
     match result {
         Ok(value) => Some(Ok(value)),
         Err(DbErr::Exec(e)) => {

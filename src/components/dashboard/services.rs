@@ -2,7 +2,7 @@ use crate::entity::dashboard;
 use crate::entity::dashboard::{ActiveModel, Model, PayloadBodyDashboard};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::check_if_is_duplicate_key;
+use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
 use sea_orm::{PaginatorTrait, Set};
 use uuid::Uuid;
@@ -58,7 +58,7 @@ impl DashboardService {
 
             let active_model = Self::generate_payload(dashboard_data.clone());
             let result = active_model.insert(&self.conn).await;
-            if let Some(value) = check_if_is_duplicate_key(&mut attempts, result) {
+            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
                 return value;
             }
         }
