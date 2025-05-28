@@ -22,6 +22,8 @@ pub struct Model {
     pub email: Option<String>,
     pub address: Option<String>,
     pub role: StaffRoleEnum,
+    #[sea_orm(column_name = "staffIc")]
+    pub staff_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

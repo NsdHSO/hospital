@@ -2,7 +2,7 @@ use crate::entity::dashboard;
 use crate::entity::dashboard::{ActiveModel, Model, PayloadBodyDashboard};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
 use sea_orm::{PaginatorTrait, Set};
 use uuid::Uuid;
@@ -74,6 +74,7 @@ impl DashboardService {
             is_active: Set(payload_body_dashboard.is_active),
             owner_id: Set(payload_body_dashboard.owner_id),
             layout_config: Set(payload_body_dashboard.layout_config),
+            dashboard_ic: Set(Some(generate_ic().to_string())),
         }
     }
 }

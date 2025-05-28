@@ -28,6 +28,8 @@ pub struct Model {
     pub instructions: Option<String>,
     #[sea_orm(column_type = "Decimal(Some((10, 2)))")]
     pub cost: Decimal,
+    #[sea_orm(column_name = "prescriptionIc")]
+    pub prescription_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

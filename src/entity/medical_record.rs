@@ -19,6 +19,8 @@ pub struct Model {
     pub record_data: Option<String>,
     #[sea_orm(column_name = "recordDate")]
     pub record_date: Option<DateTime>,
+    #[sea_orm(column_name = "medicalRecordIc")]
+    pub medical_record_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

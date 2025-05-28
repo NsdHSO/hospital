@@ -32,6 +32,8 @@ pub struct Model {
     pub allergies: Option<Vec<String>>,
     #[sea_orm(column_name = "medicalHistory", column_type = "Text", nullable)]
     pub medical_history: Option<String>,
+    #[sea_orm(column_name = "patientIc")]
+    pub patient_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -41,6 +43,7 @@ impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct PatientRequestBody {
+    pub patient_ic: Option<String>,
     pub first_name: String,
     pub last_name: String,
     pub date_of_birth: Date,

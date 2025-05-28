@@ -19,6 +19,8 @@ pub struct Model {
     pub phone: Option<String>,
     pub email: Option<String>,
     pub address: Option<String>,
+    #[sea_orm(column_name = "supplierIc")]
+    pub supplier_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

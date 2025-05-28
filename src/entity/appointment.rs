@@ -12,6 +12,8 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
+    #[sea_orm(column_name = "appointmentIc", unique)]
+    pub appointment_ic: i32,
     #[sea_orm(column_name = "patientId")]
     pub patient_id: i32,
     #[sea_orm(column_name = "doctorId")]

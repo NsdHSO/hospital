@@ -21,6 +21,8 @@ pub struct Model {
     pub description: Option<String>,
     pub capacity: Option<i32>,
     pub name: DepartmentNameEnum,
+    #[sea_orm(column_name = "departmentIc")]
+    pub department_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

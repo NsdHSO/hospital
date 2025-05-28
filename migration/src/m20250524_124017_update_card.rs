@@ -9,22 +9,22 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let db = manager.get_connection();
 
-        // Add missing columns
+        // Add missing columns (only if they do not already exist)
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ADD COLUMN icon VARCHAR;"#,
+            r#"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='card' AND column_name='icon') THEN ALTER TABLE card ADD COLUMN icon VARCHAR; END IF; END $$;"#,
         ))
         .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ADD COLUMN position INTEGER;"#,
+            r#"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='card' AND column_name='position') THEN ALTER TABLE card ADD COLUMN position INTEGER; END IF; END $$;"#,
         ))
         .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ADD COLUMN "dataConfig" JSONB;"#,
+            r#"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='card' AND column_name='dataConfig') THEN ALTER TABLE card ADD COLUMN "dataConfig" JSONB; END IF; END $$;"#,
         ))
         .await?;
 

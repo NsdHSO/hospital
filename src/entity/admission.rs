@@ -35,6 +35,8 @@ pub struct Model {
     pub admitting_doctor_notes: Option<String>,
     #[sea_orm(column_name = "dischargeSummary")]
     pub discharge_summary: Option<String>,
+    #[sea_orm(column_name = "admissionIc")]
+    pub admission_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -21,6 +21,8 @@ pub struct Model {
     pub owner_id: Option<i32>,
     #[sea_orm(column_name = "layoutConfig")]
     pub layout_config: Option<String>,
+    #[sea_orm(column_name = "dashboardIc")]
+    pub dashboard_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

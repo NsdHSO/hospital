@@ -4,7 +4,7 @@ use chrono::{NaiveDateTime, Utc};
 use crate::entity::patient;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
@@ -24,12 +24,7 @@ impl PatientService {
         // Check if patient_data exists
         let payload = match patient_data.clone() {
             Some(data) => data,
-            None => {
-                return Err(CustomError::new(
-                    400,
-                    "Missing patient data".to_string(),
-                ))
-            }
+            None => return Err(CustomError::new(400, "Missing patient data".to_string())),
         };
 
         // Generate unique emergency_ic (using nanoid for a short, unique string)
@@ -104,6 +99,7 @@ impl PatientService {
     fn generate_model(p0: Option<PatientRequestBody>, p1: NaiveDateTime) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {
+            patient_ic: Set(Some(generate_ic().to_string())),
             hospital_id: Set(Default::default()),
             first_name: Set(payload.first_name),
             last_name: Set(payload.last_name),
@@ -118,7 +114,7 @@ impl PatientService {
             emergency_contact: Set(payload.emergency_contact),
             blood_type: Set(payload.blood_type),
             allergies: Set(payload.allergies),
-            medical_history: Set(payload.medical_history)
+            medical_history: Set(payload.medical_history),
         }
     }
 }

@@ -23,6 +23,8 @@ pub struct Model {
     pub floor: Option<i32>,
     pub view: Option<String>,
     pub r#type: RoomTypeEnum,
+    #[sea_orm(column_name = "roomIc")]
+    pub room_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

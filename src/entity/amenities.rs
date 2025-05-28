@@ -12,6 +12,8 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
+    #[sea_orm(column_name = "amenitiesIc", unique)]
+    pub amenities_ic: i32,
     #[sea_orm(column_type = "Text", nullable)]
     pub description: Option<String>,
     pub cost: Option<i32>,

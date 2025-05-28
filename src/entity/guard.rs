@@ -20,6 +20,8 @@ pub struct Model {
     pub employee_id: Option<String>,
     pub shift: GuardShiftEnum,
     pub area: GuardAreaEnum,
+    #[sea_orm(column_name = "guardIc")]
+    pub guard_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

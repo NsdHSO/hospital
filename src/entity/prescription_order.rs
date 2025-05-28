@@ -23,6 +23,8 @@ pub struct Model {
     #[sea_orm(column_name = "totalAmount")]
     pub total_amount: Option<i32>,
     pub status: Option<PrescriptionOrderStatusEnum>,
+    #[sea_orm(column_name = "prescriptionOrderIc")]
+    pub prescription_order_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

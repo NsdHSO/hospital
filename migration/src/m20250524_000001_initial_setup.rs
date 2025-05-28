@@ -400,6 +400,7 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS bed (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "bedIc" INTEGER NOT NULL UNIQUE,
                 number VARCHAR NOT NULL,
                 type bed_type_enum NOT NULL,
                 "isOccupied" BOOLEAN NOT NULL DEFAULT FALSE,
@@ -475,6 +476,7 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS amenities (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "amenitiesIc" INTEGER NOT NULL UNIQUE,
                 name amenities_name_enum NOT NULL,
                 description VARCHAR,
                 "roomId" UUID NOT NULL REFERENCES room(id) ON DELETE CASCADE,
@@ -490,6 +492,7 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS appointment (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "appointmentIc" INTEGER NOT NULL UNIQUE,
                 "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 "staffId" UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
                 "appointmentDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
@@ -542,6 +545,7 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS customers (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "customerIc" INTEGER NOT NULL UNIQUE,
                 name VARCHAR NOT NULL,
                 email VARCHAR NOT NULL,
                 phone VARCHAR,
@@ -586,6 +590,43 @@ impl MigrationTrait for Migration {
                 severity emergency_severity_enum NOT NULL,
                 "incidentType" emergency_incidenttype_enum NOT NULL,
                 description VARCHAR
+            );
+            "#,
+        ))
+            .await?;
+
+        db.execute(Statement::from_string(
+            manager.get_database_backend(),
+            r#"
+            CREATE TABLE IF NOT EXISTS inventory (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "inventoryIc" INTEGER NOT NULL UNIQUE,
+                "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
+                "itemName" VARCHAR NOT NULL,
+                quantity INTEGER NOT NULL,
+                "unitPrice" INTEGER,
+                "reorderPoint" INTEGER,
+                "lastReceivedDate" TIMESTAMP WITHOUT TIME ZONE,
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+            );
+            "#,
+        ))
+            .await?;
+
+        db.execute(Statement::from_string(
+            manager.get_database_backend(),
+            r#"
+            CREATE TABLE IF NOT EXISTS patient_doctor (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "patientDoctorIc" INTEGER NOT NULL UNIQUE,
+                "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
+                "doctorId" UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
+                "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
+                "assignedDate" DATE NOT NULL,
+                notes VARCHAR,
+                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))

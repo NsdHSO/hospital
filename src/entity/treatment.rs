@@ -25,6 +25,8 @@ pub struct Model {
     pub cost: Decimal,
     #[sea_orm(column_type = "Text", nullable)]
     pub notes: Option<String>,
+    #[sea_orm(column_name = "treatmentIc")]
+    pub treatment_ic: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
