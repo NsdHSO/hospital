@@ -1,6 +1,7 @@
 use crate::components::emergency::start_scheduler;
 use crate::open_api::init;
 use actix_cors::Cors;
+use actix_web::http::header;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use chrono::Local;
@@ -53,8 +54,10 @@ async fn main() -> std::io::Result<()> {
     let mut server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:4200")
-            .allowed_origin("https://tevet-troc-client.vercel.app/");
-
+            .allowed_origin("https://tevet-troc-client.vercel.app")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+            .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
+            .supports_credentials();
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(data_base_conn.clone()))
