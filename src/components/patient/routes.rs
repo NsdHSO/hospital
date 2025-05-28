@@ -13,7 +13,7 @@ async fn create(
 ) -> Result<HttpResponse, CustomError> {
     let service = PatientService::new(db_conn.get_ref());
     let hospital = service
-        .patient_emergency(Option::from(patient.into_inner()))
+        .create_patient(Option::from(patient.into_inner()))
         .await?;
     let response = http_response_builder::ok(hospital);
     Ok(HttpResponse::Ok().json(response))

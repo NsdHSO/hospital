@@ -6,7 +6,7 @@ use crate::entity::sea_orm_active_enums::{
 };
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::generate_ic;
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{NaiveDateTime, Utc};
 use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, NotSet, PaginatorTrait};
@@ -35,7 +35,7 @@ impl EmergencyService {
         &self,         // Changed to &self as we're not modifying the service state
         page: u64,     // Use u64 for pagination
         per_page: u64, // Use u64 for pagination
-    ) -> Result<PaginatedResponse<Vec<emergency::Model>>, CustomError> {
+    ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let paginator = emergency::Entity::find().paginate(&self.conn, per_page);
 
         let total_items = paginator.num_items().await?;
@@ -85,27 +85,8 @@ impl EmergencyService {
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
-
-            match result {
-                Ok(model) => return Ok(model), // Successfully inserted, return the model
-                Err(DbErr::Exec(e)) => {
-                    // Check if the error is a unique constraint violation
-                    // The exact string to check for might vary slightly depending on the database
-                    if e.to_string()
-                        .contains("duplicate key value violates unique constraint")
-                    {
-                        // It's a unique constraint violation, retry with a new IC
-                        attempts += 1;
-                        // Continue the loop to generate a new IC and retry
-                    } else {
-                        // Some other execution error, return it
-                        return Err(CustomError::from(DbErr::Exec(e)));
-                    }
-                }
-                Err(e) => {
-                    // Other types of database errors, return them
-                    return Err(CustomError::from(e));
-                }
+            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
+                return value;
             }
         }
     }

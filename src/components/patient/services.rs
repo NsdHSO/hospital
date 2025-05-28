@@ -17,7 +17,7 @@ impl PatientService {
     pub fn new(conn: &DatabaseConnection) -> Self {
         PatientService { conn: conn.clone() }
     }
-    pub async fn patient_emergency(
+    pub async fn create_patient(
         &self,
         patient_data: Option<PatientRequestBody>,
     ) -> Result<Model, CustomError> {
@@ -27,7 +27,6 @@ impl PatientService {
             None => return Err(CustomError::new(400, "Missing patient data".to_string())),
         };
 
-        // Generate unique emergency_ic (using nanoid for a short, unique string)
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
@@ -36,7 +35,7 @@ impl PatientService {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
                     500,
-                    "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
+                    "Failed to generate a unique patient IC after multiple attempts.".to_string(),
                 ));
             }
 
@@ -51,17 +50,17 @@ impl PatientService {
         }
     }
     pub async fn find_by_name(&self, first_name: String) -> Result<Option<Model>, CustomError> {
-        let hospital = patient::Entity::find()
+        let patient = patient::Entity::find()
             .filter(patient::Column::FirstName.like(&first_name))
             .one(&self.conn)
             .await
             .map_err(|e| CustomError::new(500, format!("Database error: {}", e)));
 
-        match hospital {
-            Ok(Some(hospital_model)) => Ok(Option::from(hospital_model)),
+        match patient {
+            Ok(Some(patient_model)) => Ok(Option::from(patient_model)),
             Ok(None) => Err(CustomError::new(
                 404,
-                format!("Hospital with name '{}' not found", first_name),
+                format!("Patient with name '{}' not found", first_name),
             )),
             Err(e) => Err(CustomError::new(500, format!("Database error: {}", e))),
         }
@@ -100,21 +99,69 @@ impl PatientService {
         let payload = p0.unwrap_or_default();
         ActiveModel {
             patient_ic: Set(Some(generate_ic().to_string())),
-            hospital_id: Set(Default::default()),
-            first_name: Set(payload.first_name),
-            last_name: Set(payload.last_name),
-            date_of_birth: Set(payload.date_of_birth),
-            gender: Set(payload.gender),
-            phone: Set(payload.phone),
-            address: Set(payload.address),
+            hospital_id: if let Some(value) = payload.hospital_id {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
+            first_name: if let Some(value) = payload.first_name {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
+            last_name: if let Some(value) = payload.last_name {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
+            date_of_birth: if let Some(value) = payload.date_of_birth {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
+            gender: if let Some(value) = payload.gender {
+                Set(Some(value))
+            } else {
+                Set(Default::default())
+            },
+            phone: if let Some(value) = payload.phone {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
+            address: if let Some(value) = payload.address {
+                Set(value)
+            } else {
+                Set(Default::default())
+            },
             created_at: Set(p1),
             updated_at: Set(p1),
+            email: if let Some(value) = payload.email {
+                Set(Some(value))
+            } else {
+                Set(Default::default())
+            },
+            emergency_contact: if let Some(value) = payload.emergency_contact {
+                Set(Some(value))
+            } else {
+                Set(Default::default())
+            },
+            blood_type: if let Some(value) = payload.blood_type {
+                Set(Some(value))
+            } else {
+                Set(Default::default())
+            },
+            allergies: if let Some(value) = payload.allergies {
+                Set(Some(value))
+            } else {
+                Set(Default::default())
+            },
+            medical_history: if let Some(value) = payload.medical_history {
+                Set(Some(value))
+            } else {
+                Set(Default::default())
+            },
             id: Default::default(),
-            email: Set(payload.email),
-            emergency_contact: Set(payload.emergency_contact),
-            blood_type: Set(payload.blood_type),
-            allergies: Set(payload.allergies),
-            medical_history: Set(payload.medical_history),
         }
     }
 }

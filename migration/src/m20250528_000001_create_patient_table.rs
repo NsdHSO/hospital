@@ -29,7 +29,8 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Patient::Id)
                             .uuid()
                             .not_null()
-                            .primary_key(),
+                            .primary_key()
+                            .default(SimpleExpr::Custom("uuid_generate_v4()".into())),
                     )
                     .col(ColumnDef::new(Patient::CreatedAt).timestamp().not_null())
                     .col(ColumnDef::new(Patient::UpdatedAt).timestamp().not_null())
@@ -43,7 +44,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Patient::Address).string().not_null())
                     .col(ColumnDef::new(Patient::EmergencyContact).string().null())
                     .col(ColumnDef::new(Patient::BloodType).custom("blood_type_enum").null())
-                    .col(ColumnDef::new(Patient::Allergies).json().null())
+                    .col(ColumnDef::new(Patient::Allergies).array(ColumnType::Text).null())
                     .col(ColumnDef::new(Patient::MedicalHistory).text().null())
                     .to_owned(),
             )
