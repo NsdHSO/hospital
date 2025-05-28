@@ -37,21 +37,18 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Patient::FirstName).string().not_null())
                     .col(ColumnDef::new(Patient::LastName).string().not_null())
                     .col(ColumnDef::new(Patient::DateOfBirth).date().not_null())
-                    .col(ColumnDef::new(Patient::Gender)
-                        .custom("gender_enum")
-                        .not_null())
+                    .col(ColumnDef::new(Patient::Gender).custom("gender_enum").null())
                     .col(ColumnDef::new(Patient::Phone).string().not_null())
                     .col(ColumnDef::new(Patient::Email).string().null())
                     .col(ColumnDef::new(Patient::Address).string().not_null())
                     .col(ColumnDef::new(Patient::EmergencyContact).string().null())
-                    .col(ColumnDef::new(Patient::BloodType)
-                        .custom("blood_type_enum")
-                        .null())
+                    .col(ColumnDef::new(Patient::BloodType).custom("blood_type_enum").null())
                     .col(ColumnDef::new(Patient::Allergies).json().null())
                     .col(ColumnDef::new(Patient::MedicalHistory).text().null())
                     .to_owned(),
             )
-            .await
+            .await?;
+        Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
