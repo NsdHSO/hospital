@@ -58,6 +58,7 @@ async fn main() -> std::io::Result<()> {
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
             .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
             .supports_credentials();
+        
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(data_base_conn.clone()))
