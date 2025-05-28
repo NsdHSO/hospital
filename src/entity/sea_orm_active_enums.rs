@@ -564,3 +564,45 @@ pub enum StaffRoleEnum {
     #[sea_orm(string_value = "SECURITY")]
     Security,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
+#[sea_orm(
+    rs_type = "String",
+    db_type = "Enum",
+    enum_name = "gender_enum"
+)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum GenderEnum {
+    #[sea_orm(string_value = "MALE")]
+    Male,
+    #[sea_orm(string_value = "FEMALE")]
+    Female,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
+#[sea_orm(
+    rs_type = "String",
+    db_type = "Enum",
+    enum_name = "blood_type_enum"
+)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BloodTypeEnum {
+    #[sea_orm(string_value = "A_POSITIVE")]
+    APositive,
+    #[sea_orm(string_value = "A_NEGATIVE")]
+    ANegative,
+    #[sea_orm(string_value = "B_POSITIVE")]
+    BPositive,
+    #[sea_orm(string_value = "B_NEGATIVE")]
+    BNegative,
+    #[sea_orm(string_value = "AB_POSITIVE")]
+    #[serde(rename = "AB_POSITIVE")]
+    ABPositive,
+    #[sea_orm(string_value = "AB_NEGATIVE")]
+    #[serde(rename = "AB_NEGATIVE")]
+    ABNegative,
+    #[sea_orm(string_value = "O_POSITIVE")]
+    OPositive,
+    #[sea_orm(string_value = "O_NEGATIVE")]
+    ONegative,
+}

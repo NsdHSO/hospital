@@ -3,3 +3,4 @@ pub mod card;
 pub mod dashboard;
 pub mod emergency;
 pub mod hospital;
+pub mod patient;

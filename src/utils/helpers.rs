@@ -1,6 +1,5 @@
 use nanoid::nanoid;
 use sea_orm::DbErr;
-use crate::entity::card::Model;
 use crate::error_handler::CustomError;
 
 pub fn calculate_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
