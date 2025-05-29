@@ -13,6 +13,7 @@ pub mod customers;
 pub mod dashboard;
 pub mod department;
 pub mod emergency;
+pub mod emergency_patient;
 pub mod guard;
 pub mod hospital;
 pub mod inventory;

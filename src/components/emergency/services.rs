@@ -1,26 +1,31 @@
+use crate::components::patient::PatientService;
 use crate::entity;
-use crate::entity::emergency;
 use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
 };
+use crate::entity::{emergency, emergency_patient};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{NaiveDateTime, Utc};
 use entity::ambulance;
-use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait, TransactionTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
 // Adjust the path if needed
 
 pub struct EmergencyService {
     conn: DatabaseConnection,
+    patient_service: PatientService,
 }
 
 impl EmergencyService {
     pub fn new(conn: &DatabaseConnection) -> Self {
-        EmergencyService { conn: conn.clone() }
+        EmergencyService {
+            conn: conn.clone(),
+            patient_service: PatientService::new(&conn),
+        }
     }
 
     pub async fn find_by_ic(&self, ambulance_ic: &str) -> Result<Option<Model>, CustomError> {
@@ -64,10 +69,19 @@ impl EmergencyService {
         &self,
         emergency_data: EmergencyRequestBody,
     ) -> Result<Model, CustomError> {
-        // Generate unique emergency_ic (using nanoid for a short, unique string)
+        self.create_emergency_internal(emergency_data).await
+    }
+
+    async fn create_emergency_internal(
+        &self,
+        emergency_data: EmergencyRequestBody
+    ) -> Result<Model, CustomError> {
+        let transaction = self.conn.begin().await?;
+
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
+        let mut emergency_model_result: Result<Model, CustomError>;
 
         loop {
             if attempts >= MAX_ATTEMPTS {
@@ -77,20 +91,46 @@ impl EmergencyService {
                 ));
             }
 
-            // Generate a unique emergency_ic (using nanoid for a short, unique string)
             let emergency_ic = generate_ic();
+            let active_model = Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
 
-            let active_model =
-                Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
-
-            // Insert the record into the database
-            let result = active_model.insert(&self.conn).await;
-            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
-                return value;
+            let result = active_model.insert(&transaction).await;
+            match result {
+                Ok(model) => {
+                    emergency_model_result = Ok(model);
+                    break;
+                }
+                Err(e) => {
+                    // Convert error to string so it can be reused
+                    let err_string = e.to_string();
+                    if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, Err(e)) {
+                        emergency_model_result = value;
+                        // continue loop
+                    } else {
+                        emergency_model_result = Err(CustomError::new(500, format!("Database error: {}", err_string)));
+                        break;
+                    }
+                }
             }
         }
-    }
 
+        let emergency_model = emergency_model_result?; // Propagate error if IC generation failed
+
+        // Associate patients if provided
+        if let Some(patients) = emergency_data.patients.as_ref() {
+            self.patient_service
+                .associate_patients_with_emergency(
+                    emergency_model.id,
+                    patients,
+                    &transaction,
+                )
+                .await?;
+        }
+
+        transaction.commit().await?; // Commit all operations in the transaction
+        Ok(emergency_model)
+    }
+    
     pub async fn schedule_emergency(self) -> Result<(), CustomError> {
         let available_ambulances = ambulance::Entity::find()
             .filter(ambulance::Column::Status.eq(AmbulanceStatusEnum::Available)) // Assuming AmbulanceStatusEnum::Available exists
@@ -137,7 +177,7 @@ impl EmergencyService {
             updated_at: Set(now),
             reported_by: Set(Some(1)),
             notes: Set(emergency_data.notes.clone()), // Clone notes if needed for retries
-            resolved_at: Set(Option::from(now)),
+            resolved_at: Set(Option::from(now)),∞
             // Handle the modification_attempts field
             modification_attempts: Set(None),
             id_ambulance: NotSet,

@@ -9,6 +9,9 @@ mod m20250524_124017_update_card;
 mod m20250526_073036_add_card_ic;
 mod m20250528_000001_create_patient_table;
 mod m20250528_210000_add_ic_columns_if_missing;
+mod m20250529_000001_create_emergency_patient_table;
+
+
 pub struct Migrator;
 
 #[async_trait::async_trait]
@@ -24,6 +27,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250526_073036_add_card_ic::Migration),
             Box::new(m20250528_000001_create_patient_table::Migration),
             Box::new(m20250528_210000_add_ic_columns_if_missing::Migration),
+            Box::new(m20250529_000001_create_emergency_patient_table::Migration),
         ]
     }
 }

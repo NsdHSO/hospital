@@ -164,4 +164,45 @@ impl PatientService {
             id: Default::default(),
         }
     }
+
+    /// Associates a patient with a given emergency ID in the emergency_patient table.
+    /// If the patient does not exist, it will be created using create_patient.
+    /// Returns an error if any association fails.
+    pub async fn associate_patient_with_emergency(
+        &self,
+        emergency_id: uuid::Uuid,
+        patient_data: Option<PatientRequestBody>,
+        transaction: &sea_orm::DatabaseTransaction,
+    ) -> Result<(), CustomError> {
+        use crate::entity::emergency_patient;
+        use sea_orm::Set;
+        // Create the patient (or you could check if exists first, then create if not)
+        let created_patient = self.create_patient(patient_data).await?;
+        let junction = emergency_patient::ActiveModel {
+            emergency_id: Set(emergency_id),
+            patient_id: Set(created_patient.id),
+        };
+        junction.insert(transaction).await.map_err(|e| CustomError::new(500, format!("Failed to link patient to emergency: {}", e)))?;
+
+        Ok(())
+    }
+
+    /// Associates a list of patients with a given emergency ID in the emergency_patient table.
+    /// If a patient does not exist, it will be created using create_patient.
+    /// Returns an error if any association fails.
+    pub async fn associate_patients_with_emergency(
+        &self,
+        emergency_id: uuid::Uuid,
+        patients: &[PatientRequestBody],
+        transaction: &sea_orm::DatabaseTransaction,
+    ) -> Result<(), CustomError> {
+        for patient_data in patients {
+            self.associate_patient_with_emergency(
+                emergency_id,
+                Some(patient_data.clone()),
+                transaction,
+            ).await?;
+        }
+        Ok(())
+    }
 }
