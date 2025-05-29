@@ -4,13 +4,13 @@ use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
 };
-use crate::entity::{emergency, emergency_patient};
+use crate::entity::{emergency, emergency_patient, patient};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{NaiveDateTime, Utc};
 use entity::ambulance;
-use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait, TransactionTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait, QuerySelect, RelationTrait, TransactionTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
 // Adjust the path if needed
@@ -28,12 +28,33 @@ impl EmergencyService {
         }
     }
 
-    pub async fn find_by_ic(&self, ambulance_ic: &str) -> Result<Option<Model>, CustomError> {
-        emergency::Entity::find()
+    pub async fn find_by_ic(&self, ambulance_ic: &str) -> Result<Option<serde_json::Value>, CustomError> {
+        let result = emergency::Entity::find()
             .filter(emergency::Column::EmergencyIc.eq(ambulance_ic))
+            .find_also_related(ambulance::Entity)
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+
+        if let Some((emergency, ambulance_opt)) = result {
+            let patient_models = emergency_patient::Entity::find()
+                .filter(emergency_patient::Column::EmergencyId.eq(emergency.id))
+                .find_also_related(patient::Entity)
+                .all(&self.conn)
+                .await
+                .unwrap_or_default();
+            let patients_json = serde_json::to_value(
+                patient_models.into_iter().filter_map(|(_, p)| p).collect::<Vec<_>>()
+            ).unwrap_or(serde_json::json!([]));
+            let ambulance_json = ambulance_opt.map(|a| serde_json::to_value(a).unwrap_or(serde_json::json!({})));
+            let emergency_json = serde_json::to_value(&emergency).unwrap_or(serde_json::json!({}));
+            let mut merged = emergency_json.as_object().cloned().unwrap_or_default();
+            merged.insert("ambulance".to_string(), ambulance_json.unwrap_or(serde_json::json!({})));
+            merged.insert("patients".to_string(), patients_json);
+            Ok(Some(serde_json::Value::Object(merged)))
+        } else {
+            Ok(None)
+        }
     }
 
     pub async fn find_all(
@@ -177,7 +198,7 @@ impl EmergencyService {
             updated_at: Set(now),
             reported_by: Set(Some(1)),
             notes: Set(emergency_data.notes.clone()), // Clone notes if needed for retries
-            resolved_at: Set(Option::from(now)),∞
+            resolved_at: Set(Option::from(now)),
             // Handle the modification_attempts field
             modification_attempts: Set(None),
             id_ambulance: NotSet,
