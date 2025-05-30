@@ -37,14 +37,9 @@ impl EmergencyService {
             .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
 
         if let Some((emergency, ambulance_opt)) = result {
-            let patient_models = emergency_patient::Entity::find()
-                .filter(emergency_patient::Column::EmergencyId.eq(emergency.id))
-                .find_also_related(patient::Entity)
-                .all(&self.conn)
-                .await
-                .unwrap_or_default();
+            let patient_models = self.patient_service.find_patients_by_emergency_id(emergency.id);
             let patients_json = serde_json::to_value(
-                patient_models.into_iter().filter_map(|(_, p)| p).collect::<Vec<_>>()
+                patient_models.await?
             ).unwrap_or(serde_json::json!([]));
             let ambulance_json = ambulance_opt.map(|a| serde_json::to_value(a).unwrap_or(serde_json::json!({})));
             let emergency_json = serde_json::to_value(&emergency).unwrap_or(serde_json::json!({}));

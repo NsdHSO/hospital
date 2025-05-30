@@ -205,4 +205,16 @@ impl PatientService {
         }
         Ok(())
     }
+
+    /// Find all patients related to a given emergency ID (many-to-many).
+    pub async fn find_patients_by_emergency_id(&self, emergency_id: uuid::Uuid) -> Result<Vec<crate::entity::patient::Model>, CustomError> {
+        use crate::entity::{emergency_patient, patient};
+        let patient_models = emergency_patient::Entity::find()
+            .filter(emergency_patient::Column::EmergencyId.eq(emergency_id))
+            .find_also_related(patient::Entity)
+            .all(&self.conn)
+            .await
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
+    }
 }
