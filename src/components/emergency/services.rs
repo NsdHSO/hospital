@@ -117,7 +117,7 @@ impl EmergencyService {
                     break;
                 }
                 Err(e) => {
-                    // Convert error to string so it can be reused
+                    // Convert error to string so it can be reusedco
                     let err_string = e.to_string();
                     if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, Err(e)) {
                         emergency_model_result = value;

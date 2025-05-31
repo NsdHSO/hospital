@@ -30,7 +30,12 @@ impl PatientService {
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
-
+        // Check if patient_ic exists in DB
+        if let Some(ref ic) = payload.patient_ic {
+            if let Ok(Some(existing_patient)) = self.find_by_field("patient_ic", ic).await {
+                return Ok(existing_patient);
+            }
+        }
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
@@ -49,20 +54,34 @@ impl PatientService {
             }
         }
     }
-    pub async fn find_by_name(&self, first_name: String) -> Result<Option<Model>, CustomError> {
-        let patient = patient::Entity::find()
-            .filter(patient::Column::FirstName.like(&first_name))
+
+    /// Find a patient by a given column and value (generic for ic or name)
+    pub async fn find_by_field(
+        &self,
+        field: &str,
+        value: &str,
+    ) -> Result<Option<Model>, CustomError> {
+        let query = match field {
+            "patient_ic" => patient::Entity::find().filter(patient::Column::PatientIc.like(value)),
+            "first_name" => patient::Entity::find().filter(patient::Column::FirstName.like(value)),
+            _ => {
+                return Err(CustomError::new(
+                    400,
+                    format!("Unsupported field: {}", field),
+                ));
+            }
+        };
+        let patient = query
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)));
-
-        match patient {
-            Ok(Some(patient_model)) => Ok(Option::from(patient_model)),
-            Ok(None) => Err(CustomError::new(
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        if let Some(patient_model) = patient {
+            Ok(Some(patient_model))
+        } else {
+            Err(CustomError::new(
                 404,
-                format!("Patient with name '{}' not found", first_name),
-            )),
-            Err(e) => Err(CustomError::new(500, format!("Database error: {}", e))),
+                format!("Patient not found for {} = '{}'", field, value),
+            ))
         }
     }
 
@@ -98,7 +117,7 @@ impl PatientService {
     fn generate_model(p0: Option<PatientRequestBody>, p1: NaiveDateTime) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {
-            patient_ic: Set(Some(generate_ic().to_string())),
+            patient_ic:  Set(Some(generate_ic().to_string())),
             hospital_id: if let Some(value) = payload.hospital_id {
                 Set(value)
             } else {
@@ -182,7 +201,9 @@ impl PatientService {
             emergency_id: Set(emergency_id),
             patient_id: Set(created_patient.id),
         };
-        junction.insert(transaction).await.map_err(|e| CustomError::new(500, format!("Failed to link patient to emergency: {}", e)))?;
+        junction.insert(transaction).await.map_err(|e| {
+            CustomError::new(500, format!("Failed to link patient to emergency: {}", e))
+        })?;
 
         Ok(())
     }
@@ -201,13 +222,17 @@ impl PatientService {
                 emergency_id,
                 Some(patient_data.clone()),
                 transaction,
-            ).await?;
+            )
+            .await?;
         }
         Ok(())
     }
 
     /// Find all patients related to a given emergency ID (many-to-many).
-    pub async fn find_patients_by_emergency_id(&self, emergency_id: uuid::Uuid) -> Result<Vec<crate::entity::patient::Model>, CustomError> {
+    pub async fn find_patients_by_emergency_id(
+        &self,
+        emergency_id: uuid::Uuid,
+    ) -> Result<Vec<crate::entity::patient::Model>, CustomError> {
         use crate::entity::{emergency_patient, patient};
         let patient_models = emergency_patient::Entity::find()
             .filter(emergency_patient::Column::EmergencyId.eq(emergency_id))

@@ -25,7 +25,7 @@ async fn find(
     db_conn: web::Data<DatabaseConnection>, // Inject the database connection
 ) -> Result<HttpResponse, CustomError> {
     let service = PatientService::new(db_conn.get_ref());
-    let hospital = service.find_by_name(id.to_string()).await?;
+    let hospital = service.find_by_field("name", &**id).await?;
     let response = http_response_builder::ok(hospital);
     Ok(HttpResponse::Ok().json(response))
 }

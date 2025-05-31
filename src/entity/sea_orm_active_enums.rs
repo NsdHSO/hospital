@@ -12,24 +12,34 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AmbulanceCarDetailsMakeEnum {
     #[sea_orm(string_value = "Mercedes-Benz")]
+    #[serde(rename = "Mercedes-Benz")]
     MercedesBenz,
     #[sea_orm(string_value = "Ford")]
+    #[serde(rename = "Ford")]
     Ford,
     #[sea_orm(string_value = "Chevrolet")]
+    #[serde(rename = "Chevrolet")]
     Chevrolet,
     #[sea_orm(string_value = "Toyota")]
+    #[serde(rename = "Toyota")]
     Toyota,
     #[sea_orm(string_value = "Volkswagen")]
+    #[serde(rename = "Volkswagen")]
     Volkswagen,
     #[sea_orm(string_value = "Ram")]
+    #[serde(rename = "Ram")]
     Ram,
     #[sea_orm(string_value = "Nissan")]
+    #[serde(rename = "Nissan")]
     Nissan,
     #[sea_orm(string_value = "Peugeot")]
+    #[serde(rename = "Peugeot")]
     Peugeot,
     #[sea_orm(string_value = "Fiat")]
+    #[serde(rename = "Fiat")]
     Fiat,
     #[sea_orm(string_value = "Iveco")]
+    #[serde(rename = "Iveco")]
     Iveco,
 }
 
@@ -42,24 +52,34 @@ pub enum AmbulanceCarDetailsMakeEnum {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AmbulanceCarDetailsModelEnum {
     #[sea_orm(string_value = "Sprinter")]
+    #[serde(rename = "Sprinter")]
     Sprinter,
     #[sea_orm(string_value = "Transit")]
+    #[serde(rename = "Transit")]
     Transit,
     #[sea_orm(string_value = "Express")]
+    #[serde(rename = "Express")]
     Express,
     #[sea_orm(string_value = "HiAce")]
+    #[serde(rename = "HiAce")]
     HiAce,
     #[sea_orm(string_value = "Crafter")]
+    #[serde(rename = "Crafter")]
     Crafter,
     #[sea_orm(string_value = "ProMaster")]
+    #[serde(rename = "ProMaster")]
     ProMaster,
     #[sea_orm(string_value = "NV350")]
+    #[serde(rename = "NV350")]
     Nv350,
     #[sea_orm(string_value = "Boxer")]
+    #[serde(rename = "Boxer")]
     Boxer,
     #[sea_orm(string_value = "Ducato")]
+    #[serde(rename = "Ducato")]
     Ducato,
     #[sea_orm(string_value = "Daily")]
+    #[serde(rename = "Daily")]
     Daily,
 }
 
@@ -566,11 +586,7 @@ pub enum StaffRoleEnum {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
-#[sea_orm(
-    rs_type = "String",
-    db_type = "Enum",
-    enum_name = "gender_enum"
-)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "gender_enum")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum GenderEnum {
     #[sea_orm(string_value = "MALE")]
@@ -580,11 +596,7 @@ pub enum GenderEnum {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
-#[sea_orm(
-    rs_type = "String",
-    db_type = "Enum",
-    enum_name = "blood_type_enum"
-)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "blood_type_enum")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BloodTypeEnum {
     #[sea_orm(string_value = "A_POSITIVE")]

@@ -438,7 +438,7 @@ impl MigrationTrait for Migration {
                 "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 "hospitalId" VARCHAR NOT NULL,
-                "ambulanceIc" INTEGER NOT NULL UNIQUE,
+                "ambulance_ic" INTEGER NOT NULL UNIQUE,
                 "vehicleNumber" VARCHAR NOT NULL UNIQUE,
                 make VARCHAR,
                 year INTEGER,

@@ -8,51 +8,51 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let queries = [
             // Add hospitalIc to hospital
-            ("hospital", "hospitalIc", "VARCHAR"),
+            ("hospital", "hospital_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add departmentIc to department
-            ("department", "departmentIc", "VARCHAR"),
+            ("department", "department_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add staffIc to staff
-            ("staff", "staffIc", "VARCHAR"),
+            ("staff", "staff_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add patientIc to patient
-            ("patient", "patientIc", "VARCHAR"),
+            ("patient", "patient_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add roomIc to room
-            ("room", "roomIc", "VARCHAR"),
+            ("room", "room_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add bedIc to bed
-            ("bed", "bedIc", "INTEGER"),
+            ("bed", "bed_ic", "INTEGER NOT NULL UNIQUE"),
             // Add amenitiesIc to amenities
-            ("amenities", "amenitiesIc", "INTEGER"),
+            ("amenities", "amenities_ic", "INTEGER NOT NULL UNIQUE"),
             // Add customerIc to customers
-            ("customers", "customerIc", "INTEGER"),
+            ("customers", "customer_ic", "INTEGER NOT NULL UNIQUE"),
             // Add inventoryIc to inventory
-            ("inventory", "inventoryIc", "INTEGER"),
+            ("inventory", "inventory_ic", "INTEGER NOT NULL UNIQUE"),
             // Add appointmentIc to appointment
-            ("appointment", "appointmentIc", "INTEGER"),
+            ("appointment", "appointment_ic", "INTEGER NOT NULL UNIQUE"),
             // Add patientDoctorIc to patient_doctor
-            ("patient_doctor", "patientDoctorIc", "INTEGER"),
+            ("patient_doctor", "patient_doctor_ic", "INTEGER NOT NULL UNIQUE"),
             // Add medicalRecordIc to medical_record
-            ("medical_record", "medicalRecordIc", "VARCHAR"),
+            ("medical_record", "medical_record_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add supplierIc to supplier
-            ("supplier", "supplierIc", "VARCHAR"),
+            ("supplier", "supplier_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add staffScheduleIc to staff_schedule
-            ("staff_schedule", "staffScheduleIc", "VARCHAR"),
+            ("staff_schedule", "staff_schedule_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add prescriptionIc to prescription
-            ("prescription", "prescriptionIc", "VARCHAR"),
+            ("prescription", "prescription_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add prescriptionOrderIc to prescription_order
-            ("prescription_order", "prescriptionOrderIc", "VARCHAR"),
+            ("prescription_order", "prescription_order_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add patientInfoIc to patient_info
-            ("patient_info", "patientInfoIc", "VARCHAR"),
+            ("patient_info", "patient_info_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add guardIc to guard
-            ("guard", "guardIc", "VARCHAR"),
+            ("guard", "guard_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add dashboardIc to dashboard
-            ("dashboard", "dashboardIc", "VARCHAR"),
+            ("dashboard", "dashboard_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add treatmentIc to treatment
-            ("treatment", "treatmentIc", "VARCHAR"),
+            ("treatment", "treatment_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add admissionIc to admission
-            ("admission", "admissionIc", "VARCHAR"),
+            ("admission", "admission_ic", "VARCHAR NOT NULL UNIQUE"),
             // Add ambulanceIc to ambulance
-            ("ambulance", "ambulanceIc", "INTEGER"),
+            ("ambulance", "ambulance_ic", "INTEGER NOT NULL UNIQUE"),
             // Add cardIc to card
-            ("card", "cardIc", "INTEGER")
+            ("card", "card_ic", "INTEGER NOT NULL UNIQUE"),
         ];
         for (table, column, coltype) in queries.iter() {
             let sql = format!(
@@ -72,29 +72,29 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let queries = [
-            ("hospital", "hospitalIc"),
-            ("department", "departmentIc"),
-            ("staff", "staffIc"),
-            ("patient", "patientIc"),
-            ("room", "roomIc"),
-            ("bed", "bedIc"),
-            ("amenities", "amenitiesIc"),
-            ("customers", "customerIc"),
-            ("inventory", "inventoryIc"),
-            ("appointment", "appointmentIc"),
-            ("patient_doctor", "patientDoctorIc"),
-            ("medical_record", "medicalRecordIc"),
-            ("supplier", "supplierIc"),
-            ("staff_schedule", "staffScheduleIc"),
-            ("prescription", "prescriptionIc"),
-            ("prescription_order", "prescriptionOrderIc"),
-            ("patient_info", "patientInfoIc"),
-            ("guard", "guardIc"),
-            ("dashboard", "dashboardIc"),
-            ("treatment", "treatmentIc"),
-            ("admission", "admissionIc"),
-            ("ambulance", "ambulanceIc"),
-            ("card", "cardIc")
+            ("hospital", "hospital_ic"),
+            ("department", "department_ic"),
+            ("staff", "staff_ic"),
+            ("patient", "patient_ic"),
+            ("room", "room_ic"),
+            ("bed", "bed_ic"),
+            ("amenities", "amenities_ic"),
+            ("customers", "customer_ic"),
+            ("inventory", "inventory_ic"),
+            ("appointment", "appointment_ic"),
+            ("patient_doctor", "patient_doctor_ic"),
+            ("medical_record", "medical_record_ic"),
+            ("supplier", "supplier_ic"),
+            ("staff_schedule", "staff_schedule_ic"),
+            ("prescription", "prescription_ic"),
+            ("prescription_order", "prescription_order_ic"),
+            ("patient_info", "patient_info_ic"),
+            ("guard", "guard_ic"),
+            ("dashboard", "dashboard_ic"),
+            ("treatment", "treatment_ic"),
+            ("admission", "admission_ic"),
+            ("ambulance", "ambulance_ic"),
+            ("card", "card_ic"),
         ];
         for (table, column) in queries.iter() {
             let sql = format!(

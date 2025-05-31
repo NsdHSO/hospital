@@ -17,7 +17,6 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = true)]
     pub id: Uuid,
-    #[sea_orm(column_name = "emergencyIc", column_type = "Text")]
     pub emergency_ic: String,
     #[sea_orm(column_name = "reportedBy")]
     pub reported_by: Option<i32>,

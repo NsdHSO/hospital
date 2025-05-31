@@ -92,6 +92,7 @@ pub fn check_if_is_duplicate_key_from_data_base<T>(attempts: &mut usize, result:
             }
         }
         Err(e) => {
+            println!("{:?}", e);
             // Other types of database errors, return them
             Some(Err(CustomError::from(e)))
         }

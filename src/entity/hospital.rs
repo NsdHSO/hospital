@@ -41,6 +41,7 @@ pub struct Model {
     pub latitude: Option<Decimal>,
     #[sea_orm(column_type = "Decimal(Some((10, 6)))", nullable)]
     pub longitude: Option<Decimal>,
+    pub hospital_ic: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

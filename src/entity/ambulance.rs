@@ -18,7 +18,6 @@ pub struct Model {
     pub id: Uuid,
     #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: String,
-    #[sea_orm(column_name = "ambulanceIc", unique)]
     pub ambulance_ic: i32,
     #[sea_orm(column_name = "vehicleNumber", unique)]
     pub vehicle_number: String,
@@ -89,8 +88,13 @@ impl Related<super::emergency::Entity> for Entity {
 impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+// Payload structure for creating or updating an ambulance entity
+// This structure is used to deserialize JSON data into a Rust struct
+// It can also be used to serialize the struct back into JSON
+// when returning responses from an API endpoint
 pub struct AmbulancePayload {
     pub ambulance_ic: Option<i32>,
+    #[serde(rename = "vehicleNumber")]
     pub vehicle_number: Option<String>,
     pub make: Option<String>,
     pub year: Option<i32>,
@@ -99,6 +103,7 @@ pub struct AmbulancePayload {
     pub passengers: Option<Json>,
     pub driver_name: Option<String>,
     pub driver_license: Option<String>,
+    #[serde(rename = "hospitalName")]
     pub hospital_name: Option<String>,
     pub last_service_date: Option<DateTime>,
     pub next_service_date: Option<DateTime>,
@@ -108,15 +113,20 @@ pub struct AmbulancePayload {
     pub insurance_provider: Option<String>,
     pub insurance_expiry_date: Option<DateTime>,
     pub notes: Option<String>,
-    pub car_details_year: Option<i32>,
-    pub car_details_color: Option<String>,
-    pub car_details_is_ambulance: Option<bool>,
-    pub car_details_license_plate: Option<String>,
-    pub car_details_mileage: Option<f64>,
-    pub location_latitude: Option<Decimal>,
     pub location_longitude: Option<Decimal>,
+    pub location_latitude: Option<Decimal>,
     pub r#type: Option<AmbulanceTypeEnum>,
     pub status: Option<AmbulanceStatusEnum>,
-    pub car_details_make: Option<AmbulanceCarDetailsMakeEnum>,
-    pub car_details_model: Option<AmbulanceCarDetailsModelEnum>,
+    #[serde(rename = "carDetails")]
+    pub car_details: Option<CarDetails>,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct CarDetails {
+    pub year: Option<i32>,
+    pub color: Option<String>,
+    pub is_ambulance: Option<bool>,
+    pub license_plate: Option<String>,
+    pub mileage: Option<f64>,
+    pub make: Option<AmbulanceCarDetailsMakeEnum>,
+    pub model: Option<AmbulanceCarDetailsModelEnum>,
 }

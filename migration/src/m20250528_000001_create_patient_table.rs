@@ -30,7 +30,7 @@ impl MigrationTrait for Migration {
                             .uuid()
                             .not_null()
                             .primary_key()
-                            .default(SimpleExpr::Custom("uuid_generate_v4()".into())),
+                            .default(SimpleExpr::Custom("gen_random_uuid()".into())),
                     )
                     .col(ColumnDef::new(Patient::CreatedAt).timestamp().not_null())
                     .col(ColumnDef::new(Patient::UpdatedAt).timestamp().not_null())
@@ -46,6 +46,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Patient::BloodType).custom("blood_type_enum").null())
                     .col(ColumnDef::new(Patient::Allergies).array(ColumnType::Text).null())
                     .col(ColumnDef::new(Patient::MedicalHistory).text().null())
+                    .col(ColumnDef::new(Patient::PatientIc).string().not_null())
                     .to_owned(),
             )
             .await?;
@@ -77,4 +78,6 @@ enum Patient {
     BloodType,
     Allergies,
     MedicalHistory,
+    #[iden = "patient_ic"]
+    PatientIc,
 }

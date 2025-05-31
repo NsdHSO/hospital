@@ -109,7 +109,7 @@ pub fn generate_payload_to_create_ambulance(
 ) -> ambulance::ActiveModel {
     let now = chrono::Utc::now().naive_utc();
     let payload = payload.unwrap_or_default();
-
+    let car_details = payload.car_details.unwrap_or_default();
     ambulance::ActiveModel {
         // Always set these system fields
         id: NotSet,
@@ -155,29 +155,49 @@ pub fn generate_payload_to_create_ambulance(
 
         notes: Set(payload.notes),
 
-        car_details_year: if let Some(val) = payload.car_details_year {
+        car_details_year: if let Some(val) = car_details.year {
             Set(val)
         } else {
             Set(2023) // Default value
         },
 
-        car_details_color: if let Some(val) = payload.car_details_color {
+        car_details_color: if let Some(val) = car_details.color {
             Set(val)
         } else {
             Set("White".to_string()) // Default value
         },
 
-        car_details_is_ambulance: if let Some(val) = payload.car_details_is_ambulance {
+        car_details_is_ambulance: if let Some(val) = car_details.is_ambulance {
             Set(val)
         } else {
             Set(true) // Default value
         },
 
-        car_details_license_plate: Set(payload.car_details_license_plate),
+        car_details_license_plate: if let Some(val) = car_details.license_plate {
+            Set(Option::from(val))
+        } else {
+            Set(Default::default()) // Default value
+        },
 
-        car_details_mileage: Set(payload.car_details_mileage),
+        car_details_mileage: if let Some(val) = car_details.mileage {
+            Set(Option::from(val))
+        } else {
+            Set(Default::default()) // Default value
+        },
 
-        location_latitude: if let Some(val) = payload.location_latitude {
+        car_details_make: if let Some(val) = car_details.make {
+            Set(val)
+        } else {
+            Set(AmbulanceCarDetailsMakeEnum::Toyota)
+        },
+
+        car_details_model: if let Some(val) = car_details.model {
+            Set(val)
+        } else {
+            Set(AmbulanceCarDetailsModelEnum::Nv350)
+        },
+
+        location_latitude: if let Some(val) = payload.location_longitude {
             Set(val)
         } else {
             Set(Decimal::new(0, 6)) // Default value
@@ -199,18 +219,6 @@ pub fn generate_payload_to_create_ambulance(
             Set(val)
         } else {
             Set(AmbulanceStatusEnum::Available)
-        },
-
-        car_details_make: if let Some(val) = payload.car_details_make {
-            Set(val)
-        } else {
-            Set(AmbulanceCarDetailsMakeEnum::Toyota)
-        },
-
-        car_details_model: if let Some(val) = payload.car_details_model {
-            Set(val)
-        } else {
-            Set(AmbulanceCarDetailsModelEnum::Nv350)
         },
         hospital_id: Default::default(),
     }
