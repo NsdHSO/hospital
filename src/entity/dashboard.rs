@@ -6,22 +6,16 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "dashboard")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     #[sea_orm(column_type = "Text", unique)]
     pub name: String,
     pub description: Option<String>,
-    #[sea_orm(column_name = "isActive")]
     pub is_active: bool,
-    #[sea_orm(column_name = "ownerId")]
     pub owner_id: Option<i32>,
-    #[sea_orm(column_name = "layoutConfig")]
     pub layout_config: Option<String>,
-    #[sea_orm(column_name = "dashboardIc")]
     pub dashboard_ic: Option<String>,
 }
 

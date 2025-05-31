@@ -301,20 +301,20 @@ impl MigrationTrait for Migration {
                 address VARCHAR NOT NULL,
                 phone VARCHAR,
                 website VARCHAR,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 description TEXT,
                 capacity INTEGER,
                 established INTEGER,
                 ceo VARCHAR,
-                "traumaLevel" VARCHAR,
+                trauma_level VARCHAR,
                 revenue INTEGER,
-                "nonProfit" BOOLEAN,
-                "licenseNumber" VARCHAR,
+                non_profit BOOLEAN,
+                license_number VARCHAR,
                 accreditation VARCHAR,
-                "patientSatisfactionRating" INTEGER,
-                "averageStayLength" INTEGER,
-                "annualBudget" INTEGER,
+                patient_satisfaction_rating INTEGER,
+                average_stay_length INTEGER,
+                annual_budget INTEGER,
                 owner VARCHAR,
                 latitude DECIMAL(10, 6),
                 longitude DECIMAL(10, 6)
@@ -331,9 +331,9 @@ impl MigrationTrait for Migration {
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name department_name_enum NOT NULL,
                 description VARCHAR,
-                "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                hospital_id UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -348,10 +348,10 @@ impl MigrationTrait for Migration {
                 role staff_role_enum NOT NULL,
                 email VARCHAR,
                 phone VARCHAR,
-                "departmentId" UUID NOT NULL REFERENCES department(id) ON DELETE CASCADE,
-                "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                department_id UUID NOT NULL REFERENCES department(id) ON DELETE CASCADE,
+                hospital_id UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -363,15 +363,15 @@ impl MigrationTrait for Migration {
             CREATE TABLE IF NOT EXISTS patient (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 name VARCHAR NOT NULL,
-                "dateOfBirth" DATE,
+                date_of_birth DATE,
                 gender VARCHAR,
                 address VARCHAR,
                 phone VARCHAR,
                 email VARCHAR,
-                "bloodType" VARCHAR,
-                "emergencyContact" VARCHAR,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                blood_type VARCHAR,
+                emergency_contact VARCHAR,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -386,10 +386,10 @@ impl MigrationTrait for Migration {
                 floor INTEGER,
                 type room_type_enum NOT NULL,
                 capacity INTEGER NOT NULL,
-                "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                "departmentId" UUID NOT NULL REFERENCES department(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                hospital_id UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
+                department_id UUID NOT NULL REFERENCES department(id) ON DELETE CASCADE,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -400,13 +400,13 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS bed (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "bedIc" INTEGER NOT NULL UNIQUE,
+                bed_ic INTEGER NOT NULL UNIQUE,
                 number VARCHAR NOT NULL,
                 type bed_type_enum NOT NULL,
-                "isOccupied" BOOLEAN NOT NULL DEFAULT FALSE,
-                "roomId" UUID NOT NULL REFERENCES room(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                is_occupied BOOLEAN NOT NULL DEFAULT FALSE,
+                room_id UUID NOT NULL REFERENCES room(id) ON DELETE CASCADE,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -417,14 +417,14 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS admission (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
-                "bedId" UUID NOT NULL REFERENCES bed(id) ON DELETE CASCADE,
-                "admissionDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "dischargeDate" TIMESTAMP WITHOUT TIME ZONE,
+                patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
+                bed_id UUID NOT NULL REFERENCES bed(id) ON DELETE CASCADE,
+                admission_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                discharge_date TIMESTAMP WITHOUT TIME ZONE,
                 diagnosis VARCHAR,
                 notes VARCHAR,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -435,37 +435,37 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS ambulance (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "hospitalId" VARCHAR NOT NULL,
-                "ambulance_ic" INTEGER NOT NULL UNIQUE,
-                "vehicleNumber" VARCHAR NOT NULL UNIQUE,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                hospital_id VARCHAR NOT NULL,
+                ambulance_ic INTEGER NOT NULL UNIQUE,
+                vehicle_number VARCHAR NOT NULL UNIQUE,
                 make VARCHAR,
                 year INTEGER,
                 capacity INTEGER,
                 mission VARCHAR,
                 passengers JSONB,
-                "driverName" VARCHAR,
-                "driverLicense" VARCHAR,
-                "lastServiceDate" TIMESTAMP WITHOUT TIME ZONE,
-                "nextServiceDate" TIMESTAMP WITHOUT TIME ZONE,
+                driver_name VARCHAR,
+                driver_license VARCHAR,
+                last_service_date TIMESTAMP WITHOUT TIME ZONE,
+                next_service_date TIMESTAMP WITHOUT TIME ZONE,
                 mileage INTEGER,
-                "fuelType" VARCHAR,
-                "registrationNumber" VARCHAR,
-                "insuranceProvider" VARCHAR,
-                "insuranceExpiryDate" TIMESTAMP WITHOUT TIME ZONE,
+                fuel_type VARCHAR,
+                registration_number VARCHAR,
+                insurance_provider VARCHAR,
+                insurance_expiry_date TIMESTAMP WITHOUT TIME ZONE,
                 notes VARCHAR,
-                "carDetailsYear" INTEGER NOT NULL,
-                "carDetailsColor" VARCHAR NOT NULL,
-                "carDetailsIsambulance" BOOLEAN NOT NULL,
-                "carDetailsLicenseplate" VARCHAR,
-                "carDetailsMileage" DOUBLE PRECISION,
-                "locationLatitude" DECIMAL(9,6) NOT NULL,
-                "locationLongitude" DECIMAL(9,6) NOT NULL,
+                car_details_year INTEGER NOT NULL,
+                car_details_color VARCHAR NOT NULL,
+                car_details_is_ambulance BOOLEAN NOT NULL,
+                car_details_license_plate VARCHAR,
+                car_details_mileage DOUBLE PRECISION,
+                location_latitude DECIMAL(9,6) NOT NULL,
+                location_longitude DECIMAL(9,6) NOT NULL,
                 type ambulance_type_enum NOT NULL,
                 status ambulance_status_enum NOT NULL,
-                "carDetailsMake" ambulance_car_details_make_enum NOT NULL,
-                "carDetailsModel" ambulance_car_details_model_enum NOT NULL
+                car_details_make ambulance_car_details_make_enum NOT NULL,
+                car_details_model ambulance_car_details_model_enum NOT NULL
             );
             "#,
         ))
@@ -476,12 +476,12 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS amenities (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "amenitiesIc" INTEGER NOT NULL UNIQUE,
+                amenities_ic INTEGER NOT NULL UNIQUE,
                 name amenities_name_enum NOT NULL,
                 description VARCHAR,
-                "roomId" UUID NOT NULL REFERENCES room(id) ON DELETE CASCADE,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                room_id UUID NOT NULL REFERENCES room(id) ON DELETE CASCADE,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -492,14 +492,14 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS appointment (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "appointmentIc" INTEGER NOT NULL UNIQUE,
-                "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
-                "staffId" UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
-                "appointmentDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                appointment_ic INTEGER NOT NULL UNIQUE,
+                patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
+                staff_id UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
+                appointment_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 status appointment_status_enum NOT NULL,
                 notes VARCHAR,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -510,14 +510,14 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS bill (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
+                patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
                 amount DECIMAL(10,2) NOT NULL,
                 status bill_status_enum NOT NULL,
-                "billDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "dueDate" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "paidAmount" DECIMAL(10,2),
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                bill_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                due_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                paid_amount DECIMAL(10,2),
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -530,11 +530,11 @@ impl MigrationTrait for Migration {
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 title VARCHAR NOT NULL,
                 content VARCHAR,
-                "dashboardId" UUID NOT NULL,
-                "cardType" card_cardtype_enum NOT NULL,
+                dashboard_id UUID NOT NULL,
+                card_type card_cardtype_enum NOT NULL,
                 size card_size_enum NOT NULL,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -545,12 +545,12 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS customers (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "customerIc" INTEGER NOT NULL UNIQUE,
+                customer_ic INTEGER NOT NULL UNIQUE,
                 name VARCHAR NOT NULL,
                 email VARCHAR NOT NULL,
                 phone VARCHAR,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -563,9 +563,9 @@ impl MigrationTrait for Migration {
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 title VARCHAR NOT NULL,
                 description VARCHAR,
-                "userId" UUID NOT NULL,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                user_id UUID NOT NULL,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -576,19 +576,19 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS emergency (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "emergencyIc" VARCHAR NOT NULL,
-                "reportedBy" INTEGER,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                emergency_ic VARCHAR NOT NULL,
+                reported_by INTEGER,
                 notes VARCHAR,
-                "resolvedAt" TIMESTAMP WITHOUT TIME ZONE,
-                "modificationAttempts" JSONB,
-                "idAmbulance" UUID REFERENCES ambulance(id),
-                "emergencyLatitude" DECIMAL(9,6) NOT NULL,
-                "emergencyLongitude" DECIMAL(9,6) NOT NULL,
+                resolved_at TIMESTAMP WITHOUT TIME ZONE,
+                modification_attempts JSONB,
+                id_ambulance UUID REFERENCES ambulance(id),
+                emergency_latitude DECIMAL(9,6) NOT NULL,
+                emergency_longitude DECIMAL(9,6) NOT NULL,
                 status emergency_status_enum NOT NULL,
                 severity emergency_severity_enum NOT NULL,
-                "incidentType" emergency_incidenttype_enum NOT NULL,
+                incident_type emergency_incidenttype_enum NOT NULL,
                 description VARCHAR
             );
             "#,
@@ -600,15 +600,15 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS inventory (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "inventoryIc" INTEGER NOT NULL UNIQUE,
-                "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                "itemName" VARCHAR NOT NULL,
+                inventory_ic INTEGER NOT NULL UNIQUE,
+                hospital_id UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
+                item_name VARCHAR NOT NULL,
                 quantity INTEGER NOT NULL,
-                "unitPrice" INTEGER,
-                "reorderPoint" INTEGER,
-                "lastReceivedDate" TIMESTAMP WITHOUT TIME ZONE,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                unit_price INTEGER,
+                reorder_point INTEGER,
+                last_received_date TIMESTAMP WITHOUT TIME ZONE,
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))
@@ -619,14 +619,14 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS patient_doctor (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                "patientDoctorIc" INTEGER NOT NULL UNIQUE,
-                "patientId" UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
-                "doctorId" UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
-                "hospitalId" UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                "assignedDate" DATE NOT NULL,
+                patient_doctor_ic INTEGER NOT NULL UNIQUE,
+                patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
+                doctor_id UUID NOT NULL REFERENCES staff(id) ON DELETE CASCADE,
+                hospital_id UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
+                assigned_date DATE NOT NULL,
                 notes VARCHAR,
-                "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );
             "#,
         ))

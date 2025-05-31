@@ -7,32 +7,23 @@ use crate::entity::sea_orm_active_enums::{GenderEnum, BloodTypeEnum};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "patient")]
 pub struct Model {
-    #[sea_orm(column_name = "created_at")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updated_at")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "hospital_id")]
     pub hospital_id: i32,
-    #[sea_orm(column_name = "first_name")]
     pub first_name: String,
-    #[sea_orm(column_name = "last_name")]
     pub last_name: String,
-    #[sea_orm(column_name = "date_of_birth")]
     pub date_of_birth: Date,
     pub gender: Option<GenderEnum>,
     pub phone: String,
     pub email: Option<String>,
     pub address: String,
-    #[sea_orm(column_name = "emergency_contact")]
     pub emergency_contact: Option<String>,
-    #[sea_orm(column_name = "blood_type")]
     pub blood_type: Option<BloodTypeEnum>,
     pub allergies: Option<Vec<String>>,
     #[sea_orm(column_name = "medical_history", column_type = "Text", nullable)]
     pub medical_history: Option<String>,
-    #[sea_orm(column_name = "patientIc")]
     pub patient_ic: Option<String>,
 }
 

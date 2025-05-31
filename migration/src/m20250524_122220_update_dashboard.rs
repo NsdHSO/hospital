@@ -17,14 +17,14 @@ impl MigrationTrait for Migration {
         .await?;
 
         // Our dashboard.rs entity needs these column names and types:
-        // created_at -> "createdAt" (already exists)
-        // updated_at -> "updatedAt" (already exists)
+        // created_at -> created_at (already exists)
+        // updated_at -> updated_at (already exists)
         // id (already exists)
         // name (already exists, was probably renamed from title already)
         // description (already exists)
-        // is_active -> "isActive" (already exists)
-        // owner_id -> "ownerId" (already exists)
-        // layout_config -> "layoutConfig" (already exists)
+        // is_active -> is_active (already exists)
+        // owner_id -> owner_id (already exists)
+        // layout_config -> layout_config (already exists)
 
         // Since all columns already exist according to our schema check, 
         // this migration is essentially a no-op

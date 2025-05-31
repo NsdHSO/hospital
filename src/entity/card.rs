@@ -8,9 +8,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "card")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
@@ -20,11 +18,9 @@ pub struct Model {
     pub card_ic: i32,
     pub icon: Option<String>,
     pub position: Option<i32>,
-    #[sea_orm(column_name = "dataConfig", column_type = "JsonBinary", nullable)]
+    #[sea_orm(column_type = "JsonBinary", nullable)]
     pub data_config: Option<Json>,
-    #[sea_orm(column_name = "dashboardId")]
     pub dashboard_id: Option<Uuid>,
-    #[sea_orm(column_name = "cardType")]
     pub card_type: Option<CardTypeEnum>,
     pub size: Option<CardSizeEnum>,
 }

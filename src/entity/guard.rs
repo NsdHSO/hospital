@@ -7,20 +7,15 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "guard")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
     pub name: String,
-    #[sea_orm(column_name = "employeeId")]
     pub employee_id: Option<String>,
     pub shift: GuardShiftEnum,
     pub area: GuardAreaEnum,
-    #[sea_orm(column_name = "guardIc")]
     pub guard_ic: Option<String>,
 }
 

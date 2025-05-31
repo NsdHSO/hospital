@@ -39,9 +39,9 @@ impl MigrationTrait for Migration {
                 IF NOT EXISTS (
                     SELECT 1 
                     FROM information_schema.columns 
-                    WHERE table_name = 'dashboard' AND column_name = 'isActive'
+                    WHERE table_name = 'dashboard' AND column_name = 'is_active'
                 ) THEN
-                    ALTER TABLE dashboard ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true;
+                    ALTER TABLE dashboard ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
                 END IF;
             END $$;"#,
         ))
@@ -56,10 +56,10 @@ impl MigrationTrait for Migration {
                     SELECT 1 
                     FROM information_schema.columns 
                     WHERE table_name = 'dashboard' 
-                    AND column_name = 'userId' 
+                    AND column_name = 'user_id' 
                     AND is_nullable = 'NO'
                 ) THEN
-                    ALTER TABLE dashboard ALTER COLUMN "userId" DROP NOT NULL;
+                    ALTER TABLE dashboard ALTER COLUMN user_id DROP NOT NULL;
                 END IF;
             END $$;"#,
         ))
@@ -73,9 +73,9 @@ impl MigrationTrait for Migration {
                 IF NOT EXISTS (
                     SELECT 1 
                     FROM information_schema.columns 
-                    WHERE table_name = 'dashboard' AND column_name = 'ownerId'
+                    WHERE table_name = 'dashboard' AND column_name = 'owner_id'
                 ) THEN
-                    ALTER TABLE dashboard ADD COLUMN "ownerId" INTEGER;
+                    ALTER TABLE dashboard ADD COLUMN owner_id INTEGER;
                 END IF;
             END $$;"#,
         ))
@@ -89,15 +89,15 @@ impl MigrationTrait for Migration {
                 IF NOT EXISTS (
                     SELECT 1 
                     FROM information_schema.columns 
-                    WHERE table_name = 'dashboard' AND column_name = 'layoutConfig'
+                    WHERE table_name = 'dashboard' AND column_name = 'layout_config'
                 ) THEN
-                    ALTER TABLE dashboard ADD COLUMN "layoutConfig" TEXT;
+                    ALTER TABLE dashboard ADD COLUMN layout_config TEXT;
                 END IF;
             END $$;"#,
         ))
         .await?;
 
-        // The existing columns id, description, createdAt, and updatedAt remain unchanged
+        // The existing columns id, description, created_at, and updated_at remain unchanged
 
         Ok(())
     }
@@ -113,9 +113,9 @@ impl MigrationTrait for Migration {
                 IF EXISTS (
                     SELECT 1 
                     FROM information_schema.columns 
-                    WHERE table_name = 'dashboard' AND column_name = 'layoutConfig'
+                    WHERE table_name = 'dashboard' AND column_name = 'layout_config'
                 ) THEN
-                    ALTER TABLE dashboard DROP COLUMN "layoutConfig";
+                    ALTER TABLE dashboard DROP COLUMN layout_config;
                 END IF;
             END $$;"#,
         ))
@@ -129,15 +129,15 @@ impl MigrationTrait for Migration {
                 IF EXISTS (
                     SELECT 1 
                     FROM information_schema.columns 
-                    WHERE table_name = 'dashboard' AND column_name = 'ownerId'
+                    WHERE table_name = 'dashboard' AND column_name = 'owner_id'
                 ) THEN
-                    ALTER TABLE dashboard DROP COLUMN "ownerId";
+                    ALTER TABLE dashboard DROP COLUMN owner_id;
                 END IF;
             END $$;"#,
         ))
         .await?;
 
-        // Step 3: Make userId NOT NULL again if it's currently nullable
+        // Step 3: Make user_id NOT NULL again if it's currently nullable
         db.execute(Statement::from_string(
             manager.get_database_backend(),
             r#"DO $$ 
@@ -146,10 +146,10 @@ impl MigrationTrait for Migration {
                     SELECT 1 
                     FROM information_schema.columns 
                     WHERE table_name = 'dashboard' 
-                    AND column_name = 'userId' 
+                    AND column_name = 'user_id' 
                     AND is_nullable = 'YES'
                 ) THEN
-                    ALTER TABLE dashboard ALTER COLUMN "userId" SET NOT NULL;
+                    ALTER TABLE dashboard ALTER COLUMN user_id SET NOT NULL;
                 END IF;
             END $$;"#,
         ))
@@ -163,9 +163,9 @@ impl MigrationTrait for Migration {
                 IF EXISTS (
                     SELECT 1 
                     FROM information_schema.columns 
-                    WHERE table_name = 'dashboard' AND column_name = 'isActive'
+                    WHERE table_name = 'dashboard' AND column_name = 'is_active'
                 ) THEN
-                    ALTER TABLE dashboard DROP COLUMN "isActive";
+                    ALTER TABLE dashboard DROP COLUMN "is_active";
                 END IF;
             END $$;"#,
         ))

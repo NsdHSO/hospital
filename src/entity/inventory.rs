@@ -5,17 +5,13 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "inventory")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     #[sea_orm(column_name = "inventoryIc", unique)]
     pub inventory_ic: i32,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
-    #[sea_orm(column_name = "itemName")]
     pub item_name: String,
     pub quantity: i32,
     #[sea_orm(column_name = "unitPrice")]

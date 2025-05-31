@@ -5,21 +5,15 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "medical_record")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "patientId")]
     pub patient_id: i32,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
-    #[sea_orm(column_name = "recordData", column_type = "Text", nullable)]
+    #[sea_orm(column_type = "Text", nullable)]
     pub record_data: Option<String>,
-    #[sea_orm(column_name = "recordDate")]
     pub record_date: Option<DateTime>,
-    #[sea_orm(column_name = "medicalRecordIc")]
     pub medical_record_ic: Option<String>,
 }
 

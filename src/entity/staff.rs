@@ -6,15 +6,11 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "staff")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
-    #[sea_orm(column_name = "departmentId")]
     pub department_id: i32,
     pub name: String,
     pub specialization: Option<String>,
@@ -22,7 +18,6 @@ pub struct Model {
     pub email: Option<String>,
     pub address: Option<String>,
     pub role: StaffRoleEnum,
-    #[sea_orm(column_name = "staffIc")]
     pub staff_ic: Option<String>,
 }
 

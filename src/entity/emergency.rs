@@ -11,40 +11,33 @@ use crate::entity::patient::PatientRequestBody;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "emergency")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = true)]
     pub id: Uuid,
     pub emergency_ic: String,
-    #[sea_orm(column_name = "reportedBy")]
+    
     pub reported_by: Option<i32>,
     #[sea_orm(column_type = "Text", nullable)]
     pub notes: Option<String>,
-    #[sea_orm(column_name = "resolvedAt", nullable)]
     pub resolved_at: Option<NaiveDateTime>,
     #[sea_orm(
-        column_name = "modificationAttempts",
         column_type = "JsonBinary",
         nullable
     )]
     pub modification_attempts: Option<Json>,
-    #[sea_orm(column_name = "idAmbulance")]
+    
     pub id_ambulance: Option<Uuid>,
     #[sea_orm(
-        column_name = "emergencyLatitude",
         column_type = "Decimal(Some((9, 6)))"
     )]
     pub emergency_latitude: Decimal,
     #[sea_orm(
-        column_name = "emergencyLongitude",
         column_type = "Decimal(Some((9, 6)))"
     )]
     pub emergency_longitude: Decimal,
     pub status: EmergencyStatusEnum,
     pub severity: EmergencySeverityEnum,
-    #[sea_orm(column_name = "incidentType")]
     pub incident_type: EmergencyIncidentEnum,
     pub description: Option<String>,
 }

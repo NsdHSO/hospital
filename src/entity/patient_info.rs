@@ -8,9 +8,8 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub name: Option<String>,
-    #[sea_orm(column_name = "medicalInfo", column_type = "Text", nullable)]
+    #[sea_orm(column_type = "Text", nullable)]
     pub medical_info: Option<String>,
-    #[sea_orm(column_name = "patientInfoIc")]
     pub patient_info_ic: Option<String>,
 }
 

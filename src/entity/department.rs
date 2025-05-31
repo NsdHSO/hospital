@@ -6,22 +6,17 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "department")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
     pub floor: Option<i32>,
-    #[sea_orm(column_name = "headOfDepartment")]
     pub head_of_department: Option<String>,
     pub phone: Option<String>,
     pub description: Option<String>,
     pub capacity: Option<i32>,
     pub name: DepartmentNameEnum,
-    #[sea_orm(column_name = "departmentIc")]
     pub department_ic: Option<String>,
 }
 

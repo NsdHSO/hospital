@@ -6,9 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "hospital")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
@@ -22,24 +20,16 @@ pub struct Model {
     pub capacity: Option<i32>,
     pub established: Option<i32>,
     pub ceo: Option<String>,
-    #[sea_orm(column_name = "traumaLevel")]
     pub trauma_level: Option<String>,
     pub revenue: Option<i32>,
-    #[sea_orm(column_name = "nonProfit")]
     pub non_profit: Option<bool>,
-    #[sea_orm(column_name = "licenseNumber")]
     pub license_number: Option<String>,
     pub accreditation: Option<String>,
-    #[sea_orm(column_name = "patientSatisfactionRating")]
     pub patient_satisfaction_rating: Option<i32>,
-    #[sea_orm(column_name = "averageStayLength")]
     pub average_stay_length: Option<i32>,
-    #[sea_orm(column_name = "annualBudget")]
     pub annual_budget: Option<i32>,
     pub owner: Option<String>,
-    #[sea_orm(column_type = "Decimal(Some((10, 6)))", nullable)]
     pub latitude: Option<Decimal>,
-    #[sea_orm(column_type = "Decimal(Some((10, 6)))", nullable)]
     pub longitude: Option<Decimal>,
     pub hospital_ic: String,
 }

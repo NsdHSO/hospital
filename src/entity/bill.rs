@@ -6,28 +6,21 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "bill")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "admissionId")]
     pub admission_id: i32,
-    #[sea_orm(column_name = "patientId")]
     pub patient_id: i32,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
     #[sea_orm(column_type = "Decimal(Some((10, 2)))")]
     pub amount: Decimal,
     #[sea_orm(
-        column_name = "insuranceCoverage",
         column_type = "Decimal(Some((10, 2)))",
         nullable
     )]
     pub insurance_coverage: Option<Decimal>,
     #[sea_orm(
-        column_name = "patientResponsibility",
         column_type = "Decimal(Some((10, 2)))"
     )]
     pub patient_responsibility: Decimal,

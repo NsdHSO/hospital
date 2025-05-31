@@ -10,16 +10,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)] // Add Serialize and Deserialize here
 #[sea_orm(table_name = "ambulance")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: String,
     pub ambulance_ic: i32,
-    #[sea_orm(column_name = "vehicleNumber", unique)]
     pub vehicle_number: String,
     pub make: Option<String>,
     pub year: Option<i32>,
@@ -27,49 +23,33 @@ pub struct Model {
     pub mission: Option<String>,
     #[sea_orm(column_type = "JsonBinary", nullable)]
     pub passengers: Option<Json>,
-    #[sea_orm(column_name = "driverName")]
     pub driver_name: Option<String>,
-    #[sea_orm(column_name = "driverLicense")]
     pub driver_license: Option<String>,
-    #[sea_orm(column_name = "lastServiceDate")]
     pub last_service_date: Option<DateTime>,
-    #[sea_orm(column_name = "nextServiceDate")]
     pub next_service_date: Option<DateTime>,
     pub mileage: Option<i32>,
-    #[sea_orm(column_name = "fuelType")]
     pub fuel_type: Option<String>,
-    #[sea_orm(column_name = "registrationNumber")]
     pub registration_number: Option<String>,
-    #[sea_orm(column_name = "insuranceProvider")]
     pub insurance_provider: Option<String>,
-    #[sea_orm(column_name = "insuranceExpiryDate")]
     pub insurance_expiry_date: Option<DateTime>,
     pub notes: Option<String>,
-    #[sea_orm(column_name = "carDetailsYear")]
     pub car_details_year: i32,
-    #[sea_orm(column_name = "carDetailsColor")]
     pub car_details_color: String,
-    #[sea_orm(column_name = "carDetailsIsambulance")]
     pub car_details_is_ambulance: bool,
-    #[sea_orm(column_name = "carDetailsLicenseplate")]
     pub car_details_license_plate: Option<String>,
-    #[sea_orm(column_name = "carDetailsMileage", column_type = "Double", nullable)]
+    #[sea_orm( column_type = "Double", nullable)]
     pub car_details_mileage: Option<f64>,
     #[sea_orm(
-        column_name = "locationLatitude",
         column_type = "Decimal(Some((9, 6)))"
     )]
     pub location_latitude: Decimal,
     #[sea_orm(
-        column_name = "locationLongitude",
         column_type = "Decimal(Some((9, 6)))"
     )]
     pub location_longitude: Decimal,
     pub r#type: AmbulanceTypeEnum,
     pub status: AmbulanceStatusEnum,
-    #[sea_orm(column_name = "carDetailsMake")]
     pub car_details_make: AmbulanceCarDetailsMakeEnum,
-    #[sea_orm(column_name = "carDetailsModel")]
     pub car_details_model: AmbulanceCarDetailsModelEnum,
 }
 

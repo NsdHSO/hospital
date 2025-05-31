@@ -32,18 +32,18 @@ impl MigrationTrait for Migration {
             db.execute(Statement::from_string(
                 manager.get_database_backend(),
                 r#"CREATE TABLE card (
-                    "createdAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    "updatedAt" TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                     title VARCHAR NOT NULL,
                     content VARCHAR NOT NULL,
                     icon VARCHAR,
                     position INTEGER,
-                    "dataConfig" JSONB,
-                    "dashboardId" UUID,
-                    "cardType" card_cardtype_enum,
+                    data_config JSONB,
+                    dashboard_id UUID,
+                    card_type card_cardtype_enum,
                     size card_size_enum,
-                    "cardIc" INTEGER UNIQUE
+                    card_ic INTEGER UNIQUE
                 );"#,
             ))
             .await?;

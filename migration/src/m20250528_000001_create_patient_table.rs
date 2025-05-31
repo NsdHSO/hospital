@@ -64,7 +64,9 @@ impl MigrationTrait for Migration {
 enum Patient {
     Table,
     Id,
+    #[iden = "created_at"]
     CreatedAt,
+    #[iden = "updated_at"]
     UpdatedAt,
     HospitalId,
     FirstName,

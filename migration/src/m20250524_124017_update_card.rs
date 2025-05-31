@@ -24,20 +24,19 @@ impl MigrationTrait for Migration {
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='card' AND column_name='dataConfig') THEN ALTER TABLE card ADD COLUMN "dataConfig" JSONB; END IF; END $$;"#,
-        ))
-        .await?;
-
-        // Make columns nullable to match the entity model
-        db.execute(Statement::from_string(
-            manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "dashboardId" DROP NOT NULL;"#,
+            r#"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='card' AND column_name='data_config') THEN ALTER TABLE card ADD COLUMN data_config JSONB; END IF; END $$;"#,
         ))
         .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "cardType" DROP NOT NULL;"#,
+            r#"ALTER TABLE card ALTER COLUMN dashboard_id DROP NOT NULL;"#,
+        ))
+        .await?;
+
+        db.execute(Statement::from_string(
+            manager.get_database_backend(),
+            r#"ALTER TABLE card ALTER COLUMN card_type DROP NOT NULL;"#,
         ))
         .await?;
 
@@ -50,13 +49,13 @@ impl MigrationTrait for Migration {
         // Add default values for timestamp columns
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;"#,
+            r#"ALTER TABLE card ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;"#,
         ))
         .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "updatedAt" SET DEFAULT CURRENT_TIMESTAMP;"#,
+            r#"ALTER TABLE card ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP;"#,
         ))
         .await?;
 
@@ -69,26 +68,26 @@ impl MigrationTrait for Migration {
         // Remove default values for timestamp columns
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "createdAt" DROP DEFAULT;"#,
+            r#"ALTER TABLE card ALTER COLUMN created_at DROP DEFAULT;"#,
         ))
         .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "updatedAt" DROP DEFAULT;"#,
+            r#"ALTER TABLE card ALTER COLUMN updated_at DROP DEFAULT;"#,
         ))
         .await?;
 
         // Make columns NOT NULL again
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "dashboardId" SET NOT NULL;"#,
+            r#"ALTER TABLE card ALTER COLUMN dashboard_id SET NOT NULL;"#,
         ))
         .await?;
 
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card ALTER COLUMN "cardType" SET NOT NULL;"#,
+            r#"ALTER TABLE card ALTER COLUMN card_type SET NOT NULL;"#,
         ))
         .await?;
 
@@ -101,7 +100,7 @@ impl MigrationTrait for Migration {
         // Drop added columns
         db.execute(Statement::from_string(
             manager.get_database_backend(),
-            r#"ALTER TABLE card DROP COLUMN "dataConfig";"#,
+            r#"ALTER TABLE card DROP COLUMN data_config;"#,
         ))
         .await?;
 

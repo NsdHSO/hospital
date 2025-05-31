@@ -6,17 +6,12 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "prescription_order")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
-    #[sea_orm(column_name = "supplierId")]
     pub supplier_id: i32,
-    #[sea_orm(column_name = "orderDate")]
     pub order_date: DateTime,
     #[sea_orm(column_name = "orderItems", column_type = "Text", nullable)]
     pub order_items: Option<String>,
