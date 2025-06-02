@@ -19,16 +19,7 @@ async fn create(
     Ok(HttpResponse::Ok().json(response))
 }
 
-#[get("/patient/{id}")]
-async fn find(
-    id: web::Path<String>,
-    db_conn: web::Data<DatabaseConnection>, // Inject the database connection
-) -> Result<HttpResponse, CustomError> {
-    let service = PatientService::new(db_conn.get_ref());
-    let hospital = service.find_by_field("name", &**id).await?;
-    let response = http_response_builder::ok(hospital);
-    Ok(HttpResponse::Ok().json(response))
-}
+
 #[get("/patient")]
 pub async fn find_all(
     query: web::Query<PaginationParams>,
@@ -40,13 +31,13 @@ pub async fn find_all(
         .find_all(
             query.page.try_into().unwrap(),
             query.per_page.try_into().unwrap(),
+            query.filter.clone(),    // No need to unwrap and re-wrap in Some; it's already an Option<String>
         )
         .await?;
     let response = http_response_builder::ok(hospital);
     Ok(HttpResponse::Ok().json(response))
 }
 pub fn init_routes(config: &mut web::ServiceConfig) {
-    config.service(find);
     config.service(find_all);
     config.service(create);
 }

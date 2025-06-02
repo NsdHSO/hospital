@@ -1,5 +1,5 @@
-use crate::entity::ambulance::AmbulancePayload;
 use crate::entity::ambulance::Model;
+use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
     AmbulanceTypeEnum,
@@ -10,7 +10,9 @@ use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
+use percent_encoding::percent_decode_str;
 use sea_orm::prelude::Decimal;
+use sea_orm::prelude::Uuid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
@@ -63,24 +65,36 @@ impl AmbulanceService {
             }
         }
     }
-    pub async fn find_by_ic(
-        &self,
-        ambulance_ic: i32,
-    ) -> Result<Option<ambulance::Model>, CustomError> {
-        ambulance::Entity::find()
-            .filter(ambulance::Column::AmbulanceIc.eq(ambulance_ic))
-            .one(&self.conn)
-            .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))
-    }
 
     pub async fn find_all(
-        &self,         // Changed to &self as we're not modifying the service state
-        page: u64,     // Use u64 for pagination
-        per_page: u64, // Use u64 for pagination
-    ) -> Result<PaginatedResponse<Vec<ambulance::Model>>, CustomError> {
-        let paginator = ambulance::Entity::find().paginate(&self.conn, per_page);
-
+        &self,     // Changed to &self as we're not modifying the service state
+        page: u64, // Use u64 for pagination
+        per_page: u64,
+        filter: Option<String>,
+    ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
+        let mut query = Entity::find();
+        if let Some(filter_str) = filter {
+            match filter_str.split_once('=') {
+                Some(("ic", encoded_name)) => {
+                    let ambulance_ic = percent_decode_str(encoded_name)
+                        .decode_utf8()
+                        .map(|ic| ic.to_string())
+                        .unwrap_or_else(|_| encoded_name.to_string());
+                    query = query.filter(Column::AmbulanceIc.like(ambulance_ic));
+                }
+                Some(("id", encoded_name)) => {
+                    let ambulance_id = percent_decode_str(encoded_name)
+                        .decode_utf8()
+                        .map(|id| id.to_string())
+                        .unwrap_or_else(|_| encoded_name.to_string());
+                    let ambulance_uuid = Uuid::parse_str(&ambulance_id)
+                        .map_err(|_| CustomError::new(400, "Invalid UUID".to_string()))?;
+                    query = query.filter(Column::Id.eq(ambulance_uuid));
+                }
+                _ => {}
+            }
+        }
+        let paginator = query.paginate(&self.conn, per_page);
         let total_items = paginator.num_items().await?;
         let total_pages = paginator.num_pages().await?;
 

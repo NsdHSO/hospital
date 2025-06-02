@@ -1,10 +1,10 @@
 use crate::entity::patient::{ActiveModel, Model, PatientRequestBody};
-use chrono::{NaiveDateTime, Utc};
-
 use crate::entity::patient;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
+use chrono::{NaiveDateTime, Utc};
+use percent_encoding::percent_decode_str;
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
@@ -88,10 +88,27 @@ impl PatientService {
     pub async fn find_all(
         &self,         // Changed to &self as we're not modifying the service state
         page: u64,     // Use u64 for pagination
-        per_page: u64, // Use u64 for pagination
+        per_page: u64,
+        filter: Option<String>,
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
-        let paginator = patient::Entity::find().paginate(&self.conn, per_page);
+        let mut query = patient::Entity::find();
+        if let Some(filter_str) = filter {
+            if filter_str.starts_with("ic=") {
+                // Extract the IC name portion after "IC="
+                let encoded_name = filter_str.strip_prefix("ic=").unwrap_or("");
 
+                // URL decode the dashboard name
+                let patient_ic = match percent_decode_str(encoded_name).decode_utf8() {
+                    Ok(name) => name.to_string(),
+                    Err(_) => encoded_name.to_string(),
+                };
+                
+                let patient = query.filter(patient::Column::PatientIc.like(patient_ic));
+
+                query = patient;
+            }
+        }
+        let paginator = query.paginate(&self.conn, per_page);
         let total_items = paginator.num_items().await?;
         let total_pages = paginator.num_pages().await?;
 
@@ -232,7 +249,7 @@ impl PatientService {
     pub async fn find_patients_by_emergency_id(
         &self,
         emergency_id: uuid::Uuid,
-    ) -> Result<Vec<crate::entity::patient::Model>, CustomError> {
+    ) -> Result<Vec<Model>, CustomError> {
         use crate::entity::{emergency_patient, patient};
         let patient_models = emergency_patient::Entity::find()
             .filter(emergency_patient::Column::EmergencyId.eq(emergency_id))
