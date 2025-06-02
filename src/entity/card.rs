@@ -14,7 +14,7 @@ pub struct Model {
     pub id: Uuid,
     pub title: String,
     pub content: String,
-    #[sea_orm(column_name = "cardIc", unique)]
+    #[sea_orm( unique)]
     pub card_ic: i32,
     pub icon: Option<String>,
     pub position: Option<i32>,
