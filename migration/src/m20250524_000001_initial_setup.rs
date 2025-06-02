@@ -543,13 +543,17 @@ impl MigrationTrait for Migration {
             r#"
             CREATE TABLE IF NOT EXISTS card (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 title VARCHAR NOT NULL,
-                content VARCHAR,
-                dashboard_id UUID NOT NULL,
-                card_type card_cardtype_enum NOT NULL,
-                size card_size_enum NOT NULL,
-                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+                content VARCHAR NOT NULL,
+                icon VARCHAR,
+                position INTEGER,
+                data_config JSONB,
+                dashboard_id UUID,
+                card_type card_cardtype_enum,
+                size card_size_enum,
+                card_ic INTEGER UNIQUE
             );
             "#,
         ))
