@@ -22,7 +22,7 @@ pub struct Model {
     pub emergency_contact: Option<String>,
     pub blood_type: Option<BloodTypeEnum>,
     pub allergies: Option<Vec<String>>,
-    #[sea_orm(column_name = "medical_history", column_type = "Text", nullable)]
+    #[sea_orm(column_type = "Text", nullable)]
     pub medical_history: Option<String>,
     pub patient_ic: Option<String>,
 }

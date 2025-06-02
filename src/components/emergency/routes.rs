@@ -44,10 +44,8 @@ async fn create(
         .schedule_emergency()
         .await
         .expect("TODO: panic message");
-    Ok(HttpResponse::Created().json(serde_json::json!({
-        "message": "Emergency created successfully",
-        "data": created_emergency
-    })))
+    let response = http_response_builder::ok(created_emergency);
+    Ok(HttpResponse::Ok().json(response))
 }
 pub fn init_routes(config: &mut web::ServiceConfig) {
     config.service(find);

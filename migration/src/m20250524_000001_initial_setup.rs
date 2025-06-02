@@ -291,6 +291,41 @@ impl MigrationTrait for Migration {
         ))
             .await?;
 
+        db.execute(Statement::from_string(
+            manager.get_database_backend(),
+            r#"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gender_enum') THEN CREATE TYPE gender_enum AS ENUM ('MALE', 'FEMALE'); END IF; END $$;"#,
+        ))
+            .await?;
+        db.execute(Statement::from_string(
+            manager.get_database_backend(),
+            r#"DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'blood_type_enum') THEN CREATE TYPE blood_type_enum AS ENUM ('A_POSITIVE', 'A_NEGATIVE', 'B_POSITIVE', 'B_NEGATIVE', 'AB_POSITIVE', 'AB_NEGATIVE', 'O_POSITIVE', 'O_NEGATIVE'); END IF; END $$;"#,
+        ))
+            .await?;
+        db.execute(Statement::from_string(
+            manager.get_database_backend(),
+            r#"
+            CREATE TABLE IF NOT EXISTS patient (
+                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                hospital_id INTEGER NOT NULL,
+                first_name VARCHAR NOT NULL,
+                last_name VARCHAR NOT NULL,
+                date_of_birth DATE NOT NULL,
+                gender gender_enum NULL,
+                phone VARCHAR NOT NULL,
+                email VARCHAR NULL,
+                address VARCHAR NOT NULL,
+                emergency_contact VARCHAR NULL,
+                blood_type blood_type_enum NULL,
+                allergies TEXT[] NULL,
+                medical_history TEXT NULL,
+                patient_ic VARCHAR NOT NULL
+            );
+            "#,
+        ))
+            .await?;
+
         // Create tables - each CREATE TABLE must be a separate execute call
         db.execute(Statement::from_string(
             manager.get_database_backend(),
@@ -350,26 +385,6 @@ impl MigrationTrait for Migration {
                 phone VARCHAR,
                 department_id UUID NOT NULL REFERENCES department(id) ON DELETE CASCADE,
                 hospital_id UUID NOT NULL REFERENCES hospital(id) ON DELETE CASCADE,
-                created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
-            );
-            "#,
-        ))
-            .await?;
-
-        db.execute(Statement::from_string(
-            manager.get_database_backend(),
-            r#"
-            CREATE TABLE IF NOT EXISTS patient (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                name VARCHAR NOT NULL,
-                date_of_birth DATE,
-                gender VARCHAR,
-                address VARCHAR,
-                phone VARCHAR,
-                email VARCHAR,
-                blood_type VARCHAR,
-                emergency_contact VARCHAR,
                 created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
                 updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
             );

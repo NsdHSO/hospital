@@ -145,8 +145,7 @@ impl EmergencyService {
             }
         }
 
-        let emergency_model = emergency_model_result?; // Propagate error if IC generation failed
-        Ok(emergency_model)
+        emergency_model_result
     }
     
     pub async fn schedule_emergency(self) -> Result<(), CustomError> {
