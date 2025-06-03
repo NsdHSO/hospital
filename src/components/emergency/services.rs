@@ -1,16 +1,16 @@
 use crate::components::patient::PatientService;
 use crate::entity;
+use crate::entity::emergency;
 use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
 };
-use crate::entity::{emergency};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{NaiveDateTime, Utc};
 use entity::ambulance;
-use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait, TransactionTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
 // Adjust the path if needed
@@ -28,7 +28,10 @@ impl EmergencyService {
         }
     }
 
-    pub async fn find_by_ic(&self, ambulance_ic: &str) -> Result<Option<serde_json::Value>, CustomError> {
+    pub async fn find_by_ic(
+        &self,
+        ambulance_ic: &str,
+    ) -> Result<Option<serde_json::Value>, CustomError> {
         let result = emergency::Entity::find()
             .filter(emergency::Column::EmergencyIc.eq(ambulance_ic))
             .find_also_related(ambulance::Entity)
@@ -37,14 +40,19 @@ impl EmergencyService {
             .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
 
         if let Some((emergency, ambulance_opt)) = result {
-            let patient_models = self.patient_service.find_patients_by_emergency_id(emergency.id);
-            let patients_json = serde_json::to_value(
-                patient_models.await?
-            ).unwrap_or(serde_json::json!([]));
-            let ambulance_json = ambulance_opt.map(|a| serde_json::to_value(a).unwrap_or(serde_json::json!({})));
+            let patient_models = self
+                .patient_service
+                .find_patients_by_emergency_id(emergency.id);
+            let patients_json =
+                serde_json::to_value(patient_models.await?).unwrap_or(serde_json::json!([]));
+            let ambulance_json =
+                ambulance_opt.map(|a| serde_json::to_value(a).unwrap_or(serde_json::json!({})));
             let emergency_json = serde_json::to_value(&emergency).unwrap_or(serde_json::json!({}));
             let mut merged = emergency_json.as_object().cloned().unwrap_or_default();
-            merged.insert("ambulance".to_string(), ambulance_json.unwrap_or(serde_json::json!({})));
+            merged.insert(
+                "ambulance".to_string(),
+                ambulance_json.unwrap_or(serde_json::json!({})),
+            );
             merged.insert("patients".to_string(), patients_json);
             Ok(Some(serde_json::Value::Object(merged)))
         } else {
@@ -90,7 +98,7 @@ impl EmergencyService {
 
     async fn create_emergency_internal(
         &self,
-        emergency_data: EmergencyRequestBody
+        emergency_data: EmergencyRequestBody,
     ) -> Result<Model, CustomError> {
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
@@ -104,43 +112,43 @@ impl EmergencyService {
                 ));
             }
 
-            let transaction = self.conn.begin().await?;
             let emergency_ic = generate_ic();
-            let active_model = Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
+            let active_model =
+                Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
 
-            let result = active_model.insert(&transaction).await;
+            let result = active_model.insert(&self.conn).await;
             match result {
                 Ok(model) => {
                     // Associate patients if provided
                     if let Some(patients) = emergency_data.patients.as_ref() {
-                        if let Err(e) = self.patient_service
-                            .associate_patients_with_emergency(
-                                model.id,
-                                patients,
-                                &transaction,
-                            )
-                            .await {
-                            transaction.rollback().await.ok();
+                        if let Err(e) = self
+                            .patient_service
+                            .associate_patients_with_emergency(model.id, patients, &self.conn)
+                            .await
+                        {
                             return Err(e);
                         }
                     }
-                    transaction.commit().await?;
                     return Ok(model);
                 }
                 Err(e) => {
                     let err_string = e.to_string();
-                    if check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e)).is_some() {
-                        transaction.rollback().await.ok();
+                    if check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e))
+                        .is_some()
+                    {
+                        println!("Duplicate key error: {}, retrying...", err_string);
                         // continue loop with new attempt
                     } else {
-                        transaction.rollback().await.ok();
-                        return Err(CustomError::new(500, format!("Database error: {}", err_string)));
+                        return Err(CustomError::new(
+                            500,
+                            format!("Database error: {}", err_string),
+                        ));
                     }
                 }
             }
         }
     }
-    
+
     pub async fn schedule_emergency(self) -> Result<(), CustomError> {
         let available_ambulances = ambulance::Entity::find()
             .filter(ambulance::Column::Status.eq(AmbulanceStatusEnum::Available)) // Assuming AmbulanceStatusEnum::Available exists

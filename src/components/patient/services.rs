@@ -208,7 +208,7 @@ impl PatientService {
         &self,
         emergency_id: uuid::Uuid,
         patient_data: Option<PatientRequestBody>,
-        transaction: &sea_orm::DatabaseTransaction,
+        transaction: &DatabaseConnection,
     ) -> Result<(), CustomError> {
         use crate::entity::emergency_patient;
         use sea_orm::Set;
@@ -232,7 +232,7 @@ impl PatientService {
         &self,
         emergency_id: uuid::Uuid,
         patients: &[PatientRequestBody],
-        transaction: &sea_orm::DatabaseTransaction,
+        transaction: &DatabaseConnection,
     ) -> Result<(), CustomError> {
         for patient_data in patients {
             self.associate_patient_with_emergency(
