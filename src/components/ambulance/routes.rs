@@ -3,9 +3,8 @@ use crate::entity::ambulance::AmbulancePayload;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{HttpResponse, get, post, web};
+use actix_web::{get, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
-use sea_orm::sqlx::query;
 
 #[post("/ambulance")]
 async fn create(
@@ -31,7 +30,7 @@ pub async fn find_all(
         .find_all(
             query.page.try_into().unwrap(),
             query.per_page.try_into().unwrap(),
-            query.filter.clone()
+            query.filter.clone(),
         )
         .await?;
     let response = http_response_builder::ok(ambulance);

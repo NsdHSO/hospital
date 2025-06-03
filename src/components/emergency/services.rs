@@ -95,7 +95,6 @@ impl EmergencyService {
         let now = Utc::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
-        let mut emergency_model_result: Result<Model, CustomError>;
 
         loop {
             if attempts >= MAX_ATTEMPTS {
@@ -122,30 +121,24 @@ impl EmergencyService {
                             )
                             .await {
                             transaction.rollback().await.ok();
-                            emergency_model_result = Err(e);
-                            break;
+                            return Err(e);
                         }
                     }
                     transaction.commit().await?;
-                    emergency_model_result = Ok(model);
-                    break;
+                    return Ok(model);
                 }
                 Err(e) => {
                     let err_string = e.to_string();
-                    if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, Err(e)) {
+                    if let Some(value) = check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e)) {
                         transaction.rollback().await.ok();
-                        emergency_model_result = value;
-                        // continue loop
+                        // continue loop with new attempt
                     } else {
                         transaction.rollback().await.ok();
-                        emergency_model_result = Err(CustomError::new(500, format!("Database error: {}", err_string)));
-                        break;
+                        return Err(CustomError::new(500, format!("Database error: {}", err_string)));
                     }
                 }
             }
         }
-
-        emergency_model_result
     }
     
     pub async fn schedule_emergency(self) -> Result<(), CustomError> {
