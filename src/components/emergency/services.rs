@@ -24,7 +24,7 @@ impl EmergencyService {
     pub fn new(conn: &DatabaseConnection) -> Self {
         EmergencyService {
             conn: conn.clone(),
-            patient_service: PatientService::new(&conn),
+            patient_service: PatientService::new(conn),©
         }
     }
 
@@ -129,7 +129,7 @@ impl EmergencyService {
                 }
                 Err(e) => {
                     let err_string = e.to_string();
-                    if let Some(value) = check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e)) {
+                    if let Some(_) = check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e)) {
                         transaction.rollback().await.ok();
                         // continue loop with new attempt
                     } else {
