@@ -30,10 +30,10 @@ impl EmergencyService {
 
     pub async fn find_by_ic(
         &self,
-        ambulance_ic: &str,
+        emergency_ic: &str,
     ) -> Result<Option<serde_json::Value>, CustomError> {
         let result = emergency::Entity::find()
-            .filter(emergency::Column::EmergencyIc.eq(ambulance_ic))
+            .filter(emergency::Column::EmergencyIc.eq(emergency_ic))
             .find_also_related(ambulance::Entity)
             .one(&self.conn)
             .await
@@ -181,6 +181,37 @@ impl EmergencyService {
         );
 
         Ok(())
+    }
+
+    /// Returns the passengers JSON for the ambulance currently assigned to an emergency, if any.
+    pub async fn get_passengers_json_for_ambulance(
+        &self,
+        ambulance_id: uuid::Uuid,
+    ) -> Result<Option<serde_json::Value>, CustomError> {
+        use crate::entity::emergency;
+        // Find the emergency where this ambulance is assigned
+        let emergency_entity = emergency::Entity::find()
+            .filter(emergency::Column::IdAmbulance.eq(Some(ambulance_id)))
+            .one(&self.conn)
+            .await?;
+
+        if let Some(emergency) = emergency_entity {
+            // Update emergency.updated_at
+            let mut emergency_active: ActiveModel = emergency.clone().into();
+            emergency_active.updated_at = Set(Utc::now().naive_utc());
+            let _ = emergency_active.update(&self.conn).await;
+
+            // Fetch all patients for this emergency
+            let patients = self
+                .patient_service
+                .find_patients_by_emergency_id(emergency.id)
+                .await?;
+            let passengers_json = serde_json::to_value(&patients)
+                .map_err(|e| CustomError::new(500, format!("Serialization error: {}", e)))?;
+            Ok(Some(passengers_json))
+        } else {
+            Ok(None)
+        }
     }
 
     fn generate_model(

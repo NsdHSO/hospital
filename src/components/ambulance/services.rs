@@ -1,13 +1,18 @@
+use crate::entity::ambulance::Column::Id;
 use crate::entity::ambulance::Model;
 use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
     AmbulanceTypeEnum,
 };
+
 use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
+use chrono::Utc;
+
+use crate::components::emergency::EmergencyService;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
@@ -19,11 +24,77 @@ use sea_orm::{NotSet, QueryFilter, Set};
 
 pub struct AmbulanceService {
     conn: DatabaseConnection,
+    emergency_service: EmergencyService,
+}
+
+impl AmbulanceService {
+    pub(crate) async fn update_ambulance(
+        &self,
+        uuid: Uuid,
+        payload: AmbulancePayload,
+    ) -> Result<Model, CustomError> {
+        let now = Utc::now().naive_utc();
+        let query = Entity::find().filter(Id.eq(uuid)).one(&self.conn).await?;
+
+        let model = match query {
+            Some(model) => model,
+            None => {
+                return Err(CustomError::new(404, "Ambulance not found".to_string()));
+            }
+        };
+
+        let mut active_model: ambulance::ActiveModel = model.into();
+
+        match payload.status {
+            Some(AmbulanceStatusEnum::Available) => {
+                active_model.status = Set(AmbulanceStatusEnum::Available);
+            }
+            Some(AmbulanceStatusEnum::Dispatched) => {
+                active_model.status = Set(AmbulanceStatusEnum::Dispatched);
+            }
+            Some(AmbulanceStatusEnum::EnRouteToScene) => {
+                if let Some(json) = active_model.passengers.as_ref() {
+                    if let Some(array) = json.as_array() {
+                        if array.len() > 0 {
+                            return Err(CustomError::new(400, "Cannot set status to EnRouteToScene when passengers are present".to_string()));
+                        }
+                    }
+                }
+                
+                active_model.status = Set(AmbulanceStatusEnum::EnRouteToScene);
+            }
+            Some(AmbulanceStatusEnum::TransportingPatient) => {
+                active_model.status = Set(AmbulanceStatusEnum::TransportingPatient);
+                let passengers_json = self
+                    .emergency_service
+                    .get_passengers_json_for_ambulance(uuid);
+                active_model.passengers = Set(passengers_json.await.map_err(|e| {
+                    CustomError::new(500, format!("Error fetching passengers: {}", e))
+                })?);
+            }
+            Some(status) => {
+                active_model.status = Set(status);
+            }
+            None => {}
+        }
+
+        active_model.updated_at = Set(now);
+        // Save changes
+        let updated = active_model
+            .update(&self.conn)
+            .await
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+
+        Ok(updated)
+    }
 }
 
 impl AmbulanceService {
     pub fn new(conn: &DatabaseConnection) -> Self {
-        AmbulanceService { conn: conn.clone() }
+        AmbulanceService {
+            conn: conn.clone(),
+            emergency_service: EmergencyService::new(conn),
+        }
     }
 
     pub async fn create_ambulance(

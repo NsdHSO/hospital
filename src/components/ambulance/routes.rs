@@ -3,8 +3,9 @@ use crate::entity::ambulance::AmbulancePayload;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{get, patch, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
+use uuid::Uuid;
 
 #[post("/ambulance")]
 async fn create(
@@ -14,6 +15,20 @@ async fn create(
     let service = AmbulanceService::new(db_conn.get_ref());
     let ambulance = service
         .create_ambulance(Option::from(ambulance.into_inner()))
+        .await?;
+    let response = http_response_builder::ok(ambulance);
+    Ok(HttpResponse::Ok().json(response))
+}
+
+#[patch("/ambulance/{uuid_ambulance}")]
+async fn update(
+    uuid_ambulance: web::Path<Uuid>,
+    ambulance_payload: web::Json<AmbulancePayload>,
+    db_conn: web::Data<DatabaseConnection>,
+) -> Result<HttpResponse, CustomError> {
+    let service = AmbulanceService::new(db_conn.get_ref());
+    let ambulance = service
+        .update_ambulance(uuid_ambulance.into_inner(), ambulance_payload.clone())
         .await?;
     let response = http_response_builder::ok(ambulance);
     Ok(HttpResponse::Ok().json(response))
@@ -37,6 +52,7 @@ pub async fn find_all(
     Ok(HttpResponse::Ok().json(response))
 }
 pub fn init_routes(config: &mut web::ServiceConfig) {
+    config.service(update);
     config.service(find_all);
     config.service(create);
 }
