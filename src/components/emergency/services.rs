@@ -24,7 +24,7 @@ impl EmergencyService {
     pub fn new(conn: &DatabaseConnection) -> Self {
         EmergencyService {
             conn: conn.clone(),
-            patient_service: PatientService::new(conn),©
+            patient_service: PatientService::new(conn),
         }
     }
 
