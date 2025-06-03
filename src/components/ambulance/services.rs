@@ -65,12 +65,18 @@ impl AmbulanceService {
             }
             Some(AmbulanceStatusEnum::TransportingPatient) => {
                 active_model.status = Set(AmbulanceStatusEnum::TransportingPatient);
-                let passengers_json = self
+                // Fetch passengers as Vec<patient::Model>
+                let passengers_vec = self
                     .emergency_service
-                    .get_passengers_json_for_ambulance(uuid);
-                active_model.passengers = Set(passengers_json.await.map_err(|e| {
-                    CustomError::new(500, format!("Error fetching passengers: {}", e))
-                })?);
+                    .get_passengers_json_for_ambulance(uuid)
+                    .await
+                    .map_err(|e| CustomError::new(500, format!("Error fetching passengers: {}", e)))?;
+     
+                // Serialize to JSON
+                let passengers_json = serde_json::to_value(&passengers_vec)
+                    .map(Into::into)
+                    .map_err(|e| CustomError::new(500, format!("Serialization error: {}", e)))?;
+                active_model.passengers = Set(Some(passengers_json));
             }
             Some(status) => {
                 active_model.status = Set(status);
