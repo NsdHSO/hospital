@@ -129,7 +129,7 @@ impl EmergencyService {
                 }
                 Err(e) => {
                     let err_string = e.to_string();
-                    if let Some(_) = check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e)) {
+                    if check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e)).is_some() {
                         transaction.rollback().await.ok();
                         // continue loop with new attempt
                     } else {
