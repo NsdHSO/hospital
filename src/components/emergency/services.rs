@@ -8,7 +8,7 @@ use crate::entity::sea_orm_active_enums::{
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
-use chrono::{NaiveDateTime, Utc};
+use chrono::{Local, NaiveDateTime};
 use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
@@ -100,7 +100,7 @@ impl EmergencyService {
         &self,
         emergency_data: EmergencyRequestBody,
     ) -> Result<Model, CustomError> {
-        let now = Utc::now().naive_utc();
+        let now = Local::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
 
@@ -167,7 +167,7 @@ impl EmergencyService {
 
         let mut ambulance_active_model: ambulance::ActiveModel = assigned_ambulance.clone().into(); // Convert to ActiveModel
         ambulance_active_model.status = Set(AmbulanceStatusEnum::Dispatched); // Assuming AmbulanceStatusEnum::EnRoute exists
-        ambulance_active_model.updated_at = Set(Utc::now().naive_utc());
+        ambulance_active_model.updated_at = Set(Local::now().naive_utc());
         let updated_ambulance = ambulance_active_model
             .update(&self.conn)
             .await // Save the changes to the database
@@ -198,7 +198,7 @@ impl EmergencyService {
         if let Some(emergency) = emergency_entity {
             // Update emergency.updated_at
             let mut emergency_active: ActiveModel = emergency.clone().into();
-            emergency_active.updated_at = Set(Utc::now().naive_utc());
+            emergency_active.updated_at = Set(Local::now().naive_utc());
             let _ = emergency_active.update(&self.conn).await;
 
             // Fetch all patients for this emergency

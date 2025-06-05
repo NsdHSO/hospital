@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{Local};
 use log::{error, warn};
 use sea_orm::*;
 
@@ -226,7 +226,7 @@ async fn dispatch_ambulance(
     let mut emergency_active_model: emergency::ActiveModel = emergency.clone().into();
     emergency_active_model.status = Set(EmergencyStatusEnum::InProgress);
     emergency_active_model.id_ambulance = Set(Some(ambulance.id));
-    emergency_active_model.updated_at = Set(Utc::now().naive_utc());
+    emergency_active_model.updated_at = Set(Local::now().naive_utc());
 
     println!(
         "Attempting to update emergency with status: {:?} and ambulance_id: {:?}",
@@ -260,7 +260,7 @@ async fn dispatch_ambulance(
 
     let mut ambulance_active_model: ambulance::ActiveModel = ambulance.clone().into();
     ambulance_active_model.status = Set(AmbulanceStatusEnum::Dispatched);
-    ambulance_active_model.updated_at = Set(Utc::now().naive_utc());
+    ambulance_active_model.updated_at = Set(Local::now().naive_utc());
 
     println!(
         "Attempting to update ambulance with status: {:?}",

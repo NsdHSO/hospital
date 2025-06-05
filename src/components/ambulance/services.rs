@@ -1,3 +1,4 @@
+use chrono::Local;
 use crate::entity::ambulance::Column::Id;
 use crate::entity::ambulance::Model;
 use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
@@ -10,9 +11,9 @@ use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
-use chrono::Utc;
 
 use crate::components::emergency::EmergencyService;
+use crate::components::patient::PatientService;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
@@ -25,15 +26,23 @@ use sea_orm::{NotSet, QueryFilter, Set};
 pub struct AmbulanceService {
     conn: DatabaseConnection,
     emergency_service: EmergencyService,
+    patient_service: PatientService,
 }
 
 impl AmbulanceService {
+    pub fn new(conn: &DatabaseConnection) -> Self {
+        AmbulanceService {
+            conn: conn.clone(),
+            emergency_service: EmergencyService::new(conn),
+            patient_service: PatientService::new(conn),
+        }
+    }
     pub(crate) async fn update_ambulance(
         &self,
         uuid: Uuid,
         payload: AmbulancePayload,
     ) -> Result<Model, CustomError> {
-        let now = Utc::now().naive_utc();
+        let now = Local::now().naive_utc();
         let query = Entity::find().filter(Id.eq(uuid)).one(&self.conn).await?;
 
         let model = match query {
@@ -56,26 +65,48 @@ impl AmbulanceService {
                 if let Some(json) = active_model.passengers.as_ref() {
                     if let Some(array) = json.as_array() {
                         if array.len() > 0 {
-                            return Err(CustomError::new(400, "Cannot set status to EnRouteToScene when passengers are present".to_string()));
+                            return Err(CustomError::new(
+                                400,
+                                "Cannot set status to EnRouteToScene when passengers are present"
+                                    .to_string(),
+                            ));
                         }
                     }
                 }
-                
+
                 active_model.status = Set(AmbulanceStatusEnum::EnRouteToScene);
             }
             Some(AmbulanceStatusEnum::TransportingPatient) => {
                 active_model.status = Set(AmbulanceStatusEnum::TransportingPatient);
-                // Fetch passengers as Vec<patient::Model>
-                let passengers_vec = self
+                // Fetch passengers as Option<serde_json::Value>
+                let passengers_json_opt = self
                     .emergency_service
                     .get_passengers_json_for_ambulance(uuid)
                     .await
-                    .map_err(|e| CustomError::new(500, format!("Error fetching passengers: {}", e)))?;
-     
-                // Serialize to JSON
-                let passengers_json = serde_json::to_value(&passengers_vec)
-                    .map(Into::into)
-                    .map_err(|e| CustomError::new(500, format!("Serialization error: {}", e)))?;
+                    .map_err(|e| {
+                        CustomError::new(500, format!("Error fetching passengers: {}", e))
+                    })?;
+
+                // Get ambulance hospital_id as string
+                let ambulance_hospital_id = active_model.hospital_id.clone().unwrap();
+
+                // Set hospital_id for each passenger object
+                let mut passengers_with_hospital = Vec::new();
+                if let Some(serde_json::Value::Array(ref passenger_array)) = passengers_json_opt {
+                    for passenger in passenger_array.iter() {
+                        match passenger {
+                            serde_json::Value::Object(obj) => {
+                                let mut obj = obj.clone();
+                                obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.clone()));
+                                passengers_with_hospital.push(serde_json::Value::Object(obj));
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+
+                // Serialize to JSON as a flat array
+                let passengers_json = serde_json::Value::Array(passengers_with_hospital);
                 active_model.passengers = Set(Some(passengers_json));
             }
             Some(status) => {
@@ -92,15 +123,6 @@ impl AmbulanceService {
             .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
 
         Ok(updated)
-    }
-}
-
-impl AmbulanceService {
-    pub fn new(conn: &DatabaseConnection) -> Self {
-        AmbulanceService {
-            conn: conn.clone(),
-            emergency_service: EmergencyService::new(conn),
-        }
     }
 
     pub async fn create_ambulance(
@@ -198,7 +220,7 @@ impl AmbulanceService {
 pub fn generate_payload_to_create_ambulance(
     payload: Option<AmbulancePayload>,
 ) -> ambulance::ActiveModel {
-    let now = chrono::Utc::now().naive_utc();
+    let now = Local::now().naive_local(); 
     let payload = payload.unwrap_or_default();
     let car_details = payload.car_details.unwrap_or_default();
     ambulance::ActiveModel {

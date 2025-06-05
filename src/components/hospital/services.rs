@@ -1,5 +1,5 @@
 use crate::entity::hospital::{ActiveModel, HospitalRequestBody, Model};
-use chrono::{NaiveDateTime, Utc};
+use chrono::{Local, NaiveDateTime};
 
 use crate::entity::hospital;
 use crate::error_handler::CustomError;
@@ -22,7 +22,7 @@ impl HospitalService {
         emergency_data: Option<HospitalRequestBody>,
     ) -> Result<Model, CustomError> {
         // Generate unique emergency_ic (using nanoid for a short, unique string)
-        let now = Utc::now().naive_utc();
+        let now = Local::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
 

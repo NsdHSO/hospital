@@ -3,11 +3,13 @@ use crate::entity::patient;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
-use chrono::{NaiveDateTime, Utc};
+use chrono::{Local, NaiveDateTime};
 use percent_encoding::percent_decode_str;
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
+use uuid::Uuid;
+use crate::entity::patient::{Column, Entity};
 
 pub struct PatientService {
     conn: DatabaseConnection,
@@ -17,6 +19,33 @@ impl PatientService {
     pub fn new(conn: &DatabaseConnection) -> Self {
         PatientService { conn: conn.clone() }
     }
+    
+    pub(crate) async fn associate_hospital_with_patient(
+        &self,
+        patient_id: Uuid,
+        hospital_id: String,
+    ) {
+        let query_result = Entity::find()
+            .filter(Column::Id.eq(patient_id))
+            .one(&self.conn)
+            .await;
+
+        match query_result {
+            Ok(Some(model)) => {
+                let mut query_active: ActiveModel = model.into();
+                query_active.updated_at = Set(Local::now().naive_utc());
+                query_active.hospital_id = Set(hospital_id.parse().unwrap());
+                let _ = query_active.update(&self.conn).await;
+            }
+            Ok(None) => {
+            }
+            Err(e) => {
+                // Log the error or handle as needed
+                eprintln!("Failed to fetch available patient: {}", e);
+            }
+        }
+    }
+    
     pub async fn create_patient(
         &self,
         patient_data: Option<PatientRequestBody>,
@@ -27,7 +56,7 @@ impl PatientService {
             None => return Err(CustomError::new(400, "Missing patient data".to_string())),
         };
 
-        let now = Utc::now().naive_utc();
+        let now = Local::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
         // Check if patient_ic exists in DB
@@ -206,7 +235,7 @@ impl PatientService {
     /// Returns an error if any association fails.
     pub async fn associate_patient_with_emergency(
         &self,
-        emergency_id: uuid::Uuid,
+        emergency_id: Uuid,
         patient_data: Option<PatientRequestBody>,
         transaction: &DatabaseConnection,
     ) -> Result<(), CustomError> {
@@ -230,7 +259,7 @@ impl PatientService {
     /// Returns an error if any association fails.
     pub async fn associate_patients_with_emergency(
         &self,
-        emergency_id: uuid::Uuid,
+        emergency_id: Uuid,
         patients: &[PatientRequestBody],
         transaction: &DatabaseConnection,
     ) -> Result<(), CustomError> {
