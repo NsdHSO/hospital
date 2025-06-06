@@ -2,7 +2,7 @@ use crate::entity::patient::{ActiveModel, Model, PatientRequestBody};
 use crate::entity::patient;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use chrono::{Local, NaiveDateTime};
 use percent_encoding::percent_decode_str;
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
@@ -34,7 +34,7 @@ impl PatientService {
         match query_result {
             Ok(Some(model)) => {
                 let mut query_active: ActiveModel = model.into();
-                query_active.updated_at = Set(Local::now().naive_utc());
+                query_active.updated_at = Set(now_time());
                 query_active.hospital_id = Set(hospital_id.parse().unwrap());
                 let _ = query_active.update(&self.conn).await;
             }

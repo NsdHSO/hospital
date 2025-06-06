@@ -5,7 +5,7 @@ use sea_orm::*;
 use crate::entity::sea_orm_active_enums::{AmbulanceStatusEnum, EmergencyStatusEnum};
 use crate::entity::{ambulance, emergency};
 use crate::error_handler::CustomError;
-use crate::utils::helpers::calculate_distance;
+use crate::utils::helpers::{calculate_distance, now_time};
 
 pub struct EmergencyAllocationService {
     conn: DatabaseConnection,
@@ -226,7 +226,7 @@ async fn dispatch_ambulance(
     let mut emergency_active_model: emergency::ActiveModel = emergency.clone().into();
     emergency_active_model.status = Set(EmergencyStatusEnum::InProgress);
     emergency_active_model.id_ambulance = Set(Some(ambulance.id));
-    emergency_active_model.updated_at = Set(Local::now().naive_utc());
+    emergency_active_model.updated_at = Set(now_time());
 
     println!(
         "Attempting to update emergency with status: {:?} and ambulance_id: {:?}",

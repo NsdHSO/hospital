@@ -4,7 +4,7 @@ use chrono::{Local, NaiveDateTime};
 use crate::entity::hospital;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
@@ -22,7 +22,7 @@ impl HospitalService {
         emergency_data: Option<HospitalRequestBody>,
     ) -> Result<Model, CustomError> {
         // Generate unique emergency_ic (using nanoid for a short, unique string)
-        let now = Local::now().naive_utc();
+        let now = now_time();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
 

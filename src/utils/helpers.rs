@@ -1,6 +1,8 @@
+use crate::error_handler::CustomError;
+use chrono::NaiveDateTime;
+use chrono_tz::Europe;
 use nanoid::nanoid;
 use sea_orm::DbErr;
-use crate::error_handler::CustomError;
 
 pub fn calculate_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     const EARTH_RADIUS: f64 = 6371.0;
@@ -49,14 +51,14 @@ pub fn generate_ic_with_length(length: Option<usize>) -> i32 {
 ///
 /// * `T`: The type of the successful result (e.g., database model, entity)
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `attempts`: Mutable reference to the retry counter that gets incremented on duplicate key errors
 /// * `result`: The database operation result to examine (Result<T, DbErr>)
 ///
 /// returns: Option<Result<T, CustomError>> - Some(Ok(value)) on success, Some(Err(error)) on non-duplicate errors, None on duplicate key (for retry)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let mut retry_count = 0;
@@ -73,7 +75,10 @@ pub fn generate_ic_with_length(length: Option<usize>) -> i32 {
 ///     return final_result;
 /// }
 /// ```
-pub fn check_if_is_duplicate_key_from_data_base<T>(attempts: &mut usize, result: Result<T, DbErr>) -> Option<Result<T, CustomError>> {
+pub fn check_if_is_duplicate_key_from_data_base<T>(
+    attempts: &mut usize,
+    result: Result<T, DbErr>,
+) -> Option<Result<T, CustomError>> {
     match result {
         Ok(value) => Some(Ok(value)),
         Err(DbErr::Exec(e)) => {
@@ -97,4 +102,10 @@ pub fn check_if_is_duplicate_key_from_data_base<T>(attempts: &mut usize, result:
             Some(Err(CustomError::from(e)))
         }
     }
+}
+
+pub fn now_time() -> NaiveDateTime {
+    chrono::Utc::now()
+        .with_timezone(&Europe::Bucharest)
+        .naive_local()
 }

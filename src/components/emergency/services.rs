@@ -7,7 +7,7 @@ use crate::entity::sea_orm_active_enums::{
 };
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use chrono::{Local, NaiveDateTime};
 use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
@@ -100,7 +100,7 @@ impl EmergencyService {
         &self,
         emergency_data: EmergencyRequestBody,
     ) -> Result<Model, CustomError> {
-        let now = Local::now().naive_utc();
+        let now = now_time();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
 
@@ -163,18 +163,13 @@ impl EmergencyService {
 
         let mut ambulance_active_model: ambulance::ActiveModel = assigned_ambulance.clone().into(); // Convert to ActiveModel
         ambulance_active_model.status = Set(AmbulanceStatusEnum::Dispatched); // Assuming AmbulanceStatusEnum::EnRoute exists
-        ambulance_active_model.updated_at = Set(Local::now().naive_utc());
-        let updated_ambulance = ambulance_active_model
+        ambulance_active_model.updated_at = Set(now_time());
+        ambulance_active_model
             .update(&self.conn)
             .await // Save the changes to the database
             .map_err(|e| {
                 CustomError::new(500, format!("Failed to update ambulance status: {}", e))
-            })?; // This returns the updated Model
-
-        println!(
-            "Emergency scheduled and ambulance assigned. {:?}",
-            updated_ambulance
-        );
+            })?;
 
         Ok(())
     }
@@ -183,7 +178,7 @@ impl EmergencyService {
     pub async fn get_passengers_json_for_ambulance(
         &self,
         ambulance_id: uuid::Uuid,
-    ) -> Result<Option<serde_json::Value>, CustomError> {
+    ) -> Result<Option<serde_json::Value>, CustomError> {gis
         use crate::entity::emergency;
         // Find the emergency where this ambulance is assigned
         let emergency_entity = emergency::Entity::find()
@@ -194,7 +189,7 @@ impl EmergencyService {
         if let Some(emergency) = emergency_entity {
             // Update emergency.updated_at
             let mut emergency_active: ActiveModel = emergency.clone().into();
-            emergency_active.updated_at = Set(Local::now().naive_utc());
+            emergency_active.updated_at = Set(now_time());
             let _ = emergency_active.update(&self.conn).await;
 
             // Fetch all patients for this emergency

@@ -1,4 +1,5 @@
 use chrono::Local;
+use chrono_tz::Europe;
 use crate::entity::ambulance::Column::Id;
 use crate::entity::ambulance::{ActiveModel, Model};
 use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
@@ -10,7 +11,7 @@ use crate::entity::sea_orm_active_enums::{
 use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
-use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 
 use crate::components::emergency::EmergencyService;
 use crate::components::patient::PatientService;
@@ -42,7 +43,7 @@ impl AmbulanceService {
         uuid: Uuid,
         payload: AmbulancePayload,
     ) -> Result<Model, CustomError> {
-        let now = Local::now().naive_utc();
+        let now = now_time();
         let query = Entity::find().filter(Id.eq(uuid)).one(&self.conn).await?;
 
         let model = match query {
@@ -222,8 +223,9 @@ impl AmbulanceService {
 pub fn generate_payload_to_create_ambulance(
     payload: Option<AmbulancePayload>,
 ) -> ambulance::ActiveModel {
-    let now = Local::now().naive_local(); 
+    let now = chrono::Utc::now().with_timezone(&Europe::Bucharest).naive_local();
     let payload = payload.unwrap_or_default();
+    println!("Payload: {:?}", now);
     let car_details = payload.car_details.unwrap_or_default();
     ambulance::ActiveModel {
         // Always set these system fields
