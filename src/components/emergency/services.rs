@@ -121,13 +121,9 @@ impl EmergencyService {
                 Ok(model) => {
                     // Associate patients if provided
                     if let Some(patients) = emergency_data.patients.as_ref() {
-                        if let Err(e) = self
-                            .patient_service
+                        self.patient_service
                             .associate_patients_with_emergency(model.id, patients, &self.conn)
-                            .await
-                        {
-                            return Err(e);
-                        }
+                            .await?;
                     }
                     return Ok(model);
                 }

@@ -64,7 +64,7 @@ impl AmbulanceService {
             Some(AmbulanceStatusEnum::EnRouteToScene) => {
                 if let Some(json) = active_model.passengers.as_ref() {
                     if let Some(array) = json.as_array() {
-                        if array.len() > 0 {
+                        if array.is_empty() {
                             return Err(CustomError::new(
                                 400,
                                 "Cannot set status to EnRouteToScene when passengers are present"
@@ -113,13 +113,10 @@ impl AmbulanceService {
         let mut passengers_with_hospital = Vec::new();
         if let Some(serde_json::Value::Array(ref passenger_array)) = passengers_json_opt {
             for passenger in passenger_array.iter() {
-                match passenger {
-                    serde_json::Value::Object(obj) => {
-                        let mut obj = obj.clone();
-                        obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.clone()));
-                        passengers_with_hospital.push(serde_json::Value::Object(obj));
-                    }
-                    _ => {}
+                if let serde_json::Value::Object(obj) = passenger {
+                    let mut obj = obj.clone();
+                    obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.clone()));
+                    passengers_with_hospital.push(serde_json::Value::Object(obj));
                 }
             }
         }

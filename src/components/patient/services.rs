@@ -19,7 +19,8 @@ impl PatientService {
     pub fn new(conn: &DatabaseConnection) -> Self {
         PatientService { conn: conn.clone() }
     }
-    
+
+    #[allow(dead_code)]
     pub(crate) async fn associate_hospital_with_patient(
         &self,
         patient_id: Uuid,
