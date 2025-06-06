@@ -178,7 +178,7 @@ impl EmergencyService {
     pub async fn get_passengers_json_for_ambulance(
         &self,
         ambulance_id: uuid::Uuid,
-    ) -> Result<Option<serde_json::Value>, CustomError> {gis
+    ) -> Result<Option<serde_json::Value>, CustomError> {
         use crate::entity::emergency;
         // Find the emergency where this ambulance is assigned
         let emergency_entity = emergency::Entity::find()
