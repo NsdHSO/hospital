@@ -304,27 +304,38 @@ For additional support, please open an issue on the project repository.
 
 ## 7. Component Relationships Diagram
 
-This diagram represents the relationships between the different components of the Hospital Emergency Management System:
+This UML diagram represents the relationships between the different components of the Hospital Emergency Management System:
 
+```plantuml
+@startuml
+
+package "Hospital Management System" {
+  [Hospital Component] as Hospital
+  [Ambulance Component] as Ambulance
+  [Emergency Component] as Emergency
+  [Patient Component] as Patient
+  [Dashboard Component] as Dashboard
+  [Card Component] as Card
+}
+
+' Component relationships
+Hospital "1" *-- "many" Ambulance : owns >
+Hospital "1" *-- "many" Patient : manages >
+Ambulance "1" --> "many" Emergency : dispatched to >
+Emergency "1" o-- "many" Patient : involves >
+Patient "many" -- "many" Emergency : associated with >
+Dashboard "1" *-- "many" Card : displays >
+
+@enduml
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                        Hospital Component                      │
-└───────────────────────────────────────────────────────────────┘
-                │               │
-                │               │ manages
-                │ owns          ▼
-                │       ┌───────────────────┐     dispatched to     ┌───────────────────┐
-                └───────▶│ Ambulance        │────────────────────▶│ Emergency        │
-                        │ Component         │                     │ Component         │
-                        └───────────────────┘                     └───────────────────┘
-                                                                        │
-                                                                        │ involves
-                                                                        ▼
-┌───────────────────┐       displays       ┌───────────────────┐      ┌───────────────────┐
-│ Dashboard         │─────────────────────▶│ Card              │      │ Patient           │
-│ Component         │                     │ Component         │      │ Component         │
-└───────────────────┘                     └───────────────────┘      └───────────────────┘
-```
+![img.png](img.png)
+
+In this UML diagram:
+* `*--` represents composition/ownership relationship
+* `o--` represents aggregation relationship
+* `-->` represents directed association
+* `--` represents bidirectional association
+* Numbers indicate cardinality (one-to-many, many-to-many, etc.)
 
 ### Component Details
 
