@@ -298,8 +298,64 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - The Rust community for their excellent libraries and tools
 - Contributors to this project
 
+For additional support, please open an issue on the project repository.
+
 ---
 
-For additional support, please open an issue on the project repository.
+## 7. Component Relationships Diagram
+
+This diagram represents the relationships between the different components of the Hospital Emergency Management System:
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│                        Hospital Component                      │
+└───────────────────────────────────────────────────────────────┘
+                │               │
+                │               │ manages
+                │ owns          ▼
+                │       ┌───────────────────┐     dispatched to     ┌───────────────────┐
+                └───────▶│ Ambulance        │────────────────────▶│ Emergency        │
+                        │ Component         │                     │ Component         │
+                        └───────────────────┘                     └───────────────────┘
+                                                                        │
+                                                                        │ involves
+                                                                        ▼
+┌───────────────────┐       displays       ┌───────────────────┐      ┌───────────────────┐
+│ Dashboard         │─────────────────────▶│ Card              │      │ Patient           │
+│ Component         │                     │ Component         │      │ Component         │
+└───────────────────┘                     └───────────────────┘      └───────────────────┘
+```
+
+### Component Details
+
+1. **Hospital Component**
+   - Manages hospital information and resources
+   - Owns and manages ambulances
+   - Services: Hospital management, resource tracking
+
+2. **Ambulance Component**
+   - Manages ambulance fleet and dispatch
+   - Belongs to a specific hospital
+   - Services: Ambulance status tracking, dispatch management
+
+3. **Emergency Component**
+   - Handles emergency case information
+   - Connects patients with ambulances and hospitals
+   - Services: Emergency creation, status updates, ambulance assignment
+
+4. **Patient Component**
+   - Manages patient information
+   - Connected to emergency cases
+   - Services: Patient registration, medical history
+
+5. **Dashboard Component**
+   - Provides system visualization
+   - Services: Dashboard configuration and management
+
+6. **Card Component**
+   - Visual elements for dashboards
+   - Services: Card creation and configuration
+
+Each component follows a modular structure with routes, services, and data models, promoting separation of concerns and maintainability.
 
 # hospital
