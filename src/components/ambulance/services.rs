@@ -1,6 +1,6 @@
 use chrono::Local;
 use crate::entity::ambulance::Column::Id;
-use crate::entity::ambulance::Model;
+use crate::entity::ambulance::{ActiveModel, Model};
 use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
@@ -77,37 +77,7 @@ impl AmbulanceService {
                 active_model.status = Set(AmbulanceStatusEnum::EnRouteToScene);
             }
             Some(AmbulanceStatusEnum::TransportingPatient) => {
-                active_model.status = Set(AmbulanceStatusEnum::TransportingPatient);
-                // Fetch passengers as Option<serde_json::Value>
-                let passengers_json_opt = self
-                    .emergency_service
-                    .get_passengers_json_for_ambulance(uuid)
-                    .await
-                    .map_err(|e| {
-                        CustomError::new(500, format!("Error fetching passengers: {}", e))
-                    })?;
-
-                // Get ambulance hospital_id as string
-                let ambulance_hospital_id = active_model.hospital_id.clone().unwrap();
-
-                // Set hospital_id for each passenger object
-                let mut passengers_with_hospital = Vec::new();
-                if let Some(serde_json::Value::Array(ref passenger_array)) = passengers_json_opt {
-                    for passenger in passenger_array.iter() {
-                        match passenger {
-                            serde_json::Value::Object(obj) => {
-                                let mut obj = obj.clone();
-                                obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.clone()));
-                                passengers_with_hospital.push(serde_json::Value::Object(obj));
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-
-                // Serialize to JSON as a flat array
-                let passengers_json = serde_json::Value::Array(passengers_with_hospital);
-                active_model.passengers = Set(Some(passengers_json));
+                self.set_transport_patient(uuid, &mut active_model).await?;
             }
             Some(status) => {
                 active_model.status = Set(status);
@@ -123,6 +93,41 @@ impl AmbulanceService {
             .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
 
         Ok(updated)
+    }
+
+    async fn set_transport_patient(&self, uuid: Uuid, active_model: &mut ActiveModel) -> Result<(), CustomError> {
+        active_model.status = Set(AmbulanceStatusEnum::TransportingPatient);
+        // Fetch passengers as Option<serde_json::Value>
+        let passengers_json_opt = self
+            .emergency_service
+            .get_passengers_json_for_ambulance(uuid)
+            .await
+            .map_err(|e| {
+                CustomError::new(500, format!("Error fetching passengers: {}", e))
+            })?;
+
+        // Get ambulance hospital_id as string
+        let ambulance_hospital_id = active_model.hospital_id.clone().unwrap();
+
+        // Set hospital_id for each passenger object
+        let mut passengers_with_hospital = Vec::new();
+        if let Some(serde_json::Value::Array(ref passenger_array)) = passengers_json_opt {
+            for passenger in passenger_array.iter() {
+                match passenger {
+                    serde_json::Value::Object(obj) => {
+                        let mut obj = obj.clone();
+                        obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.clone()));
+                        passengers_with_hospital.push(serde_json::Value::Object(obj));
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        // Serialize to JSON as a flat array
+        let passengers_json = serde_json::Value::Array(passengers_with_hospital);
+        active_model.passengers = Set(Some(passengers_json));
+        Ok(())
     }
 
     pub async fn create_ambulance(
