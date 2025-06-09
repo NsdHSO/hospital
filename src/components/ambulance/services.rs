@@ -223,9 +223,8 @@ impl AmbulanceService {
 pub fn generate_payload_to_create_ambulance(
     payload: Option<AmbulancePayload>,
 ) -> ambulance::ActiveModel {
-    let now = chrono::Utc::now().with_timezone(&Europe::Bucharest).naive_local();
+    let now = now_time();
     let payload = payload.unwrap_or_default();
-    println!("Payload: {:?}", now);
     let car_details = payload.car_details.unwrap_or_default();
     ambulance::ActiveModel {
         // Always set these system fields
