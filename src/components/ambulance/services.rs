@@ -1,5 +1,3 @@
-use chrono::Local;
-use chrono_tz::Europe;
 use crate::entity::ambulance::Column::Id;
 use crate::entity::ambulance::{ActiveModel, Model};
 use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
@@ -7,6 +5,7 @@ use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
     AmbulanceTypeEnum,
 };
+use chrono_tz::Europe;
 
 use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
@@ -222,11 +221,11 @@ impl AmbulanceService {
 
 pub fn generate_payload_to_create_ambulance(
     payload: Option<AmbulancePayload>,
-) -> ambulance::ActiveModel {
+) -> ActiveModel {
     let now = now_time();
     let payload = payload.unwrap_or_default();
     let car_details = payload.car_details.unwrap_or_default();
-    ambulance::ActiveModel {
+    ActiveModel {
         // Always set these system fields
         id: NotSet,
         created_at: Set(now),
