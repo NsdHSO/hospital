@@ -92,8 +92,8 @@ impl PatientService {
         value: &str,
     ) -> Result<Option<Model>, CustomError> {
         let query = match field {
-            "patient_ic" => patient::Entity::find().filter(patient::Column::PatientIc.like(value)),
-            "first_name" => patient::Entity::find().filter(patient::Column::FirstName.like(value)),
+            "patient_ic" => Entity::find().filter(Column::PatientIc.like(value)),
+            "first_name" => Entity::find().filter(Column::FirstName.like(value)),
             _ => {
                 return Err(CustomError::new(
                     400,
@@ -121,7 +121,7 @@ impl PatientService {
         per_page: u64,
         filter: Option<String>,
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
-        let mut query = patient::Entity::find();
+        let mut query = Entity::find();
         if let Some(filter_str) = filter {
             if filter_str.starts_with("ic=") {
                 // Extract the IC name portion after "IC="
@@ -159,6 +159,66 @@ impl PatientService {
             data: records,
             pagination,
         })
+    }
+
+
+    /// Associates a patient with a given emergency ID in the emergency_patient table.
+    /// If the patient does not exist, it will be created using create_patient.
+    /// Returns an error if any association fails.
+    pub async fn associate_patient_with_emergency(
+        &self,
+        emergency_id: Uuid,
+        patient_data: Option<PatientRequestBody>,
+        transaction: &DatabaseConnection,
+    ) -> Result<(), CustomError> {
+        use crate::entity::emergency_patient;
+        use sea_orm::Set;
+        // Create the patient (or you could check if exists first, then create if not)
+        let created_patient = self.create_patient(patient_data).await?;
+        let junction = emergency_patient::ActiveModel {
+            emergency_id: Set(emergency_id),
+            patient_id: Set(created_patient.id),
+        };
+        junction.insert(transaction).await.map_err(|e| {
+            CustomError::new(500, format!("Failed to link patient to emergency: {}", e))
+        })?;
+
+        Ok(())
+    }
+
+    /// Associates a list of patients with a given emergency ID in the emergency_patient table.
+    /// If a patient does not exist, it will be created using create_patient.
+    /// Returns an error if any association fails.
+    pub async fn associate_patients_with_emergency(
+        &self,
+        emergency_id: Uuid,
+        patients: &[PatientRequestBody],
+        transaction: &DatabaseConnection,
+    ) -> Result<(), CustomError> {
+        for patient_data in patients {
+            self.associate_patient_with_emergency(
+                emergency_id,
+                Some(patient_data.clone()),
+                transaction,
+            )
+            .await?;
+        }
+        Ok(())
+    }
+
+    /// Find all patients related to a given emergency ID (many-to-many).
+    pub async fn find_patients_by_emergency_id(
+        &self,
+        emergency_id: uuid::Uuid,
+    ) -> Result<Vec<Model>, CustomError> {
+        use crate::entity::{emergency_patient, patient};
+        let patient_models = emergency_patient::Entity::find()
+            .filter(emergency_patient::Column::EmergencyId.eq(emergency_id))
+            .find_also_related(patient::Entity)
+            .all(&self.conn)
+            .await
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
     }
 
     fn generate_model(p0: Option<PatientRequestBody>, p1: NaiveDateTime) -> ActiveModel {
@@ -229,64 +289,5 @@ impl PatientService {
             },
             id: Default::default(),
         }
-    }
-
-    /// Associates a patient with a given emergency ID in the emergency_patient table.
-    /// If the patient does not exist, it will be created using create_patient.
-    /// Returns an error if any association fails.
-    pub async fn associate_patient_with_emergency(
-        &self,
-        emergency_id: Uuid,
-        patient_data: Option<PatientRequestBody>,
-        transaction: &DatabaseConnection,
-    ) -> Result<(), CustomError> {
-        use crate::entity::emergency_patient;
-        use sea_orm::Set;
-        // Create the patient (or you could check if exists first, then create if not)
-        let created_patient = self.create_patient(patient_data).await?;
-        let junction = emergency_patient::ActiveModel {
-            emergency_id: Set(emergency_id),
-            patient_id: Set(created_patient.id),
-        };
-        junction.insert(transaction).await.map_err(|e| {
-            CustomError::new(500, format!("Failed to link patient to emergency: {}", e))
-        })?;
-
-        Ok(())
-    }
-
-    /// Associates a list of patients with a given emergency ID in the emergency_patient table.
-    /// If a patient does not exist, it will be created using create_patient.
-    /// Returns an error if any association fails.
-    pub async fn associate_patients_with_emergency(
-        &self,
-        emergency_id: Uuid,
-        patients: &[PatientRequestBody],
-        transaction: &DatabaseConnection,
-    ) -> Result<(), CustomError> {
-        for patient_data in patients {
-            self.associate_patient_with_emergency(
-                emergency_id,
-                Some(patient_data.clone()),
-                transaction,
-            )
-            .await?;
-        }
-        Ok(())
-    }
-
-    /// Find all patients related to a given emergency ID (many-to-many).
-    pub async fn find_patients_by_emergency_id(
-        &self,
-        emergency_id: uuid::Uuid,
-    ) -> Result<Vec<Model>, CustomError> {
-        use crate::entity::{emergency_patient, patient};
-        let patient_models = emergency_patient::Entity::find()
-            .filter(emergency_patient::Column::EmergencyId.eq(emergency_id))
-            .find_also_related(patient::Entity)
-            .all(&self.conn)
-            .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
-        Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
     }
 }
