@@ -10,11 +10,9 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "bedIc", unique)]
+    #[sea_orm( unique)]
     pub bed_ic: i32,
-    #[sea_orm(column_name = "roomId")]
     pub room_id: i32,
-    #[sea_orm(column_name = "isOccupied")]
     pub is_occupied: Option<bool>,
     pub r#type: BedTypeEnum,
 }

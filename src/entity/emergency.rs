@@ -14,8 +14,9 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = true)]
     pub id: Uuid,
+    pub hospital_id: Option<Uuid>,
+    pub id_ambulance: Option<Uuid>,
     pub emergency_ic: String,
-    
     pub reported_by: Option<i32>,
     #[sea_orm(column_type = "Text", nullable)]
     pub notes: Option<String>,
@@ -25,8 +26,6 @@ pub struct Model {
         nullable
     )]
     pub modification_attempts: Option<Json>,
-    
-    pub id_ambulance: Option<Uuid>,
     #[sea_orm(
         column_type = "Decimal(Some((9, 6)))"
     )]

@@ -13,6 +13,7 @@ use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
+use sea_orm::sea_query::ColumnSpec::Default;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -216,6 +217,7 @@ impl EmergencyService {
             created_at: Set(now),
             updated_at: Set(now),
             reported_by: Set(Some(1)),
+            hospital_id: NotSet,
             notes: Set(emergency_data.notes.clone()), // Clone notes if needed for retries
             resolved_at: Set(Option::from(now)),
             // Handle the modification_attempts field

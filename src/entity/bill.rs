@@ -24,13 +24,10 @@ pub struct Model {
         column_type = "Decimal(Some((10, 2)))"
     )]
     pub patient_responsibility: Decimal,
-    #[sea_orm(column_name = "dueDate")]
     pub due_date: Option<Date>,
-    #[sea_orm(column_name = "lineItems", column_type = "JsonBinary", nullable)]
+    #[sea_orm( column_type = "JsonBinary", nullable)]
     pub line_items: Option<Json>,
-    #[sea_orm(column_name = "paymentDate")]
     pub payment_date: Option<DateTime>,
-    #[sea_orm(column_name = "paymentMethod")]
     pub payment_method: Option<String>,
     pub status: BillStatusEnum,
 }

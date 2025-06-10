@@ -13,12 +13,10 @@ pub struct Model {
     pub hospital_id: i32,
     pub supplier_id: i32,
     pub order_date: DateTime,
-    #[sea_orm(column_name = "orderItems", column_type = "Text", nullable)]
+    #[sea_orm(column_type = "Text", nullable)]
     pub order_items: Option<String>,
-    #[sea_orm(column_name = "totalAmount")]
     pub total_amount: Option<i32>,
     pub status: Option<PrescriptionOrderStatusEnum>,
-    #[sea_orm(column_name = "prescriptionOrderIc")]
     pub prescription_order_ic: Option<String>,
 }
 

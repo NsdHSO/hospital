@@ -22,9 +22,7 @@ pub struct Model {
     pub notes: Option<String>,
     #[sea_orm(column_type = "Decimal(Some((10, 2)))")]
     pub cost: Decimal,
-    #[sea_orm(column_name = "scheduledBy")]
     pub scheduled_by: Option<String>,
-    #[sea_orm(column_name = "appointmentType")]
     pub appointment_type: Option<String>,
     pub status: AppointmentStatusEnum,
 }

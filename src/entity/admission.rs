@@ -5,23 +5,15 @@ use sea_orm::entity::prelude::*;
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "admission")]
 pub struct Model {
-    #[sea_orm(column_name = "createdAt")]
     pub created_at: DateTime,
-    #[sea_orm(column_name = "updatedAt")]
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "patientId")]
     pub patient_id: i32,
-    #[sea_orm(column_name = "roomId")]
     pub room_id: i32,
-    #[sea_orm(column_name = "doctorId")]
     pub doctor_id: i32,
-    #[sea_orm(column_name = "hospitalId")]
     pub hospital_id: i32,
-    #[sea_orm(column_name = "admissionDate")]
     pub admission_date: DateTime,
-    #[sea_orm(column_name = "dischargeDate")]
     pub discharge_date: Option<DateTime>,
     #[sea_orm(column_type = "Text")]
     pub reason: String,
@@ -29,13 +21,10 @@ pub struct Model {
     pub diagnosis: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
     pub notes: Option<String>,
-    #[sea_orm(column_name = "totalCost", column_type = "Decimal(Some((10, 2)))")]
+    #[sea_orm( column_type = "Decimal(Some((10, 2)))")]
     pub total_cost: Decimal,
-    #[sea_orm(column_name = "admittingDoctorNotes")]
     pub admitting_doctor_notes: Option<String>,
-    #[sea_orm(column_name = "dischargeSummary")]
     pub discharge_summary: Option<String>,
-    #[sea_orm(column_name = "admissionIc")]
     pub admission_ic: Option<String>,
 }
 

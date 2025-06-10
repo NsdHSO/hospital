@@ -221,6 +221,42 @@ impl PatientService {
         Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
     }
 
+    /// Partially updates a patient by UUID. Only provided fields are updated.
+    pub async fn update_patient(
+        &self,
+        uuid: Uuid,
+        payload: PatientRequestBody,
+    ) -> Result<Model, CustomError> {
+        use sea_orm::Set;
+        let now = now_time();
+        let patient = Entity::find().filter(Column::Id.eq(uuid)).one(&self.conn).await?;
+        let model = match patient {
+            Some(model) => model,
+            None => {
+                return Err(CustomError::new(404, "Patient not found".to_string()));
+            }
+        };
+        let mut active_model: ActiveModel = model.into();
+
+        if let Some(val) = payload.patient_ic { active_model.patient_ic = Set(Some(val)); }
+        if let Some(val) = payload.hospital_id { active_model.hospital_id = Set(val); }
+        if let Some(val) = payload.first_name { active_model.first_name = Set(val); }
+        if let Some(val) = payload.last_name { active_model.last_name = Set(val); }
+        if let Some(val) = payload.date_of_birth { active_model.date_of_birth = Set(val); }
+        if let Some(val) = payload.gender { active_model.gender = Set(Some(val)); }
+        if let Some(val) = payload.phone { active_model.phone = Set(val); }
+        if let Some(val) = payload.email { active_model.email = Set(Some(val)); }
+        if let Some(val) = payload.address { active_model.address = Set(val); }
+        if let Some(val) = payload.emergency_contact { active_model.emergency_contact = Set(Some(val)); }
+        if let Some(val) = payload.blood_type { active_model.blood_type = Set(Some(val)); }
+        if let Some(val) = payload.allergies { active_model.allergies = Set(Some(val)); }
+        if let Some(val) = payload.medical_history { active_model.medical_history = Set(Some(val)); }
+
+        active_model.updated_at = Set(now);
+        let updated = active_model.update(&self.conn).await.map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        Ok(updated)
+    }
+
     fn generate_model(p0: Option<PatientRequestBody>, p1: NaiveDateTime) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {

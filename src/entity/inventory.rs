@@ -9,16 +9,13 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    #[sea_orm(column_name = "inventoryIc", unique)]
+    #[sea_orm( unique)]
     pub inventory_ic: i32,
     pub hospital_id: i32,
     pub item_name: String,
     pub quantity: i32,
-    #[sea_orm(column_name = "unitPrice")]
     pub unit_price: Option<i32>,
-    #[sea_orm(column_name = "reorderPoint")]
     pub reorder_point: Option<i32>,
-    #[sea_orm(column_name = "lastReceivedDate")]
     pub last_received_date: Option<DateTime>,
 }
 

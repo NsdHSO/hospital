@@ -11,7 +11,7 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub hospital_id: i32,
+    pub hospital_id: String,
     pub first_name: String,
     pub last_name: String,
     pub date_of_birth: Date,
@@ -37,7 +37,7 @@ pub struct PatientRequestBody {
     pub patient_ic: Option<String>,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
-    pub hospital_id: Option<i32>,
+    pub hospital_id: Option<String>,
     pub date_of_birth: Option<Date>,
     pub gender: Option<GenderEnum>,
     pub phone: Option<String>,

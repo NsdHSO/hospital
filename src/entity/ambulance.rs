@@ -14,7 +14,7 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub hospital_id: String,
+    pub hospital_id: Uuid,
     pub ambulance_ic: i32,
     pub vehicle_number: String,
     pub make: Option<String>,
