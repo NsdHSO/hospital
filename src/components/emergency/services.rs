@@ -13,7 +13,7 @@ use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
-use sea_orm::sea_query::ColumnSpec::Default;
+use uuid::Uuid;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -116,7 +116,7 @@ impl EmergencyService {
             let emergency_ic = generate_ic();
             let active_model =
                 Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
-
+            println!("Attempting to insert emergency with IC: {:?}", active_model.clone().hospital_id);
             let result = active_model.insert(&self.conn).await;
             match result {
                 Ok(model) => {
@@ -183,7 +183,7 @@ impl EmergencyService {
         use crate::entity::emergency;
         // Find the emergency where this ambulance is assigned
         let emergency_entity = emergency::Entity::find()
-            .filter(emergency::Column::IdAmbulance.eq(Some(ambulance_id)))
+            .filter(emergency::Column::AmbulanceId.eq(Some(ambulance_id)))
             .one(&self.conn)
             .await?;
 
@@ -217,18 +217,17 @@ impl EmergencyService {
             created_at: Set(now),
             updated_at: Set(now),
             reported_by: Set(Some(1)),
-            hospital_id: NotSet,
-            notes: Set(emergency_data.notes.clone()), // Clone notes if needed for retries
+            hospital_id: Set(None), // Explicitly set to NULL when creating
+            notes: Set(emergency_data.notes),
             resolved_at: Set(Option::from(now)),
-            // Handle the modification_attempts field
             modification_attempts: Set(None),
-            id_ambulance: NotSet,
-            emergency_latitude: Set(emergency_data.emergency_latitude), // Clone if needed
-            emergency_longitude: Set(emergency_data.emergency_longitude), // Clone if needed
+            ambulance_id: NotSet,
+            emergency_latitude: Set(emergency_data.emergency_latitude),
+            emergency_longitude: Set(emergency_data.emergency_longitude),
             status: Set(EmergencyStatusEnum::Pending),
             severity: Set(EmergencySeverityEnum::Unknown),
-            incident_type: Set(emergency_data.incident_type.clone()), // Clone if needed
-            description: Set(emergency_data.description.clone()),     // Clone if needed
+            incident_type: Set(emergency_data.incident_type),
+            description: Set(emergency_data.description),
         }
     }
 }

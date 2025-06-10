@@ -216,7 +216,7 @@ async fn dispatch_ambulance(
     // Log the initial state
     println!(
         "Initial Emergency State - ID: {}, Status: {:?}, Ambulance ID: {:?}",
-        emergency.id, emergency.status, emergency.id_ambulance
+        emergency.id, emergency.status, emergency.ambulance_id
     );
     println!(
         "Initial Ambulance State - ID: {}, Status: {:?}",
@@ -225,7 +225,7 @@ async fn dispatch_ambulance(
 
     let mut emergency_active_model: emergency::ActiveModel = emergency.clone().into();
     emergency_active_model.status = Set(EmergencyStatusEnum::InProgress);
-    emergency_active_model.id_ambulance = Set(Some(ambulance.id));
+    emergency_active_model.ambulance_id = Set(Some(ambulance.id));
     emergency_active_model.updated_at = Set(now_time());
 
     println!(
@@ -240,7 +240,7 @@ async fn dispatch_ambulance(
                 "Emergency update SUCCESS - ID: {}, New Status: {:?}, Ambulance ID: {:?}",
                 emergency.id,
                 updated.status.clone(),
-                updated.id_ambulance.unwrap_or_default()
+                updated.ambulance_id.unwrap_or_default()
             );
         }
         Err(e) => {

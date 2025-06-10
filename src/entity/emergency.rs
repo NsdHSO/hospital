@@ -14,11 +14,11 @@ pub struct Model {
     pub updated_at: DateTime,
     #[sea_orm(primary_key, auto_increment = true)]
     pub id: Uuid,
-    pub hospital_id: Option<Uuid>,
-    pub id_ambulance: Option<Uuid>,
+    pub hospital_id: Option<Uuid>, // This will now correctly map to UUID NULL
+    pub ambulance_id: Option<Uuid>,
     pub emergency_ic: String,
     pub reported_by: Option<i32>,
-    #[sea_orm(column_type = "Text", nullable)]
+    #[sea_orm(column_type = "Text", nullable)] // This is correct for Option<String> to TEXT
     pub notes: Option<String>,
     pub resolved_at: Option<NaiveDateTime>,
     #[sea_orm(
@@ -39,12 +39,11 @@ pub struct Model {
     pub incident_type: EmergencyIncidentEnum,
     pub description: Option<String>,
 }
-
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
         belongs_to = "super::ambulance::Entity",
-        from = "(Column::IdAmbulance, Column::IdAmbulance)",
+        from = "(Column::AmbulanceId, Column::AmbulanceId)",
         to = "(super::ambulance::Column::Id, super::ambulance::Column::Id)",
         on_update = "NoAction",
         on_delete = "NoAction"

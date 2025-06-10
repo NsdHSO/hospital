@@ -24,7 +24,7 @@ impl PatientService {
     pub(crate) async fn associate_hospital_with_patient(
         &self,
         patient_id: Uuid,
-        hospital_id: String,
+        hospital_id: Uuid,
     ) {
         let query_result = Entity::find()
             .filter(Column::Id.eq(patient_id))
@@ -35,7 +35,7 @@ impl PatientService {
             Ok(Some(model)) => {
                 let mut query_active: ActiveModel = model.into();
                 query_active.updated_at = Set(now_time());
-                query_active.hospital_id = Set(hospital_id.parse().unwrap());
+                query_active.hospital_id = Set(Option::from(hospital_id));
                 let _ = query_active.update(&self.conn).await;
             }
             Ok(None) => {
@@ -239,7 +239,7 @@ impl PatientService {
         let mut active_model: ActiveModel = model.into();
 
         if let Some(val) = payload.patient_ic { active_model.patient_ic = Set(Some(val)); }
-        if let Some(val) = payload.hospital_id { active_model.hospital_id = Set(val); }
+        if let Some(val) = payload.hospital_id { active_model.hospital_id = Set(Option::from(val)); }
         if let Some(val) = payload.first_name { active_model.first_name = Set(val); }
         if let Some(val) = payload.last_name { active_model.last_name = Set(val); }
         if let Some(val) = payload.date_of_birth { active_model.date_of_birth = Set(val); }
@@ -262,7 +262,8 @@ impl PatientService {
         ActiveModel {
             patient_ic:  Set(Some(generate_ic().to_string())),
             hospital_id: if let Some(value) = payload.hospital_id {
-                Set(value)
+                Set(
+                    Option::from(value))
             } else {
                 Set(Default::default())
             },
