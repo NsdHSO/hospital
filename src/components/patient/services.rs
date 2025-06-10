@@ -20,12 +20,12 @@ impl PatientService {
         PatientService { conn: conn.clone() }
     }
 
-    #[allow(dead_code)]
     pub(crate) async fn associate_hospital_with_patient(
         &self,
         patient_id: Uuid,
         hospital_id: Uuid,
     ) {
+        println!("Associating hospital with patient {}", patient_id);
         let query_result = Entity::find()
             .filter(Column::Id.eq(patient_id))
             .one(&self.conn)

@@ -100,7 +100,19 @@ impl AmbulanceService {
             for passenger in passenger_array.iter() {
                 if let serde_json::Value::Object(obj) = passenger {
                     let mut obj = obj.clone();
-                    obj.insert("hospital_id".to_string(), serde_json::Value::String(String::from(ambulance_hospital_id.clone())));
+                    
+                    // Extract patient id from the Value object
+                    if let Some(id_value) = obj.get("id") {
+                        if let Some(id_str) = id_value.as_str() {
+                            if let Ok(patient_uuid) = Uuid::parse_str(id_str) {
+                                self.patient_service
+                                    .associate_hospital_with_patient(patient_uuid, ambulance_hospital_id)
+                                    .await;
+                            }
+                        }
+                    }
+                    
+                    obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.to_string()));
                     passengers_with_hospital.push(serde_json::Value::Object(obj));
                 }
             }

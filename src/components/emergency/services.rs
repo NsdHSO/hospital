@@ -13,6 +13,7 @@ use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
+use uuid::Uuid;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -176,7 +177,7 @@ impl EmergencyService {
     /// Returns the passengers JSON for the ambulance currently assigned to an emergency, if any.
     pub async fn get_passengers_json_for_ambulance(
         &self,
-        ambulance_id: uuid::Uuid,
+        ambulance_id: Uuid,
     ) -> Result<Option<serde_json::Value>, CustomError> {
         use crate::entity::emergency;
         // Find the emergency where this ambulance is assigned
