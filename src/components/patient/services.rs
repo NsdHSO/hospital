@@ -115,29 +115,49 @@ impl PatientService {
         }
     }
 
+    fn parse_filter_value(filter_str: &str, prefix: &str) -> Option<String> {
+        if !filter_str.starts_with(prefix) {
+            return None;
+        }
+        
+        let encoded_value = filter_str.strip_prefix(prefix)?;
+        percent_decode_str(encoded_value)
+            .decode_utf8()
+            .map(|v| v.to_string())
+            .ok()
+            .or_else(|| Some(encoded_value.to_string()))
+    }
+
     pub async fn find_all(
-        &self,         // Changed to &self as we're not modifying the service state
-        page: u64,     // Use u64 for pagination
+        &self,
+        page: u64,
         per_page: u64,
         filter: Option<String>,
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let mut query = Entity::find();
+        
         if let Some(filter_str) = filter {
-            if filter_str.starts_with("ic=") {
-                // Extract the IC name portion after "IC="
-                let encoded_name = filter_str.strip_prefix("ic=").unwrap_or("");
-
-                // URL decode the dashboard name
-                let patient_ic = match percent_decode_str(encoded_name).decode_utf8() {
-                    Ok(name) => name.to_string(),
-                    Err(_) => encoded_name.to_string(),
-                };
-                
-                let patient = query.filter(patient::Column::PatientIc.like(patient_ic));
-
-                query = patient;
+            match filter_str.split_once('=') {
+                Some(("ic", encoded_name)) => {
+                    let patient_ic = percent_decode_str(encoded_name)
+                        .decode_utf8()
+                        .map(|ic| ic.to_string())
+                        .unwrap_or_else(|_| encoded_name.to_string());
+                    query = query.filter(Column::PatientIc.like(patient_ic));
+                }
+                Some(("id", encoded_name)) => {
+                    let patient_id = percent_decode_str(encoded_name)
+                        .decode_utf8()
+                        .map(|id| id.to_string())
+                        .unwrap_or_else(|_| encoded_name.to_string());
+                    let patient_uuid = Uuid::parse_str(&patient_id)
+                        .map_err(|_| CustomError::new(400, "Invalid UUID".to_string()))?;
+                    query = query.filter(Column::Id.eq(patient_uuid));
+                }
+                _ => {}
             }
         }
+
         let paginator = query.paginate(&self.conn, per_page);
         let total_items = paginator.num_items().await?;
         let total_pages = paginator.num_pages().await?;
@@ -147,10 +167,10 @@ impl PatientService {
             .await?;
 
         let pagination = PaginationInfo {
-            current_page: page as i64, // Convert back to i64 if needed for your PaginatedResponse
-            page_size: per_page as i64, // Convert back to i64
-            total_items: total_items as i64, // Convert back to i64
-            total_pages: total_pages as i64, // Convert back to i64
+            current_page: page as i64,
+            page_size: per_page as i64,
+            total_items: total_items as i64,
+            total_pages: total_pages as i64,
             has_next_page: page < total_pages,
             has_previous_page: page > 1,
         };
@@ -209,7 +229,7 @@ impl PatientService {
     /// Find all patients related to a given emergency ID (many-to-many).
     pub async fn find_patients_by_emergency_id(
         &self,
-        emergency_id: uuid::Uuid,
+        emergency_id: Uuid,
     ) -> Result<Vec<Model>, CustomError> {
         use crate::entity::{emergency_patient, patient};
         let patient_models = emergency_patient::Entity::find()

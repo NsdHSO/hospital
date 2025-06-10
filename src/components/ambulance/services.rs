@@ -50,32 +50,18 @@ impl AmbulanceService {
                 return Err(CustomError::new(404, "Ambulance not found".to_string()));
             }
         };
+        
 
-        let mut active_model: ambulance::ActiveModel = model.into();
+        let mut active_model: ActiveModel = model.into();
 
         match payload.status {
-            Some(AmbulanceStatusEnum::Available) => {
-                active_model.status = Set(AmbulanceStatusEnum::Available);
-            }
-            Some(AmbulanceStatusEnum::Dispatched) => {
-                active_model.status = Set(AmbulanceStatusEnum::Dispatched);
-            }
-            Some(AmbulanceStatusEnum::EnRouteToScene) => {
-                if let Some(json) = active_model.passengers.as_ref() {
-                    if let Some(array) = json.as_array() {
-                        if array.is_empty() {
-                            return Err(CustomError::new(
-                                400,
-                                "Cannot set status to EnRouteToScene when passengers are present"
-                                    .to_string(),
-                            ));
-                        }
-                    }
-                }
-
-                active_model.status = Set(AmbulanceStatusEnum::EnRouteToScene);
-            }
             Some(AmbulanceStatusEnum::TransportingPatient) => {
+                if payload.hospital_name.eq(&None) {  
+                    return Err(CustomError::new(
+                        400,
+                        "hospital_name is required for transporting patient".to_string(),
+                    ));
+                }
                 self.set_transport_patient(uuid, &mut active_model).await?;
             }
             Some(status) => {
@@ -104,7 +90,7 @@ impl AmbulanceService {
             .map_err(|e| {
                 CustomError::new(500, format!("Error fetching passengers: {}", e))
             })?;
-
+        
         // Get ambulance hospital_id as string
         let ambulance_hospital_id = active_model.hospital_id.clone().unwrap();
 
