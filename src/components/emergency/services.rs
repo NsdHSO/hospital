@@ -8,12 +8,11 @@ use crate::entity::sea_orm_active_enums::{
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
-use chrono::{Local, NaiveDateTime};
+use chrono::NaiveDateTime;
 use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
-use uuid::Uuid;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -116,7 +115,7 @@ impl EmergencyService {
             let emergency_ic = generate_ic();
             let active_model =
                 Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
-1            let result = active_model.insert(&self.conn).await;
+            let result = active_model.insert(&self.conn).await;
             match result {
                 Ok(model) => {
                     // Associate patients if provided
