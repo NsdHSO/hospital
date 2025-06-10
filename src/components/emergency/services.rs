@@ -116,8 +116,7 @@ impl EmergencyService {
             let emergency_ic = generate_ic();
             let active_model =
                 Self::generate_model(emergency_data.clone(), now, emergency_ic.to_string());
-            println!("Attempting to insert emergency with IC: {:?}", active_model.clone().hospital_id);
-            let result = active_model.insert(&self.conn).await;
+1            let result = active_model.insert(&self.conn).await;
             match result {
                 Ok(model) => {
                     // Associate patients if provided
