@@ -5,7 +5,6 @@ use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
     AmbulanceTypeEnum,
 };
-use chrono_tz::Europe;
 
 use crate::entity::{ambulance, hospital};
 use crate::error_handler::CustomError;
@@ -115,7 +114,7 @@ impl AmbulanceService {
             for passenger in passenger_array.iter() {
                 if let serde_json::Value::Object(obj) = passenger {
                     let mut obj = obj.clone();
-                    obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.clone()));
+                    obj.insert("hospital_id".to_string(), serde_json::Value::String(String::from(ambulance_hospital_id.clone())));
                     passengers_with_hospital.push(serde_json::Value::Object(obj));
                 }
             }
@@ -155,7 +154,7 @@ impl AmbulanceService {
                 .one(&self.conn)
                 .await;
             if let Ok(Some(hospital_model)) = &hospital {
-                active_model.hospital_id = Set(hospital_model.id.clone().to_string());
+                active_model.hospital_id = Set(hospital_model.id.clone());
             } else {
                 return Err(CustomError::new(500, "hospital not found".to_string()));
             }
