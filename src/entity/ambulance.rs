@@ -88,6 +88,7 @@ pub struct AmbulancePayload {
     pub last_service_date: Option<DateTime>,
     pub next_service_date: Option<DateTime>,
     pub mileage: Option<i32>,
+    #[serde(rename = "fuelType")]
     pub fuel_type: Option<String>,
     pub registration_number: Option<String>,
     pub insurance_provider: Option<String>,
