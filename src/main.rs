@@ -55,7 +55,7 @@ async fn main() -> std::io::Result<()> {
         let cors = Cors::default()
             .allowed_origin("http://localhost:4200")
             .allowed_origin("https://tevet-troc-client.vercel.app")
-            .allowed_origin("https://nsdhso.github.io/tevet-troc-client/")
+            .allowed_origin("https://nsdhso.github.io")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
             .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
             .supports_credentials();
