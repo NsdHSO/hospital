@@ -72,7 +72,7 @@ impl HospitalService {
         let total_pages = paginator.num_pages().await?;
 
         let records = paginator
-            .fetch_page(page - 1) // Page is 0-indexed in SeaORM
+            .fetch_page(page) // Page is 0-indexed in SeaORM
             .await?;
 
         let pagination = PaginationInfo {
