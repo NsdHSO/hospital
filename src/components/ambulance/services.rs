@@ -6,7 +6,7 @@ use crate::entity::sea_orm_active_enums::{
     AmbulanceTypeEnum,
 };
 
-use crate::entity::{ambulance, hospital};
+use crate::entity::hospital;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
@@ -50,13 +50,12 @@ impl AmbulanceService {
                 return Err(CustomError::new(404, "Ambulance not found".to_string()));
             }
         };
-        
 
         let mut active_model: ActiveModel = model.into();
 
         match payload.status {
             Some(AmbulanceStatusEnum::TransportingPatient) => {
-                if payload.hospital_name.eq(&None) {  
+                if payload.hospital_name.eq(&None) {
                     return Err(CustomError::new(
                         400,
                         "hospital_name is required for transporting patient".to_string(),
@@ -80,17 +79,19 @@ impl AmbulanceService {
         Ok(updated)
     }
 
-    async fn set_transport_patient(&self, uuid: Uuid, active_model: &mut ActiveModel) -> Result<(), CustomError> {
+    async fn set_transport_patient(
+        &self,
+        uuid: Uuid,
+        active_model: &mut ActiveModel,
+    ) -> Result<(), CustomError> {
         active_model.status = Set(AmbulanceStatusEnum::TransportingPatient);
         // Fetch passengers as Option<serde_json::Value>
         let passengers_json_opt = self
             .emergency_service
             .get_passengers_json_for_ambulance(uuid)
             .await
-            .map_err(|e| {
-                CustomError::new(500, format!("Error fetching passengers: {}", e))
-            })?;
-        
+            .map_err(|e| CustomError::new(500, format!("Error fetching passengers: {}", e)))?;
+
         // Get ambulance hospital_id as string
         let ambulance_hospital_id = active_model.hospital_id.clone().unwrap();
 
@@ -100,19 +101,25 @@ impl AmbulanceService {
             for passenger in passenger_array.iter() {
                 if let serde_json::Value::Object(obj) = passenger {
                     let mut obj = obj.clone();
-                    
+
                     // Extract patient id from the Value object
                     if let Some(id_value) = obj.get("id") {
                         if let Some(id_str) = id_value.as_str() {
                             if let Ok(patient_uuid) = Uuid::parse_str(id_str) {
                                 self.patient_service
-                                    .associate_hospital_with_patient(patient_uuid, ambulance_hospital_id)
+                                    .associate_hospital_with_patient(
+                                        patient_uuid,
+                                        ambulance_hospital_id,
+                                    )
                                     .await;
                             }
                         }
                     }
-                    
-                    obj.insert("hospital_id".to_string(), serde_json::Value::String(ambulance_hospital_id.to_string()));
+
+                    obj.insert(
+                        "hospital_id".to_string(),
+                        serde_json::Value::String(ambulance_hospital_id.to_string()),
+                    );
                     passengers_with_hospital.push(serde_json::Value::Object(obj));
                 }
             }
@@ -197,7 +204,7 @@ impl AmbulanceService {
         let total_pages = paginator.num_pages().await?;
 
         let records = paginator
-            .fetch_page(page - 1) // Page is 0-indexed in SeaORM
+            .fetch_page(page) // Page is 0-indexed in SeaORM
             .await?;
 
         let pagination = PaginationInfo {
@@ -216,9 +223,7 @@ impl AmbulanceService {
     }
 }
 
-pub fn generate_payload_to_create_ambulance(
-    payload: Option<AmbulancePayload>,
-) -> ActiveModel {
+pub fn generate_payload_to_create_ambulance(payload: Option<AmbulancePayload>) -> ActiveModel {
     let now = now_time();
     let payload = payload.unwrap_or_default();
     let car_details = payload.car_details.unwrap_or_default();
