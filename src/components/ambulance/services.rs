@@ -68,7 +68,10 @@ impl AmbulanceService {
             }
             None => {}
         }
-
+        if payload.driver_name.is_some() {
+            active_model.driver_name = Set(payload.driver_name);
+        }
+        
         active_model.updated_at = Set(now);
         // Save changes
         let updated = active_model

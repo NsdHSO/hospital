@@ -86,7 +86,6 @@ impl CardService {
                     .filter(dashboard::Column::Name.eq(&dashboard_name))
                     .one(&self.conn)
                     .await?;
-                println!("Dashboard: {:?}", dashboard);
 
                 if let Some(dashboard) = dashboard {
                     // Then filter cards by that dashboard's ID
