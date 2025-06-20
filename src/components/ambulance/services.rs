@@ -162,7 +162,7 @@ impl AmbulanceService {
                 .one(&self.conn)
                 .await;
             if let Ok(Some(hospital_model)) = &hospital {
-                active_model.hospital_id = Set(hospital_model.id.clone());
+                active_model.hospital_id = Set(hospital_model.id);
             } else {
                 return Err(CustomError::new(500, "hospital not found".to_string()));
             }

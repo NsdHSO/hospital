@@ -1,5 +1,5 @@
 use crate::entity::hospital::{ActiveModel, HospitalRequestBody, Model};
-use chrono::{Local, NaiveDateTime};
+use chrono::{NaiveDateTime};
 
 use crate::entity::hospital;
 use crate::error_handler::CustomError;

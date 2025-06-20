@@ -1,5 +1,4 @@
 use crate::entity::patient::{ActiveModel, Model, PatientRequestBody};
-use crate::entity::patient;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
@@ -115,6 +114,7 @@ impl PatientService {
         }
     }
 
+    #[warn(dead_code)]
     fn parse_filter_value(filter_str: &str, prefix: &str) -> Option<String> {
         if !filter_str.starts_with(prefix) {
             return None;
@@ -128,6 +128,7 @@ impl PatientService {
             .or_else(|| Some(encoded_value.to_string()))
     }
 
+    #[warn(dead_code)]
     pub async fn find_all(
         &self,
         page: u64,
