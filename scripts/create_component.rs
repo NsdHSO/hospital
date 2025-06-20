@@ -32,7 +32,7 @@ fn create_component(name: &str) {
 
     // Create routes.rs
     let routes_content = format!(
-        "use actix_web::{{web, HttpResponse}};\nuse crate::http_response::{{ok, ResponseObject}};\nuse super::services::{}Service;\n\npub fn configure(cfg: &mut web::ServiceConfig) {{\n    todo!(\"Add here routes\");\n    // Add your routes here\n}}\n",
+        "use actix_web::{{web, HttpResponse}};\nuse super::services::{}Service;\n\npub fn init_routes(config: &mut web::ServiceConfig) {{\n    todo!(\"Add here routes\");\n    // Add your routes here\n}}\n",
         capitalize(name)
     );
     fs::write(
