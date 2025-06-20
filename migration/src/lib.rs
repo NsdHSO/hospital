@@ -8,6 +8,7 @@ mod m20250524_123751_add_timestamp_defaults;
 mod m20250524_124017_update_card;
 mod m20250528_210000_add_ic_columns_if_missing;
 mod m20250529_000001_create_emergency_patient_table;
+mod m20250621_000001_add_person_table_and_refactor_patient_staff;
 
 
 pub struct Migrator;
@@ -24,6 +25,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250524_124017_update_card::Migration),
             Box::new(m20250528_210000_add_ic_columns_if_missing::Migration),
             Box::new(m20250529_000001_create_emergency_patient_table::Migration),
+            Box::new(m20250621_000001_add_person_table_and_refactor_patient_staff::Migration),
         ]
     }
 }
