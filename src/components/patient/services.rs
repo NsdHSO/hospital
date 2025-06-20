@@ -114,7 +114,7 @@ impl PatientService {
         }
     }
 
-    #[warn(dead_code)]
+    #[allow(dead_code)]
     fn parse_filter_value(filter_str: &str, prefix: &str) -> Option<String> {
         if !filter_str.starts_with(prefix) {
             return None;
@@ -128,7 +128,7 @@ impl PatientService {
             .or_else(|| Some(encoded_value.to_string()))
     }
 
-    #[warn(dead_code)]
+    #[allow(dead_code)]
     pub async fn find_all(
         &self,
         page: u64,
