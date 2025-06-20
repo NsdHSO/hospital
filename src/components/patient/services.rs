@@ -1,4 +1,5 @@
 use crate::entity::patient::{ActiveModel, Model, PatientRequestBody};
+use crate::entity::patient::{Column, Entity};
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
@@ -8,7 +9,6 @@ use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
-use crate::entity::patient::{Column, Entity};
 
 pub struct PatientService {
     conn: DatabaseConnection,
@@ -37,15 +37,14 @@ impl PatientService {
                 query_active.hospital_id = Set(Option::from(hospital_id));
                 let _ = query_active.update(&self.conn).await;
             }
-            Ok(None) => {
-            }
+            Ok(None) => {}
             Err(e) => {
                 // Log the error or handle as needed
                 eprintln!("Failed to fetch available patient: {}", e);
             }
         }
     }
-    
+
     pub async fn create_patient(
         &self,
         patient_data: Option<PatientRequestBody>,
@@ -92,7 +91,7 @@ impl PatientService {
     ) -> Result<Option<Model>, CustomError> {
         let query = match field {
             "patient_ic" => Entity::find().filter(Column::PatientIc.like(value)),
-            "first_name" => Entity::find().filter(Column::FirstName.like(value)),
+            // "first_name" => Entity::find().filter(Column::FirstName.like(value)),
             _ => {
                 return Err(CustomError::new(
                     400,
@@ -119,7 +118,7 @@ impl PatientService {
         if !filter_str.starts_with(prefix) {
             return None;
         }
-        
+
         let encoded_value = filter_str.strip_prefix(prefix)?;
         percent_decode_str(encoded_value)
             .decode_utf8()
@@ -136,7 +135,7 @@ impl PatientService {
         filter: Option<String>,
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let mut query = Entity::find();
-        
+
         if let Some(filter_str) = filter {
             match filter_str.split_once('=') {
                 Some(("ic", encoded_name)) => {
@@ -181,7 +180,6 @@ impl PatientService {
             pagination,
         })
     }
-
 
     /// Associates a patient with a given emergency ID in the emergency_patient table.
     /// If the patient does not exist, it will be created using create_patient.
@@ -250,7 +248,10 @@ impl PatientService {
     ) -> Result<Model, CustomError> {
         use sea_orm::Set;
         let now = now_time();
-        let patient = Entity::find().filter(Column::Id.eq(uuid)).one(&self.conn).await?;
+        let patient = Entity::find()
+            .filter(Column::Id.eq(uuid))
+            .one(&self.conn)
+            .await?;
         let model = match patient {
             Some(model) => model,
             None => {
@@ -259,72 +260,44 @@ impl PatientService {
         };
         let mut active_model: ActiveModel = model.into();
 
-        if let Some(val) = payload.patient_ic { active_model.patient_ic = Set(Some(val)); }
-        if let Some(val) = payload.hospital_id { active_model.hospital_id = Set(Option::from(val)); }
-        if let Some(val) = payload.first_name { active_model.first_name = Set(val); }
-        if let Some(val) = payload.last_name { active_model.last_name = Set(val); }
-        if let Some(val) = payload.date_of_birth { active_model.date_of_birth = Set(val); }
-        if let Some(val) = payload.gender { active_model.gender = Set(Some(val)); }
-        if let Some(val) = payload.phone { active_model.phone = Set(val); }
-        if let Some(val) = payload.email { active_model.email = Set(Some(val)); }
-        if let Some(val) = payload.address { active_model.address = Set(val); }
-        if let Some(val) = payload.emergency_contact { active_model.emergency_contact = Set(Some(val)); }
-        if let Some(val) = payload.blood_type { active_model.blood_type = Set(Some(val)); }
-        if let Some(val) = payload.allergies { active_model.allergies = Set(Some(val)); }
-        if let Some(val) = payload.medical_history { active_model.medical_history = Set(Some(val)); }
+        if let Some(val) = payload.patient_ic {
+            active_model.patient_ic = Set(Some(val));
+        }
+        if let Some(val) = payload.hospital_id {
+            active_model.hospital_id = Set(Option::from(val));
+        }
+        if let Some(val) = payload.emergency_contact {
+            active_model.emergency_contact = Set(Some(val));
+        }
+        if let Some(val) = payload.blood_type {
+            active_model.blood_type = Set(Some(val));
+        }
+        if let Some(val) = payload.allergies {
+            active_model.allergies = Set(Some(val));
+        }
+        if let Some(val) = payload.medical_history {
+            active_model.medical_history = Set(Some(val));
+        }
 
         active_model.updated_at = Set(now);
-        let updated = active_model.update(&self.conn).await.map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        let updated = active_model
+            .update(&self.conn)
+            .await
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
         Ok(updated)
     }
 
     fn generate_model(p0: Option<PatientRequestBody>, p1: NaiveDateTime) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {
-            patient_ic:  Set(Some(generate_ic().to_string())),
+            patient_ic: Set(Some(generate_ic().to_string())),
             hospital_id: if let Some(value) = payload.hospital_id {
-                Set(
-                    Option::from(value))
-            } else {
-                Set(Default::default())
-            },
-            first_name: if let Some(value) = payload.first_name {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            last_name: if let Some(value) = payload.last_name {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            date_of_birth: if let Some(value) = payload.date_of_birth {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            gender: if let Some(value) = payload.gender {
-                Set(Some(value))
-            } else {
-                Set(Default::default())
-            },
-            phone: if let Some(value) = payload.phone {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            address: if let Some(value) = payload.address {
-                Set(value)
+                Set(Option::from(value))
             } else {
                 Set(Default::default())
             },
             created_at: Set(p1),
             updated_at: Set(p1),
-            email: if let Some(value) = payload.email {
-                Set(Some(value))
-            } else {
-                Set(Default::default())
-            },
             emergency_contact: if let Some(value) = payload.emergency_contact {
                 Set(Some(value))
             } else {

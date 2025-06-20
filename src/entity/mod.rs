@@ -21,6 +21,7 @@ pub mod medical_record;
 pub mod patient;
 pub mod patient_doctor;
 pub mod patient_info;
+pub mod person;
 pub mod prescription;
 pub mod prescription_order;
 pub mod room;
