@@ -35,6 +35,12 @@ pub enum Relation {
 
 impl ActiveModelBehavior for ActiveModel {}
 
+impl Related<person::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Person.def()
+    }
+}
+
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct PatientRequestBody {
     pub patient_ic: Option<String>,
@@ -50,4 +56,10 @@ pub struct PatientRequestBody {
     pub blood_type: Option<BloodTypeEnum>,
     pub allergies: Option<Vec<String>>,
     pub medical_history: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct PatientWithPerson {
+    pub patient: Model,
+    pub person: person::Model,
 }

@@ -1,5 +1,8 @@
-use crate::entity::patient::{ActiveModel, Model, PatientRequestBody};
+use crate::components::person::PersonService;
+use crate::entity::patient::{ActiveModel, Model, PatientRequestBody, PatientWithPerson};
 use crate::entity::patient::{Column, Entity};
+use crate::entity::person;
+use crate::entity::person::PersonRequestBody;
 use crate::error_handler::CustomError;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
@@ -12,11 +15,15 @@ use uuid::Uuid;
 
 pub struct PatientService {
     conn: DatabaseConnection,
+    person_service: PersonService,
 }
 
 impl PatientService {
     pub fn new(conn: &DatabaseConnection) -> Self {
-        PatientService { conn: conn.clone() }
+        PatientService {
+            conn: conn.clone(),
+            person_service: PersonService::new(conn),
+        }
     }
 
     pub(crate) async fn associate_hospital_with_patient(
@@ -48,7 +55,7 @@ impl PatientService {
     pub async fn create_patient(
         &self,
         patient_data: Option<PatientRequestBody>,
-    ) -> Result<Model, CustomError> {
+    ) -> Result<PatientWithPerson, CustomError> {
         // Check if patient_data exists
         let payload = match patient_data.clone() {
             Some(data) => data,
@@ -59,9 +66,32 @@ impl PatientService {
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
         // Check if patient_ic exists in DB
+        let patient_body: PatientRequestBody = patient_data.unwrap();
+        let person = self
+            .person_service
+            .create(Option::from(PersonRequestBody {
+                first_name: patient_body.first_name,
+                last_name: patient_body.last_name,
+                date_of_birth: patient_body.date_of_birth,
+                gender: patient_body.gender,
+                phone: patient_body.phone,
+                email: patient_body.email,
+                address: patient_body.address,
+                nationality: Some(String::from("ROM")),
+                marital_status: None,
+                photo_url: None,
+            }))
+            .await
+            .or(Err(CustomError::new(
+                500,
+                "Internal server error".to_string(),
+            )))?;
         if let Some(ref ic) = payload.patient_ic {
             if let Ok(Some(existing_patient)) = self.find_by_field("patient_ic", ic).await {
-                return Ok(existing_patient);
+                return Ok(PatientWithPerson {
+                    patient: existing_patient,
+                    person,
+                });
             }
         }
         loop {
@@ -72,13 +102,19 @@ impl PatientService {
                 ));
             }
 
-            let active_model = Self::generate_model(Some(payload.clone()), now);
+            let active_model = Self::generate_model(Some(payload.clone()), now, person.clone().id);
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
 
             if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
-                return value;
+                let (patient, person) = Entity::find()
+                    .find_also_related(person::Entity)
+                    .one(&self.conn)
+                    .await?
+                    .ok_or_else(|| CustomError::new(404, "Patient not found".to_string()))?;
+                let person = person.ok_or_else(|| CustomError::new(404, "Person not found".to_string()))?;
+                return Ok(PatientWithPerson { patient, person });
             }
         }
     }
@@ -196,7 +232,7 @@ impl PatientService {
         let created_patient = self.create_patient(patient_data).await?;
         let junction = emergency_patient::ActiveModel {
             emergency_id: Set(emergency_id),
-            patient_id: Set(created_patient.id),
+            patient_id: Set(created_patient.patient.id),
         };
         junction.insert(transaction).await.map_err(|e| {
             CustomError::new(500, format!("Failed to link patient to emergency: {}", e))
@@ -287,7 +323,11 @@ impl PatientService {
         Ok(updated)
     }
 
-    fn generate_model(p0: Option<PatientRequestBody>, p1: NaiveDateTime) -> ActiveModel {
+    fn generate_model(
+        p0: Option<PatientRequestBody>,
+        p1: NaiveDateTime,
+        person_id: Uuid,
+    ) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {
             patient_ic: Set(Some(generate_ic().to_string())),
@@ -318,7 +358,7 @@ impl PatientService {
             } else {
                 Set(Default::default())
             },
-            id: Default::default(),
+            id: Set(person_id),
         }
     }
 }
