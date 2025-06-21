@@ -31,7 +31,6 @@ impl PatientService {
         patient_id: Uuid,
         hospital_id: Uuid,
     ) {
-        println!("Associating hospital with patient {}", patient_id);
         let query_result = Entity::find()
             .filter(Column::Id.eq(patient_id))
             .one(&self.conn)
@@ -87,11 +86,8 @@ impl PatientService {
                 "Internal server error".to_string(),
             )))?;
         if let Some(ref ic) = payload.patient_ic {
-            if let Ok(Some(existing_patient)) = self.find_by_field("patient_ic", ic).await {
-                return Ok(PatientWithPerson {
-                    patient: existing_patient,
-                    person,
-                });
+            if let Ok(Some(patient)) = self.find_by_field("patient_ic", ic).await {
+                return Ok(PatientWithPerson { patient, person });
             }
         }
         loop {
@@ -106,15 +102,16 @@ impl PatientService {
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
-
             if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
-                let (patient, person) = Entity::find()
+                let (patient, person) = Entity::find_by_id(person.id)
                     .find_also_related(person::Entity)
                     .one(&self.conn)
                     .await?
                     .ok_or_else(|| CustomError::new(404, "Patient not found".to_string()))?;
-                let person = person.ok_or_else(|| CustomError::new(404, "Person not found".to_string()))?;
-                return Ok(PatientWithPerson { patient, person });
+                return Ok(PatientWithPerson {
+                    patient,
+                    person: person.unwrap(),
+                });
             }
         }
     }
