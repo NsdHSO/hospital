@@ -58,7 +58,7 @@ pub struct PatientRequestBody {
     pub medical_history: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct PatientWithPerson {
     pub patient: Model,
     pub person: person::Model,
