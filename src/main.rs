@@ -71,6 +71,7 @@ async fn main() -> std::io::Result<()> {
                     .configure(components::dashboard::init_routes)
                     .configure(components::card::init_routes)
                     .configure(components::patient::init_routes)
+                    .configure(components::person::init_routes)
                     .configure(components::hospital::init_routes),
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))

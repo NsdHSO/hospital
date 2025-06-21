@@ -5,3 +5,4 @@ pub mod emergency;
 pub mod hospital;
 pub mod patient;
 pub mod staff;
+pub mod person;

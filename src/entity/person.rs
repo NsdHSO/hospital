@@ -16,9 +16,9 @@ pub struct Model {
     pub phone: Option<String>,
     pub email: Option<String>,
     pub address: Option<String>,
-    pub nationality: Option<String>,    
-    pub marital_status: Option<String>, 
-    pub photo_url: Option<String>,      
+    pub nationality: Option<String>,
+    pub marital_status: Option<String>,
+    pub photo_url: Option<String>,
     pub created_at: DateTime,
     pub updated_at: DateTime,
 }
@@ -27,3 +27,17 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+pub struct PersonRequestBody{
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub date_of_birth: Option<Date>,
+    pub gender: Option<GenderEnum>,
+    pub phone: Option<String>,
+    pub email: Option<String>,
+    pub address: Option<String>,
+    pub nationality: Option<String>,
+    pub marital_status: Option<String>,
+    pub photo_url: Option<String>,
+}
