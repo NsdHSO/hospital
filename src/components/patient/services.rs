@@ -102,17 +102,16 @@ impl PatientService {
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
-            if let Some(_) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
-                let (patient, person) = Entity::find_by_id(person.id)
-                    .find_also_related(person::Entity)
-                    .one(&self.conn)
-                    .await?
-                    .ok_or_else(|| CustomError::new(404, "Patient not found".to_string()))?;
-                return Ok(PatientWithPerson {
-                    patient,
-                    person: person.unwrap(),
-                });
-            }
+            check_if_is_duplicate_key_from_data_base(&mut attempts, result);
+            let (patient, person) = Entity::find_by_id(person.id)
+                .find_also_related(person::Entity)
+                .one(&self.conn)
+                .await?
+                .ok_or_else(|| CustomError::new(404, "Patient not found".to_string()))?;
+            return Ok(PatientWithPerson {
+                patient,
+                person: person.unwrap(),
+            });
         }
     }
 

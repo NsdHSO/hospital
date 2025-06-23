@@ -68,17 +68,16 @@ impl StaffService {
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
-            if let Some(_) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
-                let (staff, person) = Entity::find_by_id(person.id)
-                    .find_also_related(person::Entity)
-                    .one(&self.conn)
-                    .await?
-                    .ok_or_else(|| CustomError::new(404, "Staff not found".to_string()))?;
-                return Ok(StaffWithPerson {
-                    staff,
-                    person: person.unwrap(),
-                });
-            }
+            check_if_is_duplicate_key_from_data_base(&mut attempts, result);
+            let (staff, person) = Entity::find_by_id(person.id)
+                .find_also_related(person::Entity)
+                .one(&self.conn)
+                .await?
+                .ok_or_else(|| CustomError::new(404, "Staff not found".to_string()))?;
+            return Ok(StaffWithPerson {
+                staff,
+                person: person.unwrap(),
+            });
         }
     }
 
