@@ -77,13 +77,13 @@ fn generate_payload(payload: &DepartmentRequestBody, hospital_id: Uuid) -> Activ
         } else {
             Set(None)
         },
-        capacity: if let Some(value) = payload.capacity.clone() {
-            Set(Option::from(value))
+        capacity: if let Some(value) = &payload.capacity {
+            Set(Option::from(value.clone()))
         } else {
             Set(None)
         },
-        name: if let Some(value) = payload.name.clone() {
-            Set(value)
+        name: if let Some(value) = &payload.name {
+            Set(value.clone())
         } else {
             Set(DepartmentNameEnum::Pediatrics)
         },

@@ -68,7 +68,7 @@ impl StaffService {
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
-            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
+            if let Some(_) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
                 let (staff, person) = Entity::find_by_id(person.id)
                     .find_also_related(person::Entity)
                     .one(&self.conn)
@@ -83,6 +83,7 @@ impl StaffService {
     }
 
     /// Find a patient by a given column and value (generic for ic or name)
+    #[allow(dead_code)]
     pub async fn find_by_field(
         &self,
         field: &str,
