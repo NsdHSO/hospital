@@ -11,6 +11,7 @@ mod m20250529_000001_create_emergency_patient_table;
 mod m20250621_000001_add_person_table_and_refactor_patient_staff;
 mod m20250621_100000_add_specialization_to_staff;
 mod m20250623_100000_create_department_table;
+mod m20250623_120000_alter_department_name_to_enum;
 
 pub struct Migrator;
 
@@ -29,6 +30,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250621_000001_add_person_table_and_refactor_patient_staff::Migration),
             Box::new(m20250621_100000_add_specialization_to_staff::Migration),
             Box::new(m20250623_100000_create_department_table::Migration),
+            Box::new(m20250623_120000_alter_department_name_to_enum::Migration),
         ]
     }
 }

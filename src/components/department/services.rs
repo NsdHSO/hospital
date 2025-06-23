@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use crate::components::hospital::HospitalService;
 use crate::entity::department::{ActiveModel, DepartmentRequestBody, Model};
 use crate::entity::sea_orm_active_enums::DepartmentNameEnum;
 use crate::error_handler::CustomError;
@@ -8,11 +8,15 @@ use uuid::Uuid;
 
 pub struct DepartmentService {
     conn: DatabaseConnection,
+    hospital_service: HospitalService,
 }
 
 impl DepartmentService {
     pub fn new(conn: &DatabaseConnection) -> Self {
-        Self { conn: conn.clone() }
+        Self {
+            conn: conn.clone(),
+            hospital_service: HospitalService::new(conn),
+        }
     }
 
     pub async fn create(
@@ -25,16 +29,22 @@ impl DepartmentService {
         };
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
-
+        let hospital_id = &self
+            .hospital_service
+            .find_by_field("name", &payload.hospital_name)
+            .await?
+            .unwrap()
+            .id;
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
                     500,
-                    "Failed to generate a unique department IC after multiple attempts.".to_string(),
+                    "Failed to generate a unique department IC after multiple attempts."
+                        .to_string(),
                 ));
             }
 
-            let active_model = generate_payload(&payload, Uuid::from_str("0c1743be-6b37-4d8a-a2a0-8e4e8b88ea59").unwrap());
+            let active_model = generate_payload(&payload, *hospital_id);
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;

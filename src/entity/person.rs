@@ -1,6 +1,5 @@
 //! SeaORM Entity for person (shared fields)
 
-use crate::entity::person;
 use crate::entity::sea_orm_active_enums::GenderEnum;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};

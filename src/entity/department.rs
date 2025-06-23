@@ -18,7 +18,6 @@ pub struct Model {
     pub phone: Option<String>,
     pub description: Option<String>,
     pub capacity: Option<i32>,
-    #[sea_orm(unique)]
     pub name: DepartmentNameEnum,
     pub department_ic: Option<String>,
 }
@@ -28,14 +27,14 @@ pub enum Relation {
     #[sea_orm(
         belongs_to = "hospital::Entity",
         from = "Column::HospitalId",
-        to = "super::hospital::Column::Id",
+        to = "hospital::Column::Id",
         on_update = "NoAction",
         on_delete = "Cascade"
     )]
     Hospital,
 }
 
-impl Related<super::hospital::Entity> for Entity {
+impl Related<hospital::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Hospital.def()
     }

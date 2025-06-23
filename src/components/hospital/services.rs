@@ -1,4 +1,4 @@
-use crate::entity::hospital::{ActiveModel, HospitalRequestBody, Model};
+use crate::entity::hospital::{ActiveModel, Column, Entity, HospitalRequestBody, Model};
 use chrono::NaiveDateTime;
 
 use crate::entity::hospital;
@@ -45,7 +45,7 @@ impl HospitalService {
         }
     }
     pub async fn find_by_ic(&self, hospital_name: String) -> Result<Option<Model>, CustomError> {
-        let hospital = hospital::Entity::find()
+        let hospital = Entity::find()
             .filter(hospital::Column::Name.like(&hospital_name))
             .one(&self.conn)
             .await
@@ -89,7 +89,33 @@ impl HospitalService {
             pagination,
         })
     }
-
+    pub async fn find_by_field(
+        &self,
+        field: &str,
+        value: &str,
+    ) -> Result<Option<Model>, CustomError> {
+        let query = match field {
+            "name" => Entity::find().filter(Column::Name.like(value)),
+            _ => {
+                return Err(CustomError::new(
+                    400,
+                    format!("Unsupported field: {}", field),
+                ));
+            }
+        };
+        let hospital = query
+            .one(&self.conn)
+            .await
+            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        if let Some(hospital_model) = hospital {
+            Ok(Some(hospital_model))
+        } else {
+            Err(CustomError::new(
+                404,
+                format!("Hospital not found for {} = '{}'", field, value),
+            ))
+        }
+    }
     fn generate_model(p0: Option<HospitalRequestBody>, p1: NaiveDateTime) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {
