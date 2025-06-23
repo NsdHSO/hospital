@@ -78,7 +78,7 @@ fn generate_payload(payload: &DepartmentRequestBody, hospital_id: Uuid) -> Activ
             Set(None)
         },
         capacity: if let Some(value) = &payload.capacity {
-            Set(Option::from(value.clone()))
+            Set(Option::from(*value))
         } else {
             Set(None)
         },
