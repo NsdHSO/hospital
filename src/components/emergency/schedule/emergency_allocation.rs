@@ -1,4 +1,4 @@
-use chrono::{Local};
+use chrono::Local;
 use log::{error, warn};
 use sea_orm::*;
 

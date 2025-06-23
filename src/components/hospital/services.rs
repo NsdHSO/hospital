@@ -1,5 +1,5 @@
 use crate::entity::hospital::{ActiveModel, HospitalRequestBody, Model};
-use chrono::{NaiveDateTime};
+use chrono::NaiveDateTime;
 
 use crate::entity::hospital;
 use crate::error_handler::CustomError;
@@ -93,7 +93,7 @@ impl HospitalService {
     fn generate_model(p0: Option<HospitalRequestBody>, p1: NaiveDateTime) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {
-            hospital_ic:  Set(generate_ic().to_string()),
+            hospital_ic: Set(generate_ic().to_string()),
             created_at: Set(p1),
             updated_at: Set(p1),
             id: Default::default(),

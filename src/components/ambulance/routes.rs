@@ -3,7 +3,7 @@ use crate::entity::ambulance::AmbulancePayload;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, patch, post, web, HttpResponse};
+use actix_web::{HttpResponse, get, patch, post, web};
 use sea_orm::DatabaseConnection;
 use uuid::Uuid;
 

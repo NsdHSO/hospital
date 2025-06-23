@@ -21,7 +21,7 @@ pub struct Model {
     pub diagnosis: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
     pub notes: Option<String>,
-    #[sea_orm( column_type = "Decimal(Some((10, 2)))")]
+    #[sea_orm(column_type = "Decimal(Some((10, 2)))")]
     pub total_cost: Decimal,
     pub admitting_doctor_notes: Option<String>,
     pub discharge_summary: Option<String>,

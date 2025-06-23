@@ -7,14 +7,14 @@ use crate::http_response::response_object::ResponseObject;
 /// It constructs a ResponseObject struct containing the message and HTTP status code,
 /// which can be serialized to JSON with both fields.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The response payload of type T (must implement Serialize for JSON serialization)
 /// * `code`: The HTTP status code as HttpCodeW enum variant
 ///
 /// returns: ResponseObject<T> - A response object with the provided message and status code
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = create_response("Custom message", HttpCodeW::OK);

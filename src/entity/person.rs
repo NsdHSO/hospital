@@ -1,7 +1,8 @@
 //! SeaORM Entity for person (shared fields)
 
+use crate::entity::person;
+use crate::entity::sea_orm_active_enums::GenderEnum;
 use sea_orm::entity::prelude::*;
-use crate::entity::sea_orm_active_enums::{GenderEnum, BloodTypeEnum};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
@@ -29,7 +30,7 @@ pub enum Relation {}
 impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
-pub struct PersonRequestBody{
+pub struct PersonRequestBody {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub date_of_birth: Option<Date>,

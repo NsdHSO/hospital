@@ -47,4 +47,3 @@ pub async fn init() -> Result<DatabaseConnection, CustomError> {
 
     Ok(conn) // Return the connection
 }
-

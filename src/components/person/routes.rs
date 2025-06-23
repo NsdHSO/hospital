@@ -1,12 +1,10 @@
 use crate::components::person::PersonService;
+use crate::entity::person::PersonRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use actix_web::{get, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
 use std::collections::HashMap;
-use crate::components::patient::PatientService;
-use crate::entity::patient::PatientRequestBody;
-use crate::entity::person::PersonRequestBody;
 
 #[get("/person")]
 pub async fn find_all(
@@ -30,9 +28,7 @@ async fn create(
     db_conn: web::Data<DatabaseConnection>, // Inject the database connection
 ) -> Result<HttpResponse, CustomError> {
     let service = PersonService::new(db_conn.get_ref());
-    let hospital = service
-        .create(Option::from(patient.into_inner()))
-        .await?;
+    let hospital = service.create(Option::from(patient.into_inner())).await?;
     let response = http_response_builder::ok(hospital);
     Ok(HttpResponse::Ok().json(response))
 }

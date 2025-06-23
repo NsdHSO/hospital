@@ -21,18 +21,11 @@ pub struct Model {
     #[sea_orm(column_type = "Text", nullable)] // This is correct for Option<String> to TEXT
     pub notes: Option<String>,
     pub resolved_at: Option<NaiveDateTime>,
-    #[sea_orm(
-        column_type = "JsonBinary",
-        nullable
-    )]
+    #[sea_orm(column_type = "JsonBinary", nullable)]
     pub modification_attempts: Option<Json>,
-    #[sea_orm(
-        column_type = "Decimal(Some((9, 6)))"
-    )]
+    #[sea_orm(column_type = "Decimal(Some((9, 6)))")]
     pub emergency_latitude: Decimal,
-    #[sea_orm(
-        column_type = "Decimal(Some((9, 6)))"
-    )]
+    #[sea_orm(column_type = "Decimal(Some((9, 6)))")]
     pub emergency_longitude: Decimal,
     pub status: EmergencyStatusEnum,
     pub severity: EmergencySeverityEnum,
@@ -76,5 +69,5 @@ pub struct EmergencyRequestBody {
     #[serde(rename = "incidentType")]
     pub incident_type: EmergencyIncidentEnum,
     pub description: Option<String>,
-    pub patients: Option<Vec<PatientRequestBody>>
+    pub patients: Option<Vec<PatientRequestBody>>,
 }

@@ -56,10 +56,10 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin("http://localhost:4200")
             .allowed_origin("https://tevet-troc-client.vercel.app")
             .allowed_origin("https://nsdhso.github.io")
-            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE","PATCH", "OPTIONS"])
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
             .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
             .supports_credentials();
-        
+
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(data_base_conn.clone()))
@@ -72,6 +72,7 @@ async fn main() -> std::io::Result<()> {
                     .configure(components::card::init_routes)
                     .configure(components::patient::init_routes)
                     .configure(components::person::init_routes)
+                    .configure(components::staff::init_routes)
                     .configure(components::hospital::init_routes),
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))

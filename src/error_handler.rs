@@ -112,8 +112,8 @@ impl ResponseError for CustomError {
         let response_object = create_response(self.error_message.clone(), http_code);
         println!("ResponseObject: {:?}", response_object);
         // Build the HttpResponse based on the HttpCodeW
-        let status_code = StatusCode::from_u16(http_code as u16)
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        let status_code =
+            StatusCode::from_u16(http_code as u16).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
 
         HttpResponse::build(status_code).json(response_object)
     }

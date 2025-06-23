@@ -3,7 +3,7 @@ use crate::entity::patient::PatientRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{HttpResponse, get, post, web};
 use sea_orm::DatabaseConnection;
 
 #[post("/patient")]
@@ -19,7 +19,6 @@ async fn create(
     Ok(HttpResponse::Ok().json(response))
 }
 
-
 #[get("/patient")]
 pub async fn find_all(
     query: web::Query<PaginationParams>,
@@ -31,7 +30,7 @@ pub async fn find_all(
         .find_all(
             query.page.try_into().unwrap(),
             query.per_page.try_into().unwrap(),
-            query.filter.clone(),    // No need to unwrap and re-wrap in Some; it's already an Option<String>
+            query.filter.clone(), // No need to unwrap and re-wrap in Some; it's already an Option<String>
         )
         .await?;
     let response = http_response_builder::ok(hospital);
