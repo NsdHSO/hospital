@@ -10,6 +10,7 @@ mod m20250528_210000_add_ic_columns_if_missing;
 mod m20250529_000001_create_emergency_patient_table;
 mod m20250621_000001_add_person_table_and_refactor_patient_staff;
 mod m20250621_100000_add_specialization_to_staff;
+mod m20250623_100000_create_department_table;
 
 pub struct Migrator;
 
@@ -27,6 +28,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250529_000001_create_emergency_patient_table::Migration),
             Box::new(m20250621_000001_add_person_table_and_refactor_patient_staff::Migration),
             Box::new(m20250621_100000_add_specialization_to_staff::Migration),
+            Box::new(m20250623_100000_create_department_table::Migration),
         ]
     }
 }
