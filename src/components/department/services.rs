@@ -1,11 +1,82 @@
-use sea_orm::{DatabaseConnection, DbErr};
+use std::str::FromStr;
+use crate::entity::department::{ActiveModel, DepartmentRequestBody, Model};
+use crate::entity::sea_orm_active_enums::DepartmentNameEnum;
+use crate::error_handler::CustomError;
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
+use uuid::Uuid;
 
 pub struct DepartmentService {
-    db: DatabaseConnection,
+    conn: DatabaseConnection,
 }
 
 impl DepartmentService {
-    pub fn new(db: DatabaseConnection) -> Self {
-        Self { db }
+    pub fn new(conn: &DatabaseConnection) -> Self {
+        Self { conn: conn.clone() }
+    }
+
+    pub async fn create(
+        &self,
+        department_data: Option<DepartmentRequestBody>,
+    ) -> Result<Model, CustomError> {
+        let payload = match department_data {
+            None => return Err(CustomError::new(400, "Missing department data".to_string())),
+            Some(value) => value,
+        };
+        let mut attempts = 0;
+        const MAX_ATTEMPTS: usize = 5;
+
+        loop {
+            if attempts >= MAX_ATTEMPTS {
+                return Err(CustomError::new(
+                    500,
+                    "Failed to generate a unique department IC after multiple attempts.".to_string(),
+                ));
+            }
+
+            let active_model = generate_payload(&payload, Uuid::from_str("0c1743be-6b37-4d8a-a2a0-8e4e8b88ea59").unwrap());
+
+            // Insert the record into the database
+            let result = active_model.insert(&self.conn).await;
+
+            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
+                return value;
+            }
+        }
+    }
+}
+fn generate_payload(payload: &DepartmentRequestBody, hospital_id: Uuid) -> ActiveModel {
+    ActiveModel {
+        created_at: Set(now_time()),
+        updated_at: Set(now_time()),
+        id: Set(Uuid::new_v4()),
+        hospital_id: Set(hospital_id),
+        floor: Default::default(),
+        head_of_department: if let Some(value) = payload.head_of_department.clone() {
+            Set(Option::from(value))
+        } else {
+            Set(None)
+        },
+        phone: if let Some(value) = payload.phone.clone() {
+            Set(Option::from(value))
+        } else {
+            Set(None)
+        },
+        description: if let Some(value) = payload.description.clone() {
+            Set(Option::from(value))
+        } else {
+            Set(None)
+        },
+        capacity: if let Some(value) = payload.capacity.clone() {
+            Set(Option::from(value))
+        } else {
+            Set(None)
+        },
+        name: if let Some(value) = payload.name.clone() {
+            Set(value)
+        } else {
+            Set(DepartmentNameEnum::Pediatrics)
+        },
+        department_ic: Set(Option::from(generate_ic().to_string())),
     }
 }
