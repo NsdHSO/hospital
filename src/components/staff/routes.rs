@@ -2,7 +2,7 @@ use super::services::StaffService;
 use crate::entity::staff::StaffRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
-use actix_web::{post, web, HttpResponse};
+use actix_web::{HttpResponse, post, web};
 use sea_orm::DatabaseConnection;
 
 #[post("/staff")]

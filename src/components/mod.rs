@@ -1,9 +1,9 @@
 pub mod ambulance;
 pub mod card;
 pub mod dashboard;
+pub mod department;
 pub mod emergency;
 pub mod hospital;
 pub mod patient;
 pub mod person;
 pub mod staff;
-pub mod department;

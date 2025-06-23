@@ -2,7 +2,7 @@ use crate::components::person::PersonService;
 use crate::entity::person::PersonRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{HttpResponse, get, post, web};
 use sea_orm::DatabaseConnection;
 use std::collections::HashMap;
 

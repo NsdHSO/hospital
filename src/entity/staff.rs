@@ -36,7 +36,7 @@ impl Related<person::Entity> for Entity {
     }
 }
 
-impl ActiveModelBehavior for ActiveModel {} 
+impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct StaffRequestBody {

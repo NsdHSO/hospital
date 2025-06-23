@@ -3,7 +3,7 @@ use crate::open_api::init;
 use actix_cors::Cors;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};

@@ -111,7 +111,11 @@ impl StaffService {
         }
     }
 
-    fn generate_model(p0: Option<StaffRequestBody>, p1: NaiveDateTime, id_person: Uuid) -> ActiveModel {
+    fn generate_model(
+        p0: Option<StaffRequestBody>,
+        p1: NaiveDateTime,
+        id_person: Uuid,
+    ) -> ActiveModel {
         let payload = p0.unwrap();
         ActiveModel {
             id: Set(id_person),
