@@ -42,7 +42,7 @@ fn create_component(name: &str) {
 
     // Create services.rs
     let services_content = format!(
-        "use sea_orm::{{DatabaseConnection, DbErr}};\n\npub struct {}Service {{\n    conn: DatabaseConnection,\n}}\n\nimpl {}Service {{\n    pub fn new(conn: &DatabaseConnection) -> Self {{\n        Self {{ conn: db.clone() }}\n    }}\n}}\n",
+        "use sea_orm::{{DatabaseConnection, DbErr}};\n\npub struct {}Service {{\n    conn: DatabaseConnection,\n}}\n\nimpl {}Service {{\n    pub fn new(conn: &DatabaseConnection) -> Self {{\n        Self {{ conn: conn.clone() }}\n    }}\n}}\n",
         capitalize(name),
         capitalize(name)
     );
