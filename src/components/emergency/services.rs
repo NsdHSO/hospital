@@ -6,6 +6,7 @@ use crate::entity::sea_orm_active_enums::{
     AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
 };
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use chrono::NaiveDateTime;
@@ -38,7 +39,12 @@ impl EmergencyService {
             .find_also_related(ambulance::Entity)
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+            .map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Database error: {}", e),
+                )
+            })?;
 
         if let Some((emergency, ambulance_opt)) = result {
             let patient_models = self
@@ -108,7 +114,7 @@ impl EmergencyService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
                 ));
             }
@@ -136,7 +142,7 @@ impl EmergencyService {
                         // continue loop with new attempt
                     } else {
                         return Err(CustomError::new(
-                            500,
+                            HttpCodeW::InternalServerError,
                             format!("Database error: {}", err_string),
                         ));
                     }
@@ -151,7 +157,10 @@ impl EmergencyService {
             .all(&self.conn)
             .await
             .map_err(|e| {
-                CustomError::new(500, format!("Failed to fetch available ambulances: {}", e))
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Failed to fetch available ambulances: {}", e),
+                )
             })?;
 
         if available_ambulances.is_empty() {
@@ -168,7 +177,10 @@ impl EmergencyService {
             .update(&self.conn)
             .await // Save the changes to the database
             .map_err(|e| {
-                CustomError::new(500, format!("Failed to update ambulance status: {}", e))
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Failed to update ambulance status: {}", e),
+                )
             })?;
 
         Ok(())
@@ -197,8 +209,12 @@ impl EmergencyService {
                 .patient_service
                 .find_patients_by_emergency_id(emergency.id)
                 .await?;
-            let passengers_json = serde_json::to_value(&patients)
-                .map_err(|e| CustomError::new(500, format!("Serialization error: {}", e)))?;
+            let passengers_json = serde_json::to_value(&patients).map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Serialization error: {}", e),
+                )
+            })?;
             Ok(Some(passengers_json))
         } else {
             Ok(None)

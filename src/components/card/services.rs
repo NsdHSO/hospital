@@ -11,6 +11,7 @@ use sea_orm::{ActiveModelTrait, PaginatorTrait};
 use sea_orm::{ColumnTrait, Set};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use utils::helpers;
+use crate::http_response::HttpCodeW;
 
 pub struct CardService {
     conn: DatabaseConnection,
@@ -28,7 +29,7 @@ impl CardService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique  IC after multiple attempts.".to_string(),
                 ));
             }
@@ -38,7 +39,7 @@ impl CardService {
                     .as_ref()
                     .and_then(|p| p.dashboard_id)
                     .ok_or(CustomError::new(
-                        500,
+                        HttpCodeW::InternalServerError,
                         "dashboard_id is required".to_string(),
                     ))?;
 
@@ -49,7 +50,7 @@ impl CardService {
             if let Ok(Some(card_model)) = &dashboard_entity {
                 active_model.dashboard_id = Set(Some(card_model.id));
             } else {
-                return Err(CustomError::new(500, "Dashboard not found".to_string()));
+                return Err(CustomError::new(HttpCodeW::InternalServerError, "Dashboard not found".to_string()));
             }
 
             let result = active_model.insert(&self.conn).await;
@@ -64,7 +65,7 @@ impl CardService {
         page: u64, // Use u64 for pagination
         per_page: u64,
         filter: Option<String>,
-    ) -> Result<PaginatedResponse<Vec<card::Model>>, CustomError> {
+    ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let mut query = card::Entity::find();
 
         // Inside your function

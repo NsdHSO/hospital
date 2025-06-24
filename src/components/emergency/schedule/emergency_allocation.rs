@@ -5,6 +5,7 @@ use sea_orm::*;
 use crate::entity::sea_orm_active_enums::{AmbulanceStatusEnum, EmergencyStatusEnum};
 use crate::entity::{ambulance, emergency};
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::utils::helpers::{calculate_distance, now_time};
 
 pub struct EmergencyAllocationService {
@@ -33,7 +34,7 @@ impl EmergencyAllocationService {
             .await
             .map_err(|e| {
                 error!("Error during emergency allocation transaction: {}", e);
-                CustomError::new(500, format!("Transaction failed: {}", e))
+                CustomError::new(HttpCodeW::InternalServerError, format!("Transaction failed: {}", e))
             })
     }
 
@@ -139,7 +140,7 @@ impl EmergencyAllocationService {
             .all(txn)
             .await
             .map_err(|e| {
-                CustomError::new(500, format!("Failed to fetch pending emergencies: {}", e))
+                CustomError::new(HttpCodeW::InternalServerError, format!("Failed to fetch pending emergencies: {}", e))
             })
     }
 
@@ -152,7 +153,7 @@ impl EmergencyAllocationService {
             .all(txn)
             .await
             .map_err(|e| {
-                CustomError::new(500, format!("Failed to fetch available ambulances: {}", e))
+                CustomError::new(HttpCodeW::InternalServerError, format!("Failed to fetch available ambulances: {}", e))
             })
     }
 
@@ -249,7 +250,7 @@ async fn dispatch_ambulance(
                 emergency.id, e
             );
             return Err(CustomError::new(
-                500,
+                HttpCodeW::InternalServerError,
                 format!(
                     "Failed to update emergency status for {}: {}",
                     emergency.id, e
@@ -281,7 +282,7 @@ async fn dispatch_ambulance(
                 ambulance.id, e
             );
             return Err(CustomError::new(
-                500,
+                HttpCodeW::InternalServerError,
                 format!(
                     "Failed to update ambulance status for {}: {}",
                     ambulance.id, e

@@ -1,4 +1,5 @@
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use once_cell::sync::OnceCell;
 use sea_orm::{Database, DatabaseConnection};
 use std::env;
@@ -36,14 +37,23 @@ pub async fn init() -> Result<DatabaseConnection, CustomError> {
     std::io::stdout().flush().unwrap();
 
     // Handle the connection result
-    let conn = connection_result
-        .map_err(|e| CustomError::new(500, format!("Failed to connect to DB: {}", e)))?;
+    let conn = connection_result.map_err(|e| {
+        CustomError::new(
+            HttpCodeW::InternalServerError,
+            format!("Failed to connect to DB: {}", e),
+        )
+    })?;
 
     println!("Successfully connected to database!");
 
     // Store the connection in OnceCell
     DB.set(conn.clone()) // Clone the connection to store it
-        .map_err(|_| CustomError::new(500, "DB already initialized".to_string()))?;
+        .map_err(|_| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                "DB already initialized".to_string(),
+            )
+        })?;
 
     Ok(conn) // Return the connection
 }

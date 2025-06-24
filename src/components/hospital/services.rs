@@ -1,8 +1,8 @@
 use crate::entity::hospital::{ActiveModel, Column, Entity, HospitalRequestBody, Model};
 use chrono::NaiveDateTime;
 
-use crate::entity::hospital;
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
@@ -29,7 +29,7 @@ impl HospitalService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
                 ));
             }
@@ -46,18 +46,26 @@ impl HospitalService {
     }
     pub async fn find_by_ic(&self, hospital_name: String) -> Result<Option<Model>, CustomError> {
         let hospital = Entity::find()
-            .filter(hospital::Column::Name.like(&hospital_name))
+            .filter(Column::Name.like(&hospital_name))
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)));
+            .map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Database error: {}", e),
+                )
+            });
 
         match hospital {
             Ok(Some(hospital_model)) => Ok(Option::from(hospital_model)),
             Ok(None) => Err(CustomError::new(
-                404,
+                HttpCodeW::NotFound,
                 format!("Hospital with name '{}' not found", hospital_name),
             )),
-            Err(e) => Err(CustomError::new(500, format!("Database error: {}", e))),
+            Err(e) => Err(CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {}", e),
+            )),
         }
     }
 
@@ -66,7 +74,7 @@ impl HospitalService {
         page: u64,     // Use u64 for pagination
         per_page: u64, // Use u64 for pagination
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
-        let paginator = hospital::Entity::find().paginate(&self.conn, per_page);
+        let paginator = Entity::find().paginate(&self.conn, per_page);
 
         let total_items = paginator.num_items().await?;
         let total_pages = paginator.num_pages().await?;
@@ -98,20 +106,22 @@ impl HospitalService {
             "name" => Entity::find().filter(Column::Name.like(value)),
             _ => {
                 return Err(CustomError::new(
-                    400,
+                    HttpCodeW::BadRequest,
                     format!("Unsupported field: {}", field),
                 ));
             }
         };
-        let hospital = query
-            .one(&self.conn)
-            .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        let hospital = query.one(&self.conn).await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {}", e),
+            )
+        })?;
         if let Some(hospital_model) = hospital {
             Ok(Some(hospital_model))
         } else {
             Err(CustomError::new(
-                404,
+                HttpCodeW::NotFound,
                 format!("Hospital not found for {} = '{}'", field, value),
             ))
         }

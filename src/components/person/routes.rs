@@ -1,8 +1,8 @@
 use crate::components::person::PersonService;
 use crate::entity::person::PersonRequestBody;
 use crate::error_handler::CustomError;
-use crate::http_response::http_response_builder;
-use actix_web::{HttpResponse, get, post, web};
+use crate::http_response::{http_response_builder, HttpCodeW};
+use actix_web::{get, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
 use std::collections::HashMap;
 
@@ -14,8 +14,12 @@ pub async fn find_all(
     let service_instance = PersonService::new(db_conn.get_ref());
 
     // Example: find by "email"
-    let field = params.get("field").cloned().unwrap_or_default();
-    let value = params.get("value").cloned().unwrap_or_default();
+    let field = params
+        .get("field")
+        .ok_or_else(|| CustomError::new(HttpCodeW::BadRequest,"Missing 'field' parameter".to_string()))?;
+    let value = params
+        .get("value")
+        .ok_or_else(|| CustomError::new(HttpCodeW::BadRequest,"Missing 'value' parameter".to_string()))?;
 
     let hospital = service_instance.find_by_field(&field, &value).await?;
     let response = http_response_builder::ok(hospital);

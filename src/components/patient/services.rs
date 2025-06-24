@@ -12,6 +12,7 @@ use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
+use crate::http_response::HttpCodeW;
 
 pub struct PatientService {
     conn: DatabaseConnection,
@@ -58,7 +59,7 @@ impl PatientService {
         // Check if patient_data exists
         let payload = match patient_data.clone() {
             Some(data) => data,
-            None => return Err(CustomError::new(400, "Missing patient data".to_string())),
+            None => return Err(CustomError::new(HttpCodeW::BadRequest, "Missing patient data".to_string())),
         };
 
         let now = Local::now().naive_utc();
@@ -82,7 +83,7 @@ impl PatientService {
             }))
             .await
             .or(Err(CustomError::new(
-                500,
+                HttpCodeW::InternalServerError,
                 "Internal server error".to_string(),
             )))?;
         if let Some(ref ic) = payload.patient_ic {
@@ -93,7 +94,7 @@ impl PatientService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique patient IC after multiple attempts.".to_string(),
                 ));
             }
@@ -107,7 +108,7 @@ impl PatientService {
                     .find_also_related(person::Entity)
                     .one(&self.conn)
                     .await?
-                    .ok_or_else(|| CustomError::new(404, "Patient not found".to_string()))?;
+                    .ok_or_else(|| CustomError::new(HttpCodeW::NotFound, "Patient not found".to_string()))?;
                 return Ok(PatientWithPerson {
                     patient,
                     person: person.unwrap(),
@@ -127,7 +128,7 @@ impl PatientService {
             // "first_name" => Entity::find().filter(Column::FirstName.like(value)),
             _ => {
                 return Err(CustomError::new(
-                    400,
+                    HttpCodeW::BadRequest,
                     format!("Unsupported field: {}", field),
                 ));
             }
@@ -135,12 +136,12 @@ impl PatientService {
         let patient = query
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error: {}", e)))?;
         if let Some(patient_model) = patient {
             Ok(Some(patient_model))
         } else {
             Err(CustomError::new(
-                404,
+                HttpCodeW::NotFound,
                 format!("Patient not found for {} = '{}'", field, value),
             ))
         }
@@ -184,7 +185,7 @@ impl PatientService {
                         .map(|id| id.to_string())
                         .unwrap_or_else(|_| encoded_name.to_string());
                     let patient_uuid = Uuid::parse_str(&patient_id)
-                        .map_err(|_| CustomError::new(400, "Invalid UUID".to_string()))?;
+                        .map_err(|_| CustomError::new(HttpCodeW::BadRequest, "Invalid UUID".to_string()))?;
                     query = query.filter(Column::Id.eq(patient_uuid));
                 }
                 _ => {}
@@ -232,7 +233,7 @@ impl PatientService {
             patient_id: Set(created_patient.patient.id),
         };
         junction.insert(transaction).await.map_err(|e| {
-            CustomError::new(500, format!("Failed to link patient to emergency: {}", e))
+            CustomError::new(HttpCodeW::InternalServerError, format!("Failed to link patient to emergency: {}", e))
         })?;
 
         Ok(())
@@ -269,7 +270,7 @@ impl PatientService {
             .find_also_related(patient::Entity)
             .all(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error: {}", e)))?;
         Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
     }
 
@@ -289,7 +290,7 @@ impl PatientService {
         let model = match patient {
             Some(model) => model,
             None => {
-                return Err(CustomError::new(404, "Patient not found".to_string()));
+                return Err(CustomError::new(HttpCodeW::NotFound, "Patient not found".to_string()));
             }
         };
         let mut active_model: ActiveModel = model.into();
@@ -317,7 +318,7 @@ impl PatientService {
         let updated = active_model
             .update(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error: {}", e)))?;
         Ok(updated)
     }
 

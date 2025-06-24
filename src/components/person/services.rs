@@ -5,6 +5,7 @@ use chrono::{Local, NaiveDateTime};
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
 use uuid::Uuid;
+use crate::http_response::HttpCodeW;
 
 pub struct PersonService {
     conn: DatabaseConnection,
@@ -32,7 +33,7 @@ impl PersonService {
             "marital_status" => Entity::find().filter(Column::MaritalStatus.like(value)),
             _ => {
                 return Err(CustomError::new(
-                    400,
+                    HttpCodeW::BadRequest,
                     format!("Unsupported field: {}", field),
                 ));
             }
@@ -40,12 +41,12 @@ impl PersonService {
         let patient = query
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error: {}", e)))?;
         if let Some(person_model) = patient {
             Ok(Some(person_model))
         } else {
             Err(CustomError::new(
-                404,
+                HttpCodeW::NotFound,
                 format!("Person not found for {} = '{}'", field, value),
             ))
         }
@@ -65,8 +66,8 @@ impl PersonService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
-                    "Failed to generate a unique patient IC after multiple attempts.".to_string(),
+                    HttpCodeW::InternalServerError,
+                    "Failed to generate a unique Person IC after multiple attempts.".to_string(),
                 ));
             }
 

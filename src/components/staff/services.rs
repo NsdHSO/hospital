@@ -10,6 +10,7 @@ use sea_orm::ActiveModelTrait;
 use sea_orm::{ColumnTrait, QueryFilter, Set};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
+use crate::http_response::HttpCodeW;
 
 pub struct StaffService {
     conn: DatabaseConnection,
@@ -29,7 +30,7 @@ impl StaffService {
     ) -> Result<StaffWithPerson, CustomError> {
         let payload = match staff_data.clone() {
             Some(data) => data,
-            None => return Err(CustomError::new(400, "Missing patient data".to_string())),
+            None => return Err(CustomError::new(HttpCodeW::BadRequest, "Missing patient data".to_string())),
         };
 
         let now = Local::now().naive_utc();
@@ -52,14 +53,14 @@ impl StaffService {
             }))
             .await
             .or(Err(CustomError::new(
-                500,
+                HttpCodeW::InternalServerError,
                 "Internal server error".to_string(),
             )))?;
 
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique staff IC after multiple attempts.".to_string(),
                 ));
             }
@@ -73,7 +74,7 @@ impl StaffService {
                 .find_also_related(person::Entity)
                 .one(&self.conn)
                 .await?
-                .ok_or_else(|| CustomError::new(404, "Staff not found".to_string()))?;
+                .ok_or_else(|| CustomError::new(HttpCodeW::BadRequest, "Staff not found".to_string()))?;
             return Ok(StaffWithPerson {
                 staff,
                 person: person.unwrap(),
@@ -92,7 +93,7 @@ impl StaffService {
             "staff_ic" => Entity::find().filter(Column::StaffIc.like(value)),
             _ => {
                 return Err(CustomError::new(
-                    400,
+                    HttpCodeW::BadRequest,
                     format!("Unsupported field: {}", field),
                 ));
             }
@@ -100,12 +101,12 @@ impl StaffService {
         let staff = query
             .one(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error: {}", e)))?;
         if let Some(patient_model) = staff {
             Ok(Some(patient_model))
         } else {
             Err(CustomError::new(
-                404,
+                HttpCodeW::NotFound,
                 format!("Patient not found for {} = '{}'", field, value),
             ))
         }

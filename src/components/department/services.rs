@@ -5,6 +5,7 @@ use crate::error_handler::CustomError;
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
 use uuid::Uuid;
+use crate::http_response::HttpCodeW;
 
 pub struct DepartmentService {
     conn: DatabaseConnection,
@@ -24,7 +25,7 @@ impl DepartmentService {
         department_data: Option<DepartmentRequestBody>,
     ) -> Result<Model, CustomError> {
         let payload = match department_data {
-            None => return Err(CustomError::new(400, "Missing department data".to_string())),
+            None => return Err(CustomError::new(HttpCodeW::BadRequest, "Missing department data".to_string())),
             Some(value) => value,
         };
         let mut attempts = 0;
@@ -38,7 +39,7 @@ impl DepartmentService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique department IC after multiple attempts."
                         .to_string(),
                 ));
