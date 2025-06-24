@@ -81,7 +81,7 @@ pub fn check_if_is_duplicate_key_from_data_base<T>(
 ) -> Option<Result<T, CustomError>> {
     match result {
         Ok(value) => Some(Ok(value)),
-        Err(DbErr::Exec(e)) => {
+        Err(e) => {
             // Check if the error is a unique constraint violation
             // The exact string to check for might vary slightly depending on the database
             if e.to_string()
@@ -93,13 +93,8 @@ pub fn check_if_is_duplicate_key_from_data_base<T>(
                 None
             } else {
                 // Some other execution error, return it
-                Some(Err(CustomError::from(DbErr::Exec(e))))
+                Some(Err(CustomError::from(e)))
             }
-        }
-        Err(e) => {
-            println!("{:?}", e);
-            // Other types of database errors, return them
-            Some(Err(CustomError::from(e)))
         }
     }
 }
