@@ -8,7 +8,7 @@ use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use chrono::{Local, NaiveDateTime};
 use percent_encoding::percent_decode_str;
-use sea_orm::{ActiveModelTrait, Iden, PaginatorTrait, Set};
+use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
@@ -102,7 +102,7 @@ impl PatientService {
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
-            if let Some(_) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
+            if check_if_is_duplicate_key_from_data_base(&mut attempts, result).is_some() {
                 let (patient, person) = Entity::find_by_id(person.id)
                     .find_also_related(person::Entity)
                     .one(&self.conn)
