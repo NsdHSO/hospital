@@ -42,13 +42,13 @@ impl ActiveModelBehavior for ActiveModel {}
 pub struct StaffRequestBody {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
-    pub hospital_id: Option<Uuid>,
+    pub hospital_name: Option<String>,
     pub date_of_birth: Option<Date>,
     pub gender: Option<GenderEnum>,
     pub phone: Option<String>,
     pub email: Option<String>,
     pub address: Option<String>,
-    pub department_name: i32,
+    pub department_name: Option<String>,
     pub specialization: Option<String>,
     pub role: Option<StaffRoleEnum>,
 }

@@ -1,20 +1,24 @@
+use crate::components::department::DepartmentService;
+use crate::components::hospital::HospitalService;
 use crate::components::person::PersonService;
 use crate::entity::person;
 use crate::entity::person::PersonRequestBody;
 use crate::entity::sea_orm_active_enums::StaffRoleEnum;
 use crate::entity::staff::{ActiveModel, Column, Entity, Model, StaffRequestBody, StaffWithPerson};
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{Local, NaiveDateTime};
 use sea_orm::ActiveModelTrait;
 use sea_orm::{ColumnTrait, QueryFilter, Set};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
-use crate::http_response::HttpCodeW;
 
 pub struct StaffService {
     conn: DatabaseConnection,
     person_service: PersonService,
+    hospital_service: HospitalService,
+    department_service: DepartmentService,
 }
 
 impl StaffService {
@@ -22,6 +26,8 @@ impl StaffService {
         Self {
             conn: db.clone(),
             person_service: PersonService::new(db),
+            hospital_service: HospitalService::new(db),
+            department_service: DepartmentService::new(db),
         }
     }
     pub async fn create(
@@ -30,7 +36,12 @@ impl StaffService {
     ) -> Result<StaffWithPerson, CustomError> {
         let payload = match staff_data.clone() {
             Some(data) => data,
-            None => return Err(CustomError::new(HttpCodeW::BadRequest, "Missing patient data".to_string())),
+            None => {
+                return Err(CustomError::new(
+                    HttpCodeW::BadRequest,
+                    "Missing patient data".to_string(),
+                ));
+            }
         };
 
         let now = Local::now().naive_utc();
@@ -54,9 +65,10 @@ impl StaffService {
             .await
             .or(Err(CustomError::new(
                 HttpCodeW::InternalServerError,
-                "Internal server error".to_string(),
+                "Internal When created Person in staff Service server error".to_string(),
             )))?;
-
+        let hospital_id: Uuid = self.hospital_service.find_by_field("name", &*staff_body.hospital_name.unwrap()).await?.unwrap().id;
+        let department_id: Uuid = self.department_service.find_by_field("name", &*staff_body.department_name.unwrap()).await?.unwrap().id;;
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
@@ -65,7 +77,13 @@ impl StaffService {
                 ));
             }
 
-            let active_model = Self::generate_model(Some(payload.clone()), now, person.clone().id);
+            let active_model = Self::generate_model(
+                Some(payload.clone()),
+                now,
+                person.clone().id,
+                department_id,
+                hospital_id,
+            );
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
@@ -74,7 +92,9 @@ impl StaffService {
                 .find_also_related(person::Entity)
                 .one(&self.conn)
                 .await?
-                .ok_or_else(|| CustomError::new(HttpCodeW::BadRequest, "Staff not found".to_string()))?;
+                .ok_or_else(|| {
+                    CustomError::new(HttpCodeW::BadRequest, "Staff not found".to_string())
+                })?;
             return Ok(StaffWithPerson {
                 staff,
                 person: person.unwrap(),
@@ -98,10 +118,12 @@ impl StaffService {
                 ));
             }
         };
-        let staff = query
-            .one(&self.conn)
-            .await
-            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error: {}", e)))?;
+        let staff = query.one(&self.conn).await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {}", e),
+            )
+        })?;
         if let Some(patient_model) = staff {
             Ok(Some(patient_model))
         } else {
@@ -116,12 +138,14 @@ impl StaffService {
         p0: Option<StaffRequestBody>,
         p1: NaiveDateTime,
         id_person: Uuid,
+        department_id: Uuid,
+        hospital_id: Uuid,
     ) -> ActiveModel {
         let payload = p0.unwrap();
         ActiveModel {
             id: Set(id_person),
-            hospital_id: Set(Uuid::new_v4()),
-            department_id: Set(Uuid::new_v4()),
+            hospital_id: Set(hospital_id),
+            department_id: Set(department_id),
             specialization: if let Some(value) = payload.specialization {
                 Set(Option::from(value))
             } else {

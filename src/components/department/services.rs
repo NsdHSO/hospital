@@ -1,11 +1,12 @@
+use sea_orm::QueryFilter;
 use crate::components::hospital::HospitalService;
-use crate::entity::department::{ActiveModel, DepartmentRequestBody, Model};
+use crate::entity::department::{ActiveModel, Column, DepartmentRequestBody, Entity, Model};
 use crate::entity::sea_orm_active_enums::DepartmentNameEnum;
 use crate::error_handler::CustomError;
-use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
-use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
-use uuid::Uuid;
 use crate::http_response::HttpCodeW;
+use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Set};
+use uuid::Uuid;
 
 pub struct DepartmentService {
     conn: DatabaseConnection,
@@ -20,12 +21,46 @@ impl DepartmentService {
         }
     }
 
+    pub async fn find_by_field(
+        &self,
+        field: &str,
+        value: &str,
+    ) -> Result<Option<Model>, CustomError> {
+        let query = match field {
+            "name" => Entity::find().filter(Column::Name.eq(value)),
+            _ => {
+                return Err(CustomError::new(
+                    HttpCodeW::BadRequest,
+                    format!("Unsupported field: {}", field),
+                ));
+            }
+        };
+        let department = query.one(&self.conn).await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {}", e),
+            )
+        })?;
+        if let Some(department_model) = department {
+            Ok(Some(department_model))
+        } else {
+            Err(CustomError::new(
+                HttpCodeW::NotFound,
+                format!("Department not found for {} = '{}'", field, value),
+            ))
+        }
+    }
     pub async fn create(
         &self,
         department_data: Option<DepartmentRequestBody>,
     ) -> Result<Model, CustomError> {
         let payload = match department_data {
-            None => return Err(CustomError::new(HttpCodeW::BadRequest, "Missing department data".to_string())),
+            None => {
+                return Err(CustomError::new(
+                    HttpCodeW::BadRequest,
+                    "Missing department data".to_string(),
+                ));
+            }
             Some(value) => value,
         };
         let mut attempts = 0;
