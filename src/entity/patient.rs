@@ -18,6 +18,7 @@ pub struct Model {
     pub allergies: Option<Vec<String>>,
     #[sea_orm(column_type = "Text", nullable)]
     pub medical_history: Option<String>,
+    #[sea_orm(unique)]
     pub patient_ic: Option<String>,
 }
 
