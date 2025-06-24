@@ -1,11 +1,11 @@
 use crate::entity::person::{ActiveModel, Column, Entity, Model, PersonRequestBody};
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
 use chrono::{Local, NaiveDateTime};
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
 use uuid::Uuid;
-use crate::http_response::HttpCodeW;
 
 pub struct PersonService {
     conn: DatabaseConnection,
@@ -38,10 +38,12 @@ impl PersonService {
                 ));
             }
         };
-        let patient = query
-            .one(&self.conn)
-            .await
-            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error: {}", e)))?;
+        let patient = query.one(&self.conn).await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {}", e),
+            )
+        })?;
         if let Some(person_model) = patient {
             Ok(Some(person_model))
         } else {

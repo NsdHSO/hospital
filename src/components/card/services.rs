@@ -1,6 +1,7 @@
 use crate::entity::card::{ActiveModel, CardPayload, Model};
 use crate::entity::{card, dashboard};
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils;
 use crate::utils::helpers::generate_ic;
@@ -11,7 +12,6 @@ use sea_orm::{ActiveModelTrait, PaginatorTrait};
 use sea_orm::{ColumnTrait, Set};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use utils::helpers;
-use crate::http_response::HttpCodeW;
 
 pub struct CardService {
     conn: DatabaseConnection,
@@ -50,7 +50,10 @@ impl CardService {
             if let Ok(Some(card_model)) = &dashboard_entity {
                 active_model.dashboard_id = Set(Some(card_model.id));
             } else {
-                return Err(CustomError::new(HttpCodeW::InternalServerError, "Dashboard not found".to_string()));
+                return Err(CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    "Dashboard not found".to_string(),
+                ));
             }
 
             let result = active_model.insert(&self.conn).await;

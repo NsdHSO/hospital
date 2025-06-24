@@ -63,7 +63,9 @@ impl From<DbErr> for CustomError {
                 print!("{}", msg); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
-            DbErr::RecordNotFound(_) => CustomError::new(HttpCodeW::NotFound, "Record not found".to_string()), // Not an error that needs logging at ERROR level
+            DbErr::RecordNotFound(_) => {
+                CustomError::new(HttpCodeW::NotFound, "Record not found".to_string())
+            } // Not an error that needs logging at ERROR level
             DbErr::Custom(e) => {
                 let msg = format!("Custom database error: {}", e);
                 print!("{}", msg); // Log the error
@@ -86,14 +88,12 @@ impl ResponseError for CustomError {
             self.error_status_code, self.error_message
         );
 
-       
-
         // Create a ResponseObject using the error message and mapped HttpCodeW
         let response_object = create_response(self.error_message.clone(), self.error_status_code);
         println!("ResponseObject: {:?}", response_object);
         // Build the HttpResponse based on the HttpCodeW
-        let status_code =
-            StatusCode::from_u16(self.error_status_code as u16).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        let status_code = StatusCode::from_u16(self.error_status_code as u16)
+            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
 
         HttpResponse::build(status_code).json(response_object)
     }

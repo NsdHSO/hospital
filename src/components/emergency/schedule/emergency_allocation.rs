@@ -34,7 +34,10 @@ impl EmergencyAllocationService {
             .await
             .map_err(|e| {
                 error!("Error during emergency allocation transaction: {}", e);
-                CustomError::new(HttpCodeW::InternalServerError, format!("Transaction failed: {}", e))
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Transaction failed: {}", e),
+                )
             })
     }
 
@@ -140,7 +143,10 @@ impl EmergencyAllocationService {
             .all(txn)
             .await
             .map_err(|e| {
-                CustomError::new(HttpCodeW::InternalServerError, format!("Failed to fetch pending emergencies: {}", e))
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Failed to fetch pending emergencies: {}", e),
+                )
             })
     }
 
@@ -153,7 +159,10 @@ impl EmergencyAllocationService {
             .all(txn)
             .await
             .map_err(|e| {
-                CustomError::new(HttpCodeW::InternalServerError, format!("Failed to fetch available ambulances: {}", e))
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Failed to fetch available ambulances: {}", e),
+                )
             })
     }
 

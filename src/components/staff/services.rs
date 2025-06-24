@@ -67,8 +67,18 @@ impl StaffService {
                 HttpCodeW::InternalServerError,
                 "Internal When created Person in staff Service server error".to_string(),
             )))?;
-        let hospital_id: Uuid = self.hospital_service.find_by_field("name", &*staff_body.hospital_name.unwrap()).await?.unwrap().id;
-        let department_id: Uuid = self.department_service.find_by_field("name", &*staff_body.department_name.unwrap()).await?.unwrap().id;;
+        let hospital_id: Uuid = self
+            .hospital_service
+            .find_by_field("name", &*staff_body.hospital_name.unwrap())
+            .await?
+            .unwrap()
+            .id;
+        let department_id: Uuid = self
+            .department_service
+            .find_by_field("name", &*staff_body.department_name.unwrap())
+            .await?
+            .unwrap()
+            .id;
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(

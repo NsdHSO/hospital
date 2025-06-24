@@ -1,10 +1,10 @@
-use sea_orm::QueryFilter;
 use crate::components::hospital::HospitalService;
 use crate::entity::department::{ActiveModel, Column, DepartmentRequestBody, Entity, Model};
 use crate::entity::sea_orm_active_enums::DepartmentNameEnum;
 use crate::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
+use sea_orm::QueryFilter;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, Set};
 use uuid::Uuid;
 
