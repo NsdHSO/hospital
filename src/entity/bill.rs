@@ -15,17 +15,12 @@ pub struct Model {
     pub hospital_id: i32,
     #[sea_orm(column_type = "Decimal(Some((10, 2)))")]
     pub amount: Decimal,
-    #[sea_orm(
-        column_type = "Decimal(Some((10, 2)))",
-        nullable
-    )]
+    #[sea_orm(column_type = "Decimal(Some((10, 2)))", nullable)]
     pub insurance_coverage: Option<Decimal>,
-    #[sea_orm(
-        column_type = "Decimal(Some((10, 2)))"
-    )]
+    #[sea_orm(column_type = "Decimal(Some((10, 2)))")]
     pub patient_responsibility: Decimal,
     pub due_date: Option<Date>,
-    #[sea_orm( column_type = "JsonBinary", nullable)]
+    #[sea_orm(column_type = "JsonBinary", nullable)]
     pub line_items: Option<Json>,
     pub payment_date: Option<DateTime>,
     pub payment_method: Option<String>,

@@ -285,12 +285,13 @@ pub enum CardSizeEnum {
     Large,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
     enum_name = "department_name_enum"
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DepartmentNameEnum {
     #[sea_orm(string_value = "CARDIOLOGY")]
     Cardiology,
@@ -566,8 +567,9 @@ pub enum RoomTypeEnum {
     Isolation,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "staff_role_enum")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StaffRoleEnum {
     #[sea_orm(string_value = "DOCTOR")]
     Doctor,

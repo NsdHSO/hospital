@@ -1,6 +1,7 @@
 use crate::entity::dashboard;
 use crate::entity::dashboard::{ActiveModel, Model, PayloadBodyDashboard};
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
@@ -20,7 +21,7 @@ impl DashboardService {
         &self,         // Changed to &self as we're not modifying the service state
         page: u64,     // Use u64 for pagination
         per_page: u64, // Use u64 for pagination
-    ) -> Result<PaginatedResponse<Vec<dashboard::Model>>, CustomError> {
+    ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let paginator = dashboard::Entity::find().paginate(&self.conn, per_page);
 
         let total_items = paginator.num_items().await?;
@@ -51,7 +52,7 @@ impl DashboardService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
                 ));
             }

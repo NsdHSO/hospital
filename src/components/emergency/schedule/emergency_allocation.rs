@@ -1,10 +1,11 @@
-use chrono::{Local};
+use chrono::Local;
 use log::{error, warn};
 use sea_orm::*;
 
 use crate::entity::sea_orm_active_enums::{AmbulanceStatusEnum, EmergencyStatusEnum};
 use crate::entity::{ambulance, emergency};
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::utils::helpers::{calculate_distance, now_time};
 
 pub struct EmergencyAllocationService {
@@ -32,8 +33,11 @@ impl EmergencyAllocationService {
             })
             .await
             .map_err(|e| {
-                error!("Error during emergency allocation transaction: {}", e);
-                CustomError::new(500, format!("Transaction failed: {}", e))
+                error!("Error during emergency allocation transaction: {e}");
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Transaction failed: {e}"),
+                )
             })
     }
 
@@ -106,7 +110,7 @@ impl EmergencyAllocationService {
                         );
                     }
                     Err(e) => {
-                        error!("Failed to dispatch ambulance: {}", e);
+                        error!("Failed to dispatch ambulance: {e}");
                         return Err(e);
                     }
                 }
@@ -119,12 +123,10 @@ impl EmergencyAllocationService {
         }
 
         println!(
-            "Emergency allocation process completed within transaction. Dispatched {} ambulances.",
-            dispatched_count
+            "Emergency allocation process completed within transaction. Dispatched {dispatched_count} ambulances."
         );
         Ok(format!(
-            "Emergency allocation process completed successfully. Dispatched {} ambulances.",
-            dispatched_count
+            "Emergency allocation process completed successfully. Dispatched {dispatched_count} ambulances."
         ))
     }
 
@@ -139,7 +141,10 @@ impl EmergencyAllocationService {
             .all(txn)
             .await
             .map_err(|e| {
-                CustomError::new(500, format!("Failed to fetch pending emergencies: {}", e))
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Failed to fetch pending emergencies: {e}"),
+                )
             })
     }
 
@@ -152,7 +157,10 @@ impl EmergencyAllocationService {
             .all(txn)
             .await
             .map_err(|e| {
-                CustomError::new(500, format!("Failed to fetch available ambulances: {}", e))
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Failed to fetch available ambulances: {e}"),
+                )
             })
     }
 
@@ -249,10 +257,10 @@ async fn dispatch_ambulance(
                 emergency.id, e
             );
             return Err(CustomError::new(
-                500,
+                HttpCodeW::InternalServerError,
                 format!(
-                    "Failed to update emergency status for {}: {}",
-                    emergency.id, e
+                    "Failed to update emergency status for {}: {e}",
+                    emergency.id
                 ),
             ));
         }
@@ -281,10 +289,10 @@ async fn dispatch_ambulance(
                 ambulance.id, e
             );
             return Err(CustomError::new(
-                500,
+                HttpCodeW::InternalServerError,
                 format!(
-                    "Failed to update ambulance status for {}: {}",
-                    ambulance.id, e
+                    "Failed to update ambulance status for {}: {e}",
+                    ambulance.id
                 ),
             ));
         }

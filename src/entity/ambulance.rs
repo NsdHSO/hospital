@@ -37,15 +37,11 @@ pub struct Model {
     pub car_details_color: String,
     pub car_details_is_ambulance: bool,
     pub car_details_license_plate: Option<String>,
-    #[sea_orm( column_type = "Double", nullable)]
+    #[sea_orm(column_type = "Double", nullable)]
     pub car_details_mileage: Option<f64>,
-    #[sea_orm(
-        column_type = "Decimal(Some((9, 6)))"
-    )]
+    #[sea_orm(column_type = "Decimal(Some((9, 6)))")]
     pub location_latitude: Decimal,
-    #[sea_orm(
-        column_type = "Decimal(Some((9, 6)))"
-    )]
+    #[sea_orm(column_type = "Decimal(Some((9, 6)))")]
     pub location_longitude: Decimal,
     pub r#type: AmbulanceTypeEnum,
     pub status: AmbulanceStatusEnum,
@@ -55,7 +51,11 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::emergency::Entity", from = "Column::Id", to = "super::emergency::Column::AmbulanceId")]
+    #[sea_orm(
+        has_many = "super::emergency::Entity",
+        from = "Column::Id",
+        to = "super::emergency::Column::AmbulanceId"
+    )]
     Emergency,
 }
 

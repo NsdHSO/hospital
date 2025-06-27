@@ -26,7 +26,7 @@ fn create_component(name: &str) {
         "mod routes;\nmod services;\n\npub use routes::*;\npub use services::*;"
     );
     fs::write(
-        format!("{}/mod.rs", base_path),
+        format!("{base_path}/mod.rs", ),
         mod_content
     ).expect("Failed to create mod.rs");
 
@@ -36,38 +36,38 @@ fn create_component(name: &str) {
         capitalize(name)
     );
     fs::write(
-        format!("{}/routes.rs", base_path),
+        format!("{base_path}/routes.rs"),
         routes_content
     ).expect("Failed to create routes.rs");
 
     // Create services.rs
     let services_content = format!(
-        "use sea_orm::{{DatabaseConnection, DbErr}};\n\npub struct {}Service {{\n    db: DatabaseConnection,\n}}\n\nimpl {}Service {{\n    pub fn new(db: DatabaseConnection) -> Self {{\n        Self {{ db }}\n    }}\n}}\n",
+        "use sea_orm::{{DatabaseConnection, DbErr}};\n\npub struct {}Service {{\n    conn: DatabaseConnection,\n}}\n\nimpl {}Service {{\n    pub fn new(conn: &DatabaseConnection) -> Self {{\n        Self {{ conn: conn.clone() }}\n    }}\n}}\n",
         capitalize(name),
         capitalize(name)
     );
     fs::write(
-        format!("{}/services.rs", base_path),
+        format!("{base_path}/services.rs" ),
         services_content
     ).expect("Failed to create services.rs");
 
     // Update main components/mod.rs to include the new module
     let components_mod_path = "src/components/mod.rs";
     if let Ok(mut content) = fs::read_to_string(components_mod_path) {
-        if !content.contains(&format!("pub mod {};", name)) {
+        if !content.contains(&format!("pub mod {name};")) {
             if !content.ends_with('\n') {
                 content.push('\n');
             }
-            content.push_str(&format!("pub mod {};\n", name));
+            content.push_str(&format!("pub mod {name};\n" ));
             fs::write(components_mod_path, content).expect("Failed to update components/mod.rs");
         }
     }
 
-    println!("✅ Successfully created component '{}'", name);
+    println!("✅ Successfully created component '{name}'");
     println!("📁 Created following files:");
-    println!("   - {}/mod.rs", base_path);
-    println!("   - {}/routes.rs", base_path);
-    println!("   - {}/services.rs", base_path);
+    println!("   - {base_path}/mod.rs" );
+    println!("   - {base_path}/routes.rs" );
+    println!("   - {base_path}/services.rs");
 }
 
 fn capitalize(s: &str) -> String {

@@ -2,7 +2,7 @@ use crate::components::emergency::schedule::emergency_allocation::EmergencyAlloc
 use log::{error, warn};
 use sea_orm::DatabaseConnection;
 use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::time::{Duration};
+use tokio::time::Duration;
 // Create a static flag to track if a process is running
 static ALLOCATION_RUNNING: AtomicBool = AtomicBool::new(false);
 pub async fn start_scheduler(
@@ -12,7 +12,7 @@ pub async fn start_scheduler(
 
     loop {
         let now = chrono::Local::now();
-        println!("Emergency check triggered at {:?}", now);
+        println!("Emergency check triggered at {now:?}");
 
         if ALLOCATION_RUNNING
             .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
@@ -26,7 +26,7 @@ pub async fn start_scheduler(
 
             match result {
                 Ok(_) => println!("Emergency allocation process completed successfully"),
-                Err(e) => error!("Emergency allocation process failed: {}", e),
+                Err(e) => error!("Emergency allocation process failed: {e}"),
             }
 
             ALLOCATION_RUNNING.store(false, Ordering::SeqCst);

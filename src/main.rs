@@ -3,7 +3,7 @@ use crate::open_api::init;
 use actix_cors::Cors;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
     let scheduler_conn = conn.clone();
     tokio::spawn(async move {
         if let Err(e) = start_scheduler(&scheduler_conn).await {
-            error!("Scheduler crashed: {:?}", e);
+            error!("Scheduler crashed: {e:?}");
         }
     });
     let data_base_conn = conn.clone();
@@ -56,10 +56,10 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin("http://localhost:4200")
             .allowed_origin("https://tevet-troc-client.vercel.app")
             .allowed_origin("https://nsdhso.github.io")
-            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE","PATCH", "OPTIONS"])
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
             .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
             .supports_credentials();
-        
+
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(data_base_conn.clone()))
@@ -71,6 +71,9 @@ async fn main() -> std::io::Result<()> {
                     .configure(components::dashboard::init_routes)
                     .configure(components::card::init_routes)
                     .configure(components::patient::init_routes)
+                    .configure(components::person::init_routes)
+                    .configure(components::staff::init_routes)
+                    .configure(components::department::init_routes)
                     .configure(components::hospital::init_routes),
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))
@@ -81,7 +84,7 @@ async fn main() -> std::io::Result<()> {
         None => {
             let host = env::var("HOST").expect("Please set host in .env");
             let port = env::var("PORT").expect("Please set port in .env");
-            server.bind(format!("{}:{}", host, port))?
+            server.bind(format!("{host}:{port}"))?
         }
     };
 

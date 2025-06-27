@@ -13,6 +13,8 @@ use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_i
 
 use crate::components::emergency::EmergencyService;
 use crate::components::patient::PatientService;
+use crate::http_response::HttpCodeW;
+use Column::AmbulanceIc;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
@@ -47,7 +49,10 @@ impl AmbulanceService {
         let model = match query {
             Some(model) => model,
             None => {
-                return Err(CustomError::new(404, "Ambulance not found".to_string()));
+                return Err(CustomError::new(
+                    HttpCodeW::NotFound,
+                    "Ambulance not found".to_string(),
+                ));
             }
         };
 
@@ -57,7 +62,7 @@ impl AmbulanceService {
             Some(AmbulanceStatusEnum::TransportingPatient) => {
                 if payload.hospital_name.eq(&None) {
                     return Err(CustomError::new(
-                        400,
+                        HttpCodeW::BadRequest,
                         "hospital_name is required for transporting patient".to_string(),
                     ));
                 }
@@ -71,13 +76,15 @@ impl AmbulanceService {
         if payload.driver_name.is_some() {
             active_model.driver_name = Set(payload.driver_name);
         }
-        
+
         active_model.updated_at = Set(now);
         // Save changes
-        let updated = active_model
-            .update(&self.conn)
-            .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        let updated = active_model.update(&self.conn).await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {e}"),
+            )
+        })?;
 
         Ok(updated)
     }
@@ -93,7 +100,12 @@ impl AmbulanceService {
             .emergency_service
             .get_passengers_json_for_ambulance(uuid)
             .await
-            .map_err(|e| CustomError::new(500, format!("Error fetching passengers: {}", e)))?;
+            .map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Error fetching passengers: {e}"),
+                )
+            })?;
 
         // Get ambulance hospital_id as string
         let ambulance_hospital_id = active_model.hospital_id.clone().unwrap();
@@ -144,7 +156,7 @@ impl AmbulanceService {
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique emergency IC after multiple attempts.".to_string(),
                 ));
             }
@@ -153,7 +165,7 @@ impl AmbulanceService {
                 .as_ref()
                 .and_then(|p| p.hospital_name.as_deref())
                 .ok_or(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "hospital_name is required".to_string(),
                 ))?;
 
@@ -164,7 +176,10 @@ impl AmbulanceService {
             if let Ok(Some(hospital_model)) = &hospital {
                 active_model.hospital_id = Set(hospital_model.id);
             } else {
-                return Err(CustomError::new(500, "hospital not found".to_string()));
+                return Err(CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    "hospital not found".to_string(),
+                ));
             }
 
             let result = active_model.insert(&self.conn).await;
@@ -188,16 +203,17 @@ impl AmbulanceService {
                         .decode_utf8()
                         .map(|ic| ic.to_string())
                         .unwrap_or_else(|_| encoded_name.to_string());
-                    query = query.filter(Column::AmbulanceIc.like(ambulance_ic));
+                    query = query.filter(AmbulanceIc.like(ambulance_ic));
                 }
                 Some(("id", encoded_name)) => {
                     let ambulance_id = percent_decode_str(encoded_name)
                         .decode_utf8()
                         .map(|id| id.to_string())
                         .unwrap_or_else(|_| encoded_name.to_string());
-                    let ambulance_uuid = Uuid::parse_str(&ambulance_id)
-                        .map_err(|_| CustomError::new(400, "Invalid UUID".to_string()))?;
-                    query = query.filter(Column::Id.eq(ambulance_uuid));
+                    let ambulance_uuid = Uuid::parse_str(&ambulance_id).map_err(|_| {
+                        CustomError::new(HttpCodeW::BadRequest, "Invalid UUID".to_string())
+                    })?;
+                    query = query.filter(Id.eq(ambulance_uuid));
                 }
                 _ => {}
             }

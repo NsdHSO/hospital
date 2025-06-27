@@ -1,5 +1,10 @@
-use crate::entity::patient::{ActiveModel, Model, PatientRequestBody};
+use crate::components::person::PersonService;
+use crate::entity::patient::{ActiveModel, Model, PatientRequestBody, PatientWithPerson};
+use crate::entity::patient::{Column, Entity};
+use crate::entity::person;
+use crate::entity::person::PersonRequestBody;
 use crate::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use chrono::{Local, NaiveDateTime};
@@ -8,15 +13,18 @@ use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
-use crate::entity::patient::{Column, Entity};
 
 pub struct PatientService {
     conn: DatabaseConnection,
+    person_service: PersonService,
 }
 
 impl PatientService {
     pub fn new(conn: &DatabaseConnection) -> Self {
-        PatientService { conn: conn.clone() }
+        PatientService {
+            conn: conn.clone(),
+            person_service: PersonService::new(conn),
+        }
     }
 
     pub(crate) async fn associate_hospital_with_patient(
@@ -24,7 +32,6 @@ impl PatientService {
         patient_id: Uuid,
         hospital_id: Uuid,
     ) {
-        println!("Associating hospital with patient {}", patient_id);
         let query_result = Entity::find()
             .filter(Column::Id.eq(patient_id))
             .one(&self.conn)
@@ -37,49 +44,82 @@ impl PatientService {
                 query_active.hospital_id = Set(Option::from(hospital_id));
                 let _ = query_active.update(&self.conn).await;
             }
-            Ok(None) => {
-            }
+            Ok(None) => {}
             Err(e) => {
                 // Log the error or handle as needed
-                eprintln!("Failed to fetch available patient: {}", e);
+                eprintln!("Failed to fetch available patient: {e}");
             }
         }
     }
-    
+
     pub async fn create_patient(
         &self,
         patient_data: Option<PatientRequestBody>,
-    ) -> Result<Model, CustomError> {
+    ) -> Result<PatientWithPerson, CustomError> {
         // Check if patient_data exists
         let payload = match patient_data.clone() {
             Some(data) => data,
-            None => return Err(CustomError::new(400, "Missing patient data".to_string())),
+            None => {
+                return Err(CustomError::new(
+                    HttpCodeW::BadRequest,
+                    "Missing patient data".to_string(),
+                ));
+            }
         };
 
         let now = Local::now().naive_utc();
         let mut attempts = 0;
         const MAX_ATTEMPTS: usize = 5;
         // Check if patient_ic exists in DB
+        let patient_body: PatientRequestBody = patient_data.unwrap();
+        let person = self
+            .person_service
+            .create(Option::from(PersonRequestBody {
+                first_name: patient_body.first_name,
+                last_name: patient_body.last_name,
+                date_of_birth: patient_body.date_of_birth,
+                gender: patient_body.gender,
+                phone: patient_body.phone,
+                email: patient_body.email,
+                address: patient_body.address,
+                nationality: Some(String::from("ROM")),
+                marital_status: None,
+                photo_url: None,
+            }))
+            .await
+            .or(Err(CustomError::new(
+                HttpCodeW::InternalServerError,
+                "Internal server error".to_string(),
+            )))?;
         if let Some(ref ic) = payload.patient_ic {
-            if let Ok(Some(existing_patient)) = self.find_by_field("patient_ic", ic).await {
-                return Ok(existing_patient);
+            if let Ok(Some(patient)) = self.find_by_field("patient_ic", ic).await {
+                return Ok(PatientWithPerson { patient, person });
             }
         }
         loop {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
-                    500,
+                    HttpCodeW::InternalServerError,
                     "Failed to generate a unique patient IC after multiple attempts.".to_string(),
                 ));
             }
 
-            let active_model = Self::generate_model(Some(payload.clone()), now);
+            let active_model = Self::generate_model(Some(payload.clone()), now, person.clone().id);
 
             // Insert the record into the database
             let result = active_model.insert(&self.conn).await;
-
-            if let Some(value) = check_if_is_duplicate_key_from_data_base(&mut attempts, result) {
-                return value;
+            if check_if_is_duplicate_key_from_data_base(&mut attempts, result).is_some() {
+                let (patient, person) = Entity::find_by_id(person.id)
+                    .find_also_related(person::Entity)
+                    .one(&self.conn)
+                    .await?
+                    .ok_or_else(|| {
+                        CustomError::new(HttpCodeW::NotFound, "Patient not found".to_string())
+                    })?;
+                return Ok(PatientWithPerson {
+                    patient,
+                    person: person.unwrap(),
+                });
             }
         }
     }
@@ -92,24 +132,26 @@ impl PatientService {
     ) -> Result<Option<Model>, CustomError> {
         let query = match field {
             "patient_ic" => Entity::find().filter(Column::PatientIc.like(value)),
-            "first_name" => Entity::find().filter(Column::FirstName.like(value)),
+            // "first_name" => Entity::find().filter(Column::FirstName.like(value)),
             _ => {
                 return Err(CustomError::new(
-                    400,
-                    format!("Unsupported field: {}", field),
+                    HttpCodeW::BadRequest,
+                    format!("Unsupported field: {field}"),
                 ));
             }
         };
-        let patient = query
-            .one(&self.conn)
-            .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        let patient = query.one(&self.conn).await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {e}"),
+            )
+        })?;
         if let Some(patient_model) = patient {
             Ok(Some(patient_model))
         } else {
             Err(CustomError::new(
-                404,
-                format!("Patient not found for {} = '{}'", field, value),
+                HttpCodeW::NotFound,
+                format!("Patient not found for {field} = '{value}'"),
             ))
         }
     }
@@ -119,7 +161,7 @@ impl PatientService {
         if !filter_str.starts_with(prefix) {
             return None;
         }
-        
+
         let encoded_value = filter_str.strip_prefix(prefix)?;
         percent_decode_str(encoded_value)
             .decode_utf8()
@@ -136,7 +178,7 @@ impl PatientService {
         filter: Option<String>,
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let mut query = Entity::find();
-        
+
         if let Some(filter_str) = filter {
             match filter_str.split_once('=') {
                 Some(("ic", encoded_name)) => {
@@ -151,8 +193,9 @@ impl PatientService {
                         .decode_utf8()
                         .map(|id| id.to_string())
                         .unwrap_or_else(|_| encoded_name.to_string());
-                    let patient_uuid = Uuid::parse_str(&patient_id)
-                        .map_err(|_| CustomError::new(400, "Invalid UUID".to_string()))?;
+                    let patient_uuid = Uuid::parse_str(&patient_id).map_err(|_| {
+                        CustomError::new(HttpCodeW::BadRequest, "Invalid UUID".to_string())
+                    })?;
                     query = query.filter(Column::Id.eq(patient_uuid));
                 }
                 _ => {}
@@ -182,7 +225,6 @@ impl PatientService {
         })
     }
 
-
     /// Associates a patient with a given emergency ID in the emergency_patient table.
     /// If the patient does not exist, it will be created using create_patient.
     /// Returns an error if any association fails.
@@ -198,10 +240,13 @@ impl PatientService {
         let created_patient = self.create_patient(patient_data).await?;
         let junction = emergency_patient::ActiveModel {
             emergency_id: Set(emergency_id),
-            patient_id: Set(created_patient.id),
+            patient_id: Set(created_patient.patient.id),
         };
         junction.insert(transaction).await.map_err(|e| {
-            CustomError::new(500, format!("Failed to link patient to emergency: {}", e))
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Failed to link patient to emergency: {e}"),
+            )
         })?;
 
         Ok(())
@@ -238,11 +283,17 @@ impl PatientService {
             .find_also_related(patient::Entity)
             .all(&self.conn)
             .await
-            .map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+            .map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Database error: {e}"),
+                )
+            })?;
         Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
     }
 
     /// Partially updates a patient by UUID. Only provided fields are updated.
+    #[allow(dead_code)]
     pub async fn update_patient(
         &self,
         uuid: Uuid,
@@ -250,81 +301,65 @@ impl PatientService {
     ) -> Result<Model, CustomError> {
         use sea_orm::Set;
         let now = now_time();
-        let patient = Entity::find().filter(Column::Id.eq(uuid)).one(&self.conn).await?;
+        let patient = Entity::find()
+            .filter(Column::Id.eq(uuid))
+            .one(&self.conn)
+            .await?;
         let model = match patient {
             Some(model) => model,
             None => {
-                return Err(CustomError::new(404, "Patient not found".to_string()));
+                return Err(CustomError::new(
+                    HttpCodeW::NotFound,
+                    "Patient not found".to_string(),
+                ));
             }
         };
         let mut active_model: ActiveModel = model.into();
 
-        if let Some(val) = payload.patient_ic { active_model.patient_ic = Set(Some(val)); }
-        if let Some(val) = payload.hospital_id { active_model.hospital_id = Set(Option::from(val)); }
-        if let Some(val) = payload.first_name { active_model.first_name = Set(val); }
-        if let Some(val) = payload.last_name { active_model.last_name = Set(val); }
-        if let Some(val) = payload.date_of_birth { active_model.date_of_birth = Set(val); }
-        if let Some(val) = payload.gender { active_model.gender = Set(Some(val)); }
-        if let Some(val) = payload.phone { active_model.phone = Set(val); }
-        if let Some(val) = payload.email { active_model.email = Set(Some(val)); }
-        if let Some(val) = payload.address { active_model.address = Set(val); }
-        if let Some(val) = payload.emergency_contact { active_model.emergency_contact = Set(Some(val)); }
-        if let Some(val) = payload.blood_type { active_model.blood_type = Set(Some(val)); }
-        if let Some(val) = payload.allergies { active_model.allergies = Set(Some(val)); }
-        if let Some(val) = payload.medical_history { active_model.medical_history = Set(Some(val)); }
+        if let Some(val) = payload.patient_ic {
+            active_model.patient_ic = Set(Some(val));
+        }
+        if let Some(val) = payload.hospital_id {
+            active_model.hospital_id = Set(Option::from(val));
+        }
+        if let Some(val) = payload.emergency_contact {
+            active_model.emergency_contact = Set(Some(val));
+        }
+        if let Some(val) = payload.blood_type {
+            active_model.blood_type = Set(Some(val));
+        }
+        if let Some(val) = payload.allergies {
+            active_model.allergies = Set(Some(val));
+        }
+        if let Some(val) = payload.medical_history {
+            active_model.medical_history = Set(Some(val));
+        }
 
         active_model.updated_at = Set(now);
-        let updated = active_model.update(&self.conn).await.map_err(|e| CustomError::new(500, format!("Database error: {}", e)))?;
+        let updated = active_model.update(&self.conn).await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error: {e}"),
+            )
+        })?;
         Ok(updated)
     }
 
-    fn generate_model(p0: Option<PatientRequestBody>, p1: NaiveDateTime) -> ActiveModel {
+    fn generate_model(
+        p0: Option<PatientRequestBody>,
+        p1: NaiveDateTime,
+        person_id: Uuid,
+    ) -> ActiveModel {
         let payload = p0.unwrap_or_default();
         ActiveModel {
-            patient_ic:  Set(Some(generate_ic().to_string())),
+            patient_ic: Set(Some(generate_ic().to_string())),
             hospital_id: if let Some(value) = payload.hospital_id {
-                Set(
-                    Option::from(value))
-            } else {
-                Set(Default::default())
-            },
-            first_name: if let Some(value) = payload.first_name {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            last_name: if let Some(value) = payload.last_name {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            date_of_birth: if let Some(value) = payload.date_of_birth {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            gender: if let Some(value) = payload.gender {
-                Set(Some(value))
-            } else {
-                Set(Default::default())
-            },
-            phone: if let Some(value) = payload.phone {
-                Set(value)
-            } else {
-                Set(Default::default())
-            },
-            address: if let Some(value) = payload.address {
-                Set(value)
+                Set(Option::from(value))
             } else {
                 Set(Default::default())
             },
             created_at: Set(p1),
             updated_at: Set(p1),
-            email: if let Some(value) = payload.email {
-                Set(Some(value))
-            } else {
-                Set(Default::default())
-            },
             emergency_contact: if let Some(value) = payload.emergency_contact {
                 Set(Some(value))
             } else {
@@ -345,7 +380,7 @@ impl PatientService {
             } else {
                 Set(Default::default())
             },
-            id: Default::default(),
+            id: Set(person_id),
         }
     }
 }

@@ -8,13 +8,13 @@ use crate::http_response::response_object::ResponseObject;
 /// indicating that the request has succeeded. The ResponseObject can be serialized
 /// to JSON containing both the message and HTTP status code.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The response payload of type T to be returned to the client (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the message and OK status (HttpCodeW::OK)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = ok("Request processed successfully");
@@ -31,13 +31,13 @@ pub fn ok<T>(message: T) -> ResponseObject<T> {
 /// This function is typically used when a new resource has been successfully created
 /// on the server as a result of the request. Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The response payload of type T, usually containing the created resource (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the message and Created status (HttpCodeW::Created)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = created("User created successfully");
@@ -55,13 +55,13 @@ pub fn created<T>(message: T) -> ResponseObject<T> {
 /// but is not returning any content. Commonly used for DELETE operations.
 /// Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The response payload of type T (often empty or confirmation message, must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the message and NoContent status (HttpCodeW::NoContent)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = no_content("Resource deleted successfully");
@@ -79,13 +79,13 @@ pub fn no_content<T>(message: T) -> ResponseObject<T> {
 /// client error, such as malformed syntax or invalid request parameters.
 /// Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The error message or details of type T explaining why the request is invalid (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the error message and BadRequest status (HttpCodeW::BadRequest)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = bad_request("Missing required field: email");
@@ -103,13 +103,13 @@ pub fn bad_request<T>(message: T) -> ResponseObject<T> {
 /// the provided authentication credentials are invalid.
 /// Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The error message of type T explaining the authentication failure (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the error message and Unauthorized status (HttpCodeW::Unauthorized)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = unauthorized("Invalid authentication token");
@@ -127,13 +127,13 @@ pub fn unauthorized<T>(message: T) -> ResponseObject<T> {
 /// of the server, such as attempting to create a resource that already exists.
 /// Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The error message of type T describing the conflict (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the error message and Conflict status (HttpCodeW::Conflict)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = conflict("User with this email already exists");
@@ -151,13 +151,13 @@ pub fn conflict<T>(message: T) -> ResponseObject<T> {
 /// The URL is not recognized or the resource does not exist.
 /// Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The error message of type T indicating what resource was not found (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the error message and NotFound status (HttpCodeW::NotFound)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = not_found("User not found");
@@ -175,13 +175,13 @@ pub fn not_found<T>(message: T) -> ResponseObject<T> {
 /// that prevented it from fulfilling the request.
 /// Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The error message of type T describing the server error (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the error message and InternalServerError status (HttpCodeW::InternalServerError)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = internal_server_error("Database connection failed");
@@ -200,13 +200,13 @@ pub fn internal_server_error<T>(message: T) -> ResponseObject<T> {
 /// are planned but not yet implemented.
 /// Uses the `create_response` helper internally.
 ///
-/// # Arguments 
+/// # Arguments
 ///
 /// * `message`: The message of type T indicating what functionality is not implemented (must implement Serialize for JSON serialization)
 ///
 /// returns: ResponseObject<T> - A response object containing the message and NotImplemented status (HttpCodeW::NotImplemented)
 ///
-/// # Examples 
+/// # Examples
 ///
 /// ```rust
 /// let response = not_implemented("File upload feature coming soon");
