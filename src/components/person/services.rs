@@ -1,9 +1,12 @@
 use crate::entity::person::{ActiveModel, Column, Entity, Model, PersonRequestBody};
 use crate::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
+use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
 use chrono::{Local, NaiveDateTime};
-use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait,
+};
 use sea_orm::{QueryFilter, Set};
 use uuid::Uuid;
 
@@ -16,44 +19,115 @@ impl PersonService {
         Self { conn: db.clone() }
     }
 
-    pub async fn find_by_field(
+    pub async fn find_persons(
         &self,
-        field: &str,
-        value: &str,
-    ) -> Result<Option<Model>, CustomError> {
-        let query = match field {
-            "id" => Entity::find().filter(Column::Id.like(value)),
-            "first_name" => Entity::find().filter(Column::FirstName.like(value)),
-            "date_of_birth" => Entity::find().filter(Column::DateOfBirth.like(value)),
-            "gender" => Entity::find().filter(Column::Gender.like(value)),
-            "phone" => Entity::find().filter(Column::Phone.like(value)),
-            "email" => Entity::find().filter(Column::Email.like(value)),
-            "address" => Entity::find().filter(Column::Address.like(value)),
-            "nationality" => Entity::find().filter(Column::Nationality.like(value)),
-            "marital_status" => Entity::find().filter(Column::MaritalStatus.like(value)),
+        field: Option<&str>, // field can now be None
+        value: Option<&str>, // value can now be None
+        page: Option<u64>,   // page number (1-based)
+        limit: Option<u64>,  // number of records per page
+    ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
+        let query_builder = Entity::find();
+
+        let query = match (field, value) {
+            (Some(f), Some(v)) => {
+                match f {
+                    "id" => {
+                        // Parse the UUID string and handle potential errors
+                        match Uuid::parse_str(v) {
+                            Ok(uuid_val) => query_builder.filter(Column::Id.eq(uuid_val)),
+                            Err(_) => {
+                                return Err(CustomError::new(
+                                    HttpCodeW::BadRequest,
+                                    format!("Invalid UUID format for id: {}", v),
+                                ));
+                            }
+                        }
+                    }
+                    "first_name" => {
+                        query_builder.filter(Column::FirstName.like(format!("%{}%", v)))
+                    }
+                    "date_of_birth" => {
+                        query_builder.filter(Column::DateOfBirth.like(format!("%{}%", v)))
+                    }
+                    "gender" => query_builder.filter(Column::Gender.like(format!("%{}%", v))),
+                    "phone" => query_builder.filter(Column::Phone.like(format!("%{}%", v))),
+                    "email" => query_builder.filter(Column::Email.like(format!("%{}%", v))),
+                    "address" => query_builder.filter(Column::Address.like(format!("%{}%", v))),
+                    "nationality" => {
+                        query_builder.filter(Column::Nationality.like(format!("%{}%", v)))
+                    }
+                    "marital_status" => {
+                        query_builder.filter(Column::MaritalStatus.like(format!("%{}%", v)))
+                    }
+                    _ => {
+                        // If field is provided but unsupported
+                        return Err(CustomError::new(
+                            HttpCodeW::BadRequest,
+                            format!("Unsupported field for search: {}", f),
+                        ));
+                    }
+                }
+            }
+            // If field is None or value is None, return all persons
             _ => {
-                return Err(CustomError::new(
-                    HttpCodeW::BadRequest,
-                    format!("Unsupported field: {}", field),
-                ));
+                println!(
+                    "No specific field or value provided, returning all persons with pagination."
+                );
+                query_builder
             }
         };
-        let patient = query.one(&self.conn).await.map_err(|e| {
+
+        // Default pagination values
+        let page_num = page.unwrap_or(1);
+        let per_page = limit.unwrap_or(10);
+
+        // Convert to 0-based indexing for SeaORM paginator
+        let page_index = page_num.saturating_sub(1);
+
+        // Create paginator
+        let paginator = query.paginate(&self.conn, per_page);
+
+        // Get pagination metadata
+        let total_items = paginator.num_items().await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error getting total items: {}", e),
             )
         })?;
-        if let Some(person_model) = patient {
-            Ok(Some(person_model))
-        } else {
-            Err(CustomError::new(
-                HttpCodeW::NotFound,
-                format!("Person not found for {} = '{}'", field, value),
-            ))
-        }
-    }
 
+        let total_pages = paginator.num_pages().await.map_err(|e| {
+            CustomError::new(
+                HttpCodeW::InternalServerError,
+                format!("Database error getting total pages: {}", e),
+            )
+        })?;
+
+        // Fetch the records for the current page
+        let records = paginator
+            .fetch_page(page_index) // Page is 0-indexed in SeaORM
+            .await
+            .map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Database error fetching page: {}", e),
+                )
+            })?;
+
+        // Create pagination info
+        let pagination = PaginationInfo {
+            current_page: page_num as i64,
+            page_size: per_page as i64,
+            total_items: total_items as i64,
+            total_pages: total_pages as i64,
+            has_next_page: page_num < total_pages,
+            has_previous_page: page_num > 1,
+        };
+
+        Ok(PaginatedResponse {
+            data: records,
+            pagination,
+        })
+    }
     pub async fn create(
         &self,
         person_data: Option<PersonRequestBody>,
