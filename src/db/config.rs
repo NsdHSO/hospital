@@ -40,7 +40,7 @@ pub async fn init() -> Result<DatabaseConnection, CustomError> {
     let conn = connection_result.map_err(|e| {
         CustomError::new(
             HttpCodeW::InternalServerError,
-            format!("Failed to connect to DB: {}", e),
+            format!("Failed to connect to DB: {e}"),
         )
     })?;
 

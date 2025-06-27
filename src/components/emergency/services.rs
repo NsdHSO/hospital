@@ -138,12 +138,12 @@ impl EmergencyService {
                     if check_if_is_duplicate_key_from_data_base::<Model>(&mut attempts, Err(e))
                         .is_some()
                     {
-                        println!("Duplicate key error: {}, retrying...", err_string);
+                        println!("Duplicate key error: {err_string}, retrying..." );
                         // continue loop with new attempt
                     } else {
                         return Err(CustomError::new(
                             HttpCodeW::InternalServerError,
-                            format!("Database error: {}", err_string),
+                            format!("Database error: {err_string}" ),
                         ));
                     }
                 }
@@ -159,7 +159,7 @@ impl EmergencyService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Failed to fetch available ambulances: {}", e),
+                    format!("Failed to fetch available ambulances: {e}"),
                 )
             })?;
 
@@ -212,7 +212,7 @@ impl EmergencyService {
             let passengers_json = serde_json::to_value(&patients).map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Serialization error: {}", e),
+                    format!("Serialization error: {e}" ),
                 )
             })?;
             Ok(Some(passengers_json))

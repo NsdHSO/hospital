@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
     let scheduler_conn = conn.clone();
     tokio::spawn(async move {
         if let Err(e) = start_scheduler(&scheduler_conn).await {
-            error!("Scheduler crashed: {:?}", e);
+            error!("Scheduler crashed: {e:?}");
         }
     });
     let data_base_conn = conn.clone();
@@ -84,7 +84,7 @@ async fn main() -> std::io::Result<()> {
         None => {
             let host = env::var("HOST").expect("Please set host in .env");
             let port = env::var("PORT").expect("Please set port in .env");
-            server.bind(format!("{}:{}", host, port))?
+            server.bind(format!("{host}:{port}"))?
         }
     };
 

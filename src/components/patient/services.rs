@@ -136,14 +136,14 @@ impl PatientService {
             _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
-                    format!("Unsupported field: {}", field),
+                    format!("Unsupported field: {field}" ),
                 ));
             }
         };
         let patient = query.one(&self.conn).await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error: {e}"),
             )
         })?;
         if let Some(patient_model) = patient {
@@ -151,7 +151,7 @@ impl PatientService {
         } else {
             Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Patient not found for {} = '{}'", field, value),
+                format!("Patient not found for {field} = '{value}'"),
             ))
         }
     }
@@ -245,7 +245,7 @@ impl PatientService {
         junction.insert(transaction).await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Failed to link patient to emergency: {}", e),
+                format!("Failed to link patient to emergency: {e}"),
             )
         })?;
 
@@ -286,7 +286,7 @@ impl PatientService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Database error: {}", e),
+                    format!("Database error: {e}" ),
                 )
             })?;
         Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
@@ -339,7 +339,7 @@ impl PatientService {
         let updated = active_model.update(&self.conn).await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error: {e}"),
             )
         })?;
         Ok(updated)

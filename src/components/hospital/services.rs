@@ -52,7 +52,7 @@ impl HospitalService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Database error: {}", e),
+                    format!("Database error: {e}"),
                 )
             });
 
@@ -60,11 +60,11 @@ impl HospitalService {
             Ok(Some(hospital_model)) => Ok(Option::from(hospital_model)),
             Ok(None) => Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Hospital with name '{}' not found", hospital_name),
+                format!("Hospital with name '{hospital_name}' not found" ),
             )),
             Err(e) => Err(CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error: {e}"),
             )),
         }
     }
@@ -107,14 +107,14 @@ impl HospitalService {
             _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
-                    format!("Unsupported field: {}", field),
+                    format!("Unsupported field: {field}" ),
                 ));
             }
         };
         let hospital = query.one(&self.conn).await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error: {e}"),
             )
         })?;
         if let Some(hospital_model) = hospital {
@@ -122,7 +122,7 @@ impl HospitalService {
         } else {
             Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Hospital not found for {} = '{}'", field, value),
+                format!("Hospital not found for {field} = '{value}'"),
             ))
         }
     }

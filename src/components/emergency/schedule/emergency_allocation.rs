@@ -33,10 +33,10 @@ impl EmergencyAllocationService {
             })
             .await
             .map_err(|e| {
-                error!("Error during emergency allocation transaction: {}", e);
+                error!("Error during emergency allocation transaction: {e}");
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Transaction failed: {}", e),
+                    format!("Transaction failed: {e}"),
                 )
             })
     }
@@ -110,7 +110,7 @@ impl EmergencyAllocationService {
                         );
                     }
                     Err(e) => {
-                        error!("Failed to dispatch ambulance: {}", e);
+                        error!("Failed to dispatch ambulance: {e}");
                         return Err(e);
                     }
                 }
@@ -123,12 +123,10 @@ impl EmergencyAllocationService {
         }
 
         println!(
-            "Emergency allocation process completed within transaction. Dispatched {} ambulances.",
-            dispatched_count
+            "Emergency allocation process completed within transaction. Dispatched {dispatched_count} ambulances."
         );
         Ok(format!(
-            "Emergency allocation process completed successfully. Dispatched {} ambulances.",
-            dispatched_count
+            "Emergency allocation process completed successfully. Dispatched {dispatched_count} ambulances."
         ))
     }
 
@@ -145,7 +143,7 @@ impl EmergencyAllocationService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Failed to fetch pending emergencies: {}", e),
+                    format!("Failed to fetch pending emergencies: {e}"),
                 )
             })
     }
@@ -161,7 +159,7 @@ impl EmergencyAllocationService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Failed to fetch available ambulances: {}", e),
+                    format!("Failed to fetch available ambulances: {e}"),
                 )
             })
     }
@@ -261,8 +259,8 @@ async fn dispatch_ambulance(
             return Err(CustomError::new(
                 HttpCodeW::InternalServerError,
                 format!(
-                    "Failed to update emergency status for {}: {}",
-                    emergency.id, e
+                    "Failed to update emergency status for {}: {e}",
+                    emergency.id
                 ),
             ));
         }
@@ -293,8 +291,8 @@ async fn dispatch_ambulance(
             return Err(CustomError::new(
                 HttpCodeW::InternalServerError,
                 format!(
-                    "Failed to update ambulance status for {}: {}",
-                    ambulance.id, e
+                    "Failed to update ambulance status for {}: {e}",
+                    ambulance.id
                 ),
             ));
         }

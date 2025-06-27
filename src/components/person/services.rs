@@ -26,7 +26,7 @@ impl PersonService {
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let query_builder = Entity::find();
 
-        let query = match (field, value) {
+        let query = match (field,value) {
             (Some(f), Some(v)) => {
                 match f {
                     "id" => {
@@ -36,32 +36,32 @@ impl PersonService {
                             Err(_) => {
                                 return Err(CustomError::new(
                                     HttpCodeW::BadRequest,
-                                    format!("Invalid UUID format for id: {}", v),
+                                    format!("Invalid UUID format for id: {v}"),
                                 ));
                             }
                         }
                     }
                     "first_name" => {
-                        query_builder.filter(Column::FirstName.like(format!("%{}%", v)))
+                        query_builder.filter(Column::FirstName.like(format!("%{v}%")))
                     }
                     "date_of_birth" => {
-                        query_builder.filter(Column::DateOfBirth.like(format!("%{}%", v)))
+                        query_builder.filter(Column::DateOfBirth.like(format!("%{v}%")))
                     }
-                    "gender" => query_builder.filter(Column::Gender.like(format!("%{}%", v))),
-                    "phone" => query_builder.filter(Column::Phone.like(format!("%{}%", v))),
-                    "email" => query_builder.filter(Column::Email.like(format!("%{}%", v))),
-                    "address" => query_builder.filter(Column::Address.like(format!("%{}%", v))),
+                    "gender" => query_builder.filter(Column::Gender.like(format!("%{v}%"))),
+                    "phone" => query_builder.filter(Column::Phone.like(format!("%{v}%"))),
+                    "email" => query_builder.filter(Column::Email.like(format!("%{v}%"))),
+                    "address" => query_builder.filter(Column::Address.like(format!("%{v}%"))),
                     "nationality" => {
-                        query_builder.filter(Column::Nationality.like(format!("%{}%", v)))
+                        query_builder.filter(Column::Nationality.like(format!("%{v}%")))
                     }
                     "marital_status" => {
-                        query_builder.filter(Column::MaritalStatus.like(format!("%{}%", v)))
+                        query_builder.filter(Column::MaritalStatus.like(format!("%{v}%")))
                     }
                     _ => {
                         // If field is provided but unsupported
                         return Err(CustomError::new(
                             HttpCodeW::BadRequest,
-                            format!("Unsupported field for search: {}", f),
+                            format!("Unsupported field for search: {f}"),
                         ));
                     }
                 }
@@ -89,14 +89,14 @@ impl PersonService {
         let total_items = paginator.num_items().await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error getting total items: {}", e),
+                format!("Database error getting total items: {e}"),
             )
         })?;
 
         let total_pages = paginator.num_pages().await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error getting total pages: {}", e),
+                format!("Database error getting total pages: {e}"),
             )
         })?;
 
@@ -107,7 +107,7 @@ impl PersonService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Database error fetching page: {}", e),
+                    format!("Database error fetching page: {e}"),
                 )
             })?;
 

@@ -82,7 +82,7 @@ impl AmbulanceService {
         let updated = active_model.update(&self.conn).await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error: {e}"),
             )
         })?;
 
@@ -103,7 +103,7 @@ impl AmbulanceService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Error fetching passengers: {}", e),
+                    format!("Error fetching passengers: {e}"),
                 )
             })?;
 

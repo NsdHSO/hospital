@@ -124,14 +124,14 @@ impl StaffService {
             _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
-                    format!("Unsupported field: {}", field),
+                    format!("Unsupported field: {field}"),
                 ));
             }
         };
         let staff = query.one(&self.conn).await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error: {e}"),
             )
         })?;
         if let Some(patient_model) = staff {
@@ -139,7 +139,7 @@ impl StaffService {
         } else {
             Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Patient not found for {} = '{}'", field, value),
+                format!("Patient not found for {field} = '{value}'" ),
             ))
         }
     }

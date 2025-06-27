@@ -39,41 +39,41 @@ impl From<DbErr> for CustomError {
     fn from(error: DbErr) -> CustomError {
         match error {
             DbErr::Conn(e) => {
-                let msg = format!("Database connection error: {}", e);
-                print!("{}", msg); // Log the error
+                let msg = format!("Database connection error: {e}");
+                print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
             DbErr::Exec(e) => {
-                let msg = format!("Database execution error: {}", e);
-                print!("{}", msg); // Log the error
+                let msg = format!("Database execution error: {e}");
+                print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
             DbErr::Query(e) => {
-                let msg = format!("Database query error: {}", e);
-                print!("{}", msg); // Log the error
+                let msg = format!("Database query error: {e}");
+                print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
             DbErr::Json(e) => {
-                let msg = format!("JSON error: {}", e);
-                print!("{}", msg); // Log the error
+                let msg = format!("JSON error: {e}");
+                print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
             DbErr::ConvertFromU64(e) => {
-                let msg = format!("Conversion error: {}", e);
-                print!("{}", msg); // Log the error
+                let msg = format!("Conversion error: {e}");
+                print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
             DbErr::RecordNotFound(_) => {
                 CustomError::new(HttpCodeW::NotFound, "Record not found".to_string())
             } // Not an error that needs logging at ERROR level
             DbErr::Custom(e) => {
-                let msg = format!("Custom database error: {}", e);
-                print!("{}", msg); // Log the error
+                let msg = format!("Custom database error: {e}");
+                print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
             _ => {
-                let msg = format!("Unknown database error: {:?}", error);
-                print!("{}", msg); // Log the error
+                let msg = format!("Unknown database error: {error:?}" );
+                print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
         }

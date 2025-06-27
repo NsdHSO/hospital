@@ -31,14 +31,14 @@ impl DepartmentService {
             _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
-                    format!("Unsupported field: {}", field),
+                    format!("Unsupported field: {field}"),
                 ));
             }
         };
         let department = query.one(&self.conn).await.map_err(|e| {
             CustomError::new(
                 HttpCodeW::InternalServerError,
-                format!("Database error: {}", e),
+                format!("Database error: {e}"),
             )
         })?;
         if let Some(department_model) = department {
@@ -46,7 +46,7 @@ impl DepartmentService {
         } else {
             Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Department not found for {} = '{}'", field, value),
+                format!("Department not found for {field} = '{value}'")
             ))
         }
     }

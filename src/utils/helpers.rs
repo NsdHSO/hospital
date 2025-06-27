@@ -84,7 +84,7 @@ pub fn check_if_is_duplicate_key_from_data_base<T>(
         Err(e) => {
             // Check if the error is a unique constraint violation
             // The exact string to check for might vary slightly depending on the database
-            println!("Error occured while checking for duplicate key: {}", e);
+            println!("Error occured while checking for duplicate key: {e}");
             if e.to_string()
                 .contains("duplicate key value violates unique constraint")
             {
