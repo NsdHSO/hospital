@@ -83,7 +83,7 @@ impl CardService {
                     Err(_) => encoded_name.to_string(),
                 };
 
-                println!("Dashboard name after decoding: '{}'", dashboard_name);
+                println!("Dashboard name after decoding: '{dashboard_name}'");
 
                 // First, find the dashboard by name
                 let dashboard = dashboard::Entity::find()

@@ -42,7 +42,7 @@ impl EmergencyService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Database error: {}", e),
+                    format!("Database error: {e}"),
                 )
             })?;
 
@@ -179,7 +179,7 @@ impl EmergencyService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Failed to update ambulance status: {}", e),
+                    format!("Failed to update ambulance status: {e}"),
                 )
             })?;
 

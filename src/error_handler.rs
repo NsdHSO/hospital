@@ -90,7 +90,7 @@ impl ResponseError for CustomError {
 
         // Create a ResponseObject using the error message and mapped HttpCodeW
         let response_object = create_response(self.error_message.clone(), self.error_status_code);
-        println!("ResponseObject: {:?}", response_object);
+        println!("ResponseObject: {response_object:?}");
         // Build the HttpResponse based on the HttpCodeW
         let status_code = StatusCode::from_u16(self.error_status_code as u16)
             .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);

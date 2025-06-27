@@ -47,7 +47,7 @@ impl PatientService {
             Ok(None) => {}
             Err(e) => {
                 // Log the error or handle as needed
-                eprintln!("Failed to fetch available patient: {}", e);
+                eprintln!("Failed to fetch available patient: {e}");
             }
         }
     }
