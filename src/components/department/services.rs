@@ -46,7 +46,7 @@ impl DepartmentService {
         } else {
             Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Department not found for {field} = '{value}'")
+                format!("Department not found for {field} = '{value}'"),
             ))
         }
     }

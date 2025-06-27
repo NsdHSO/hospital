@@ -72,7 +72,7 @@ impl From<DbErr> for CustomError {
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }
             _ => {
-                let msg = format!("Unknown database error: {error:?}" );
+                let msg = format!("Unknown database error: {error:?}");
                 print!("{msg}"); // Log the error
                 CustomError::new(HttpCodeW::InternalServerError, msg)
             }

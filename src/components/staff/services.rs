@@ -139,7 +139,7 @@ impl StaffService {
         } else {
             Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Patient not found for {field} = '{value}'" ),
+                format!("Patient not found for {field} = '{value}'"),
             ))
         }
     }

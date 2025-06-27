@@ -26,7 +26,7 @@ impl PersonService {
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
         let query_builder = Entity::find();
 
-        let query = match (field,value) {
+        let query = match (field, value) {
             (Some(f), Some(v)) => {
                 match f {
                     "id" => {
@@ -41,9 +41,7 @@ impl PersonService {
                             }
                         }
                     }
-                    "first_name" => {
-                        query_builder.filter(Column::FirstName.like(format!("%{v}%")))
-                    }
+                    "first_name" => query_builder.filter(Column::FirstName.like(format!("%{v}%"))),
                     "date_of_birth" => {
                         query_builder.filter(Column::DateOfBirth.like(format!("%{v}%")))
                     }

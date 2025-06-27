@@ -60,7 +60,7 @@ impl HospitalService {
             Ok(Some(hospital_model)) => Ok(Option::from(hospital_model)),
             Ok(None) => Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Hospital with name '{hospital_name}' not found" ),
+                format!("Hospital with name '{hospital_name}' not found"),
             )),
             Err(e) => Err(CustomError::new(
                 HttpCodeW::InternalServerError,
@@ -107,7 +107,7 @@ impl HospitalService {
             _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
-                    format!("Unsupported field: {field}" ),
+                    format!("Unsupported field: {field}"),
                 ));
             }
         };

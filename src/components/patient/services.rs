@@ -136,7 +136,7 @@ impl PatientService {
             _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
-                    format!("Unsupported field: {field}" ),
+                    format!("Unsupported field: {field}"),
                 ));
             }
         };
@@ -286,7 +286,7 @@ impl PatientService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::InternalServerError,
-                    format!("Database error: {e}" ),
+                    format!("Database error: {e}"),
                 )
             })?;
         Ok(patient_models.into_iter().filter_map(|(_, p)| p).collect())
