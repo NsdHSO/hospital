@@ -2,7 +2,7 @@ use crate::components::person::PersonService;
 use crate::entity::person::PersonRequestBody;
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
-use actix_web::{get, post, web, HttpResponse};
+use actix_web::{HttpResponse, get, post, web};
 use sea_orm::DatabaseConnection;
 use std::collections::HashMap;
 
@@ -21,12 +21,12 @@ pub async fn find_all(
     let field_str: Option<&str> = field_option_string.map(String::as_str);
     let value_str: Option<&str> = value_option_string.map(String::as_str);
     // Parse pagination parameters
-    let page = params.get("page")
-        .and_then(|p| p.parse::<u64>().ok());
-    let per_page = params.get("per_page")
-        .and_then(|l| l.parse::<u64>().ok());
+    let page = params.get("page").and_then(|p| p.parse::<u64>().ok());
+    let per_page = params.get("per_page").and_then(|l| l.parse::<u64>().ok());
     // *** THE FIX IS HERE: Use field_str and value_str ***
-    let person = service_instance.find_persons(field_str, value_str, page, per_page).await?;
+    let person = service_instance
+        .find_persons(field_str, value_str, page, per_page)
+        .await?;
 
     let response = http_response_builder::ok(person);
     Ok(HttpResponse::Ok().json(response))

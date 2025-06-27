@@ -4,9 +4,7 @@ use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
 use chrono::{Local, NaiveDateTime};
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait,
-};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait};
 use sea_orm::{QueryFilter, Set};
 use uuid::Uuid;
 
