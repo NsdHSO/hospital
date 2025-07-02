@@ -14,6 +14,7 @@ use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_i
 use crate::components::emergency::EmergencyService;
 use crate::components::patient::PatientService;
 use crate::http_response::HttpCodeW;
+use Column::AmbulanceIc;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
@@ -22,7 +23,6 @@ use sea_orm::prelude::Uuid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
-use Column::AmbulanceIc;
 
 pub struct AmbulanceService {
     conn: DatabaseConnection,

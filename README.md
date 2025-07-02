@@ -69,10 +69,13 @@ The system uses a relational database with the following key entities and relati
 
 ### Core Entities
 
-- **Hospital**: Information about healthcare facilities
-- **Ambulance**: Emergency vehicles linked to specific hospitals
-- **Emergency**: Emergency cases with location, description, and status
-- **Triage**: Classification system for prioritizing emergency cases
+- **Hospital**: Information about healthcare facilities including name, address, capacity, and other details
+- **Ambulance**: Emergency vehicles linked to specific hospitals with vehicle details and status
+- **Emergency**: Emergency cases with location, description, severity, and status
+- **Person**: Base entity containing shared personal information (name, contact, demographics)
+- **Patient**: Patient-specific information linked to Person entity including medical history
+- **Staff**: Medical staff information linked to Person entity with role and department
+- **Department**: Hospital departments with specializations
 - **User**: System users with authentication details
 
 ### Key Relationships
@@ -80,32 +83,86 @@ The system uses a relational database with the following key entities and relati
 - **Hospital to Ambulance**: One-to-many (a hospital owns multiple ambulances)
 - **Hospital to Emergency**: One-to-many (emergencies can be assigned to hospitals)
 - **Ambulance to Emergency**: One-to-many (an ambulance can handle multiple emergencies over time)
-- **Emergency to Triage**: Many-to-one (emergencies are classified using triage levels)
+- **Hospital to Staff**: One-to-many (a hospital employs multiple staff members)
+- **Hospital to Patient**: One-to-many (a hospital treats multiple patients)
+- **Person to Patient**: One-to-one (patient extends person with medical information)
+- **Person to Staff**: One-to-one (staff extends person with role and department)
+- **Emergency to Patient**: Many-to-many via emergency_patient junction table (multiple patients can be involved in an emergency)
 
 ### Entity Relationship Diagram (ERD)
 
 ```
-┌───────────────┐      ┌───────────────┐      ┌───────────────┐
-│   Hospital    │      │   Ambulance   │      │   Emergency   │
-├───────────────┤      ├───────────────┤      ├───────────────┤
-│ id (PK)       │──┐   │ id (PK)       │──┐   │ id (PK)       │
-│ name          │  │   │ name          │  │   │ emergency_date│
-│ location      │  │   │ plate_number  │  │   │ description   │
-│ address       │  │   │ status        │  │   │ latitude      │
-│ created_at    │  │   │ id_hospital(FK)│◄─┘   │ longitude     │
-│ updated_at    │  │   │ created_at    │      │ geohash       │
-└───────────────┘  │   │ updated_at    │      │ status        │
-                   │   └───────────────┘      │ id_ambulance(FK)│
-                   │                          │ id_triage(FK) │
-┌───────────────┐  │                          │ id_hospital(FK)│◄─┘
-│    Triage     │  │                          │ created_at    │
-├───────────────┤  │                          │ updated_at    │
-│ id (PK)       │  │                          └───────────────┘
-│ name          │  │                                  ▲
-│ description   │  │                                  │
-│ level         │──┘                                  │
-│ created_at    │                                     │
-│ updated_at    │─────────────────────────────────────┘
+┌───────────────┐      ┌───────────────┐      ┌─────────────────┐
+│   Hospital    │      │   Ambulance   │      │   Emergency     │
+├───────────────┤      ├───────────────┤      ├───────────────  ┤
+│ id (PK)       │──┐   │ id (PK)       │───┐   │ id (PK)        │
+│ name          │  │   │ hospital_id(FK)│◄─┘  │ hospital_id(FK) │◄─┘
+│ address       │  │   │ ambulance_ic  │      │ ambulance_id(FK)│
+│ phone         │  │   │ vehicle_number│      │ emergency_ic    │
+│ website       │  │   │ car_details   │      │ emergency_lat   │
+│ description   │  │   │ location_lat  │      │ emergency_long  │
+│ capacity      │  │   │ location_long │      │ status          │
+│ established   │  │   │ type          │      │ severity        │
+│ hospital_ic   │  │   │ status        │      │ incident_type   │
+│ created_at    │  │   │ created_at    │      │ description     │
+│ updated_at    │  │   │ updated_at    │      │ created_at      │
+└───────────────┘  │   └───────────────┘      │ updated_at      │
+     │  │  ▲                                  └─────────────────┘
+     │  │  │                                           ▲
+     │  │  │                                           │
+     │  │  │      ┌───────────────┐       ┌────────────┴─────────┐
+     │  │  │      │    Person     │       │  Emergency_Patient   │
+     │  │  │      ├───────────────┤       ├──────────────────────┤
+     │  │  │      │ id (PK)       │       │ emergency_id (PK,FK) │
+     │  │  │      │ first_name    │       │ patient_id (PK,FK)   │
+     │  │  │      │ last_name     │       └──────────────────────┘
+     │  │  │      │ date_of_birth │                   │
+     │  │  │      │ gender        │                   /
+     │  │  │      │ phone         │                ▼
+     │  │  │      │ email         │           ┌───────────────┐
+     │  │  │      │ address       │           │    Patient    │
+     │  │  │      │ nationality   │           ├───────────────┤
+     │  │  │      │ marital_status│           │ id (PK,FK)    │───┐
+     │  │  │      │ photo_url     │           │ hospital_id(FK)│◄─┘
+     │  │  │      │ created_at    │           │ patient_ic    │
+     │  │  │      │ updated_at    │           │ emergency_con │
+     │  │  │      └───────────────┘           │ blood_type    │
+     │  │  │             ▲ ▲                  │ allergies     │
+     │  │  │             │ │                  │ medical_hist  │
+     │  │  │             │ │                  │ created_at    │
+     │  │  │             │ │                  │ updated_at    │
+     │  │  │             │ │                  └───────────────┘
+     │  │  │             │ │
+     │  │  │             │ │
+     │  │  │             │ │
+     │  └──┼─────────────┘ │
+     │     │               │
+     ▼     ▼               │
+┌───────────────┐          │
+│ Department    │          │
+├───────────────┤          │
+│ id (PK)       │          │
+│ hospital_id(FK)│◄────────┘
+│ name          │          │
+│ description   │          │
+│ created_at    │          │
+│ updated_at    │          │
+└───────────────┘          │
+       ▲                   │
+       │                   │
+       │                   │
+       │                   │
+┌──────┴────────┐          │
+│     Staff     │          │
+├───────────────┤          │
+│ id (PK,FK)    │──────────┘
+│ hospital_id(FK)│
+│ department_id(FK)│
+│ specialization│
+│ role          │
+│ staff_ic      │
+│ created_at    │
+│ updated_at    │
 └───────────────┘
 ```
 
