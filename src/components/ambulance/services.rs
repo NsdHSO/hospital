@@ -14,7 +14,6 @@ use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_i
 use crate::components::emergency::EmergencyService;
 use crate::components::patient::PatientService;
 use crate::http_response::HttpCodeW;
-use Column::AmbulanceIc;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
@@ -23,6 +22,7 @@ use sea_orm::prelude::Uuid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
+use Column::AmbulanceIc;
 
 pub struct AmbulanceService {
     conn: DatabaseConnection,
@@ -203,7 +203,15 @@ impl AmbulanceService {
                         .decode_utf8()
                         .map(|ic| ic.to_string())
                         .unwrap_or_else(|_| encoded_name.to_string());
-                    query = query.filter(AmbulanceIc.like(ambulance_ic));
+                    // Parse to integer
+                    let ic_value: i32 = ambulance_ic.parse().map_err(|_| {
+                        CustomError::new(
+                            HttpCodeW::BadRequest,
+                            "Invalid integer for ic".to_string(),
+                        )
+                    })?;
+
+                    query = query.filter(AmbulanceIc.eq(ic_value));
                 }
                 Some(("id", encoded_name)) => {
                     let ambulance_id = percent_decode_str(encoded_name)
