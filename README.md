@@ -73,6 +73,7 @@ The system uses a relational database with the following key entities and relati
 - **Ambulance**: Emergency vehicles linked to specific hospitals
 - **Emergency**: Emergency cases with location, description, and status
 - **Triage**: Classification system for prioritizing emergency cases
+- **Person**: Comprehensive information about individuals (patients, medical staff, etc.)
 - **User**: System users with authentication details
 
 ### Key Relationships
@@ -81,6 +82,8 @@ The system uses a relational database with the following key entities and relati
 - **Hospital to Emergency**: One-to-many (emergencies can be assigned to hospitals)
 - **Ambulance to Emergency**: One-to-many (an ambulance can handle multiple emergencies over time)
 - **Emergency to Triage**: Many-to-one (emergencies are classified using triage levels)
+- **Person to Emergency**: One-to-many (a person can be involved in multiple emergencies)
+- **Person to Hospital**: Many-to-one (a person can be associated with a hospital, e.g., as staff or patient)
 
 ### Entity Relationship Diagram (ERD)
 
@@ -95,18 +98,40 @@ The system uses a relational database with the following key entities and relati
 │ created_at    │  │   │ id_hospital(FK)│◄─┘   │ longitude     │
 │ updated_at    │  │   │ created_at    │      │ geohash       │
 └───────────────┘  │   │ updated_at    │      │ status        │
-                   │   └───────────────┘      │ id_ambulance(FK)│
-                   │                          │ id_triage(FK) │
-┌───────────────┐  │                          │ id_hospital(FK)│◄─┘
-│    Triage     │  │                          │ created_at    │
-├───────────────┤  │                          │ updated_at    │
-│ id (PK)       │  │                          └───────────────┘
-│ name          │  │                                  ▲
+         ▲         │   └───────────────┘      │ id_ambulance(FK)│
+         │         │                          │ id_triage(FK) │
+         │         │                          │ id_hospital(FK)│◄─┘
+         │         │                          │ id_person(FK) │
+         │         │                          │ created_at    │
+         │         │                          │ updated_at    │
+┌───────────────┐  │                          └───────────────┘
+│    Triage     │  │                                  ▲
+├───────────────┤  │                                  │
+│ id (PK)       │  │                                  │
+│ name          │  │                                  │
 │ description   │  │                                  │
 │ level         │──┘                                  │
 │ created_at    │                                     │
 │ updated_at    │─────────────────────────────────────┘
-└───────────────┘
+└───────────────┘                                      
+                                                       
+┌───────────────┐                                      
+│    Person     │                                      
+├───────────────┤                                      
+│ id (PK)       │──────────────────────────────────────┘
+│ first_name    │                                       
+│ last_name     │                                       
+│ date_of_birth │                                       
+│ gender        │                                       
+│ address       │                                       
+│ phone         │                                       
+│ email         │                                       
+│ blood_type    │                                       
+│ medical_history│                                      
+│ id_hospital(FK)│─────────────────────────────────────┘
+│ created_at    │                                       
+│ updated_at    │                                       
+└───────────────┘                                       
 ```
 
 ## 4. Setup and Installation
