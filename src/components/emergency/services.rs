@@ -1,5 +1,6 @@
 use crate::components::patient::PatientService;
 use crate::entity;
+use crate::entity::ambulance::AmbulanceId;
 use crate::entity::emergency;
 use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
 use crate::entity::sea_orm_active_enums::{
@@ -14,7 +15,6 @@ use entity::ambulance;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
-use uuid::Uuid;
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -189,14 +189,26 @@ impl EmergencyService {
     /// Returns the passengers JSON for the ambulance currently assigned to an emergency, if any.
     pub async fn get_passengers_json_for_ambulance(
         &self,
-        ambulance_id: Uuid,
+        ambulance_id: AmbulanceId,
     ) -> Result<Option<serde_json::Value>, CustomError> {
         use crate::entity::emergency;
         // Find the emergency where this ambulance is assigned
-        let emergency_entity = emergency::Entity::find()
-            .filter(emergency::Column::AmbulanceId.eq(Some(ambulance_id)))
-            .one(&self.conn)
-            .await?;
+        let mut query = emergency::Entity::find(); // Start with the base query
+
+        // Apply the filter based on the AmbulanceId variant
+        query = match ambulance_id {
+            AmbulanceId::Uuid(uuid_value) => {
+                // Assuming emergency::Column::AmbulanceId is of type Uuid
+                query.filter(emergency::Column::AmbulanceId.eq(Some(uuid_value)))
+            }
+            AmbulanceId::Integer(_) => {
+                return Err(CustomError::new(
+                    HttpCodeW::BadRequest,
+                    "Cannot filter emergencies by integer ambulance ID directly for this operation. UUID required.".to_string(),
+                ))
+            }
+        };
+        let emergency_entity = query.one(&self.conn).await?;
 
         if let Some(emergency) = emergency_entity {
             // Update emergency.updated_at
