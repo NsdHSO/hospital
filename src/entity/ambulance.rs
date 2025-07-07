@@ -115,3 +115,10 @@ pub enum AmbulanceId {
     Uuid(Uuid),
     Integer(i32),
 }
+
+// DTO (Data Transfer Object) for the frontend
+#[derive(Debug, Serialize)]
+pub struct StatusDto {
+    pub value: String,
+    pub label: String,
+}

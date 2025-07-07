@@ -1,5 +1,5 @@
 use crate::entity::ambulance::Column::Id;
-use crate::entity::ambulance::{ActiveModel, AmbulanceId, Model};
+use crate::entity::ambulance::{ActiveModel, AmbulanceId, Model, StatusDto};
 use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
@@ -20,7 +20,7 @@ use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
 use sea_orm::prelude::Decimal;
 use sea_orm::prelude::Uuid;
-use sea_orm::{ActiveModelTrait, ColumnTrait, PaginatorTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, Iterable, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
 
@@ -279,6 +279,24 @@ impl AmbulanceService {
             pagination,
         })
     }
+
+    pub async fn find_all_status(&self) -> Result<Vec<StatusDto>, CustomError> {
+        let statuses: Vec<StatusDto> = AmbulanceStatusEnum::iter() // Use EnumIter to get all variants
+            .map(|status_enum_variant| {
+                let value = serde_json::to_string(&status_enum_variant)
+                    .unwrap_or_else(|_| "\"UNKNOWN\"".to_string()) // Fallback for error
+                    .trim_matches('"') // Remove quotes from the string
+                    .to_string();
+
+                // Format the label
+                let label = format_status_label(&value);
+
+                StatusDto { value, label }
+            })
+            .collect();
+
+        Ok(statuses)
+    }
 }
 
 pub fn generate_payload_to_create_ambulance(payload: Option<AmbulancePayload>) -> ActiveModel {
@@ -397,4 +415,21 @@ pub fn generate_payload_to_create_ambulance(payload: Option<AmbulancePayload>) -
         },
         hospital_id: Default::default(),
     }
+}
+// Helper function to convert SCREAMING_SNAKE_CASE to a more readable format
+// This is the same function as before, ensuring consistent labels
+fn format_status_label(s: &str) -> String {
+    s.split('_')
+        .map(|word| {
+            let mut chars = word.chars();
+            match chars.next() {
+                None => String::new(),
+                Some(first_char) => {
+                    first_char.to_uppercase().collect::<String>()
+                        + chars.as_str().to_lowercase().as_str()
+                }
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(" ")
 }
