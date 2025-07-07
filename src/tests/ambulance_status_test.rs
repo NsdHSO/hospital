@@ -1,4 +1,12 @@
 #[cfg(test)]
+/// Tests for ambulance status functionality, verifying both the AmbulanceStatusEnum 
+/// and the /status API endpoint.
+/// 
+/// These tests ensure that:
+/// 1. The AmbulanceStatusEnum contains exactly 18 status values as expected
+/// 2. The /status endpoint successfully returns all 18 statuses
+/// 3. The response format matches our API contract with correct value and label fields
+/// 4. All expected status values are present in the API response
 mod ambulance_status_tests {
     use crate::components;
     use crate::entity::sea_orm_active_enums::AmbulanceStatusEnum;
@@ -7,8 +15,12 @@ mod ambulance_status_tests {
     use sea_orm::Iterable;
     use serde_json::Value;
 
-    // This test verifies that the AmbulanceStatusEnum has 18 variants
-    // which matches the number of statuses that should be returned by the API
+    /// Tests that the AmbulanceStatusEnum has exactly 18 variants.
+    /// 
+    /// This test ensures that our enum definition contains all expected ambulance statuses
+    /// and matches the number of statuses that should be returned by the API.
+    /// It also prints all variants for debugging and verifies that all expected status
+    /// names are present in the enum.
     #[test]
     async fn test_ambulance_status_enum_has_18_values() {
         // Count the number of variants in the AmbulanceStatusEnum
@@ -63,16 +75,33 @@ mod ambulance_status_tests {
             assert!(found, "Expected status '{}' not found in enum", expected);
         }
     }
+    /// Tests the /status API endpoint for ambulance statuses.
+    /// 
+    /// This integration test:
+    /// 1. Sets up a real database connection
+    /// 2. Configures an Actix-Web test server with the ambulance routes
+    /// 3. Sends a GET request to the /status endpoint
+    /// 4. Verifies the response is successful and properly formatted
+    /// 5. Checks that exactly 18 statuses are returned
+    /// 6. Validates that each status has both 'value' and 'label' fields
+    /// 7. Confirms all expected statuses are present in the response
+    /// 
+    /// Note: This test requires a working database connection as the routes
+    /// are configured to use the database, even though the actual method
+    /// doesn't query the database (it uses enum iteration).
     #[actix_rt::test]
     async fn test_ambulance_statuses() {
         // Set up the database connection for testing
+        // This is required because the Actix-Web route expects a database connection,
+        // even though the service method doesn't actually query the database
         let db = db_config::setup_test_db().await;
 
-        // Configure the app with the database connection and routes
+        // Configure the app with the database connection and ambulance routes
+        // This creates a test server instance with our API routes registered
         let app = test::init_service(
             App::new()
-                .app_data(web::Data::new(db.clone())) // Add the database connection
-                .configure(components::ambulance::init_routes),
+                .app_data(web::Data::new(db.clone())) // Provide the database connection to the app
+                .configure(components::ambulance::init_routes), // Register ambulance routes
         )
         .await;
 
