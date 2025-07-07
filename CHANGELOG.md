@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/NsdHSO/hospital/compare/v1.0.0...v1.1.0) (2025-07-07)
+
+
+### Features
+
+* 🎸 remove to touch dependencies from Cargo.toml ([74122c8](https://github.com/NsdHSO/hospital/commit/74122c80a3108727413fe951236d7359c82e4dfb))
+
 # 1.0.0 (2025-07-07)
 
 
