@@ -1,4 +1,4 @@
 pub mod routes;
-mod services;
+pub(crate) mod services;
 
 pub use routes::*;
