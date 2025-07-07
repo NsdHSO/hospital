@@ -1,5 +1,5 @@
 use crate::entity::ambulance::Column::Id;
-use crate::entity::ambulance::{ActiveModel, Model};
+use crate::entity::ambulance::{ActiveModel, AmbulanceId, Model};
 use crate::entity::ambulance::{AmbulancePayload, Column, Entity};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceCarDetailsMakeEnum, AmbulanceCarDetailsModelEnum, AmbulanceStatusEnum,
@@ -40,14 +40,45 @@ impl AmbulanceService {
     }
     pub(crate) async fn update_ambulance(
         &self,
-        uuid: Uuid,
+        id: AmbulanceId,
         payload: AmbulancePayload,
     ) -> Result<Model, CustomError> {
         let now = now_time();
-        let query = Entity::find().filter(Id.eq(uuid)).one(&self.conn).await?;
+        // Declare a mutable variable to hold the query result (Option<Model>)
+        let model_option;
 
-        let model = match query {
-            Some(model) => model,
+        // Initialize a base query outside the match if there are common parts
+        let base_query = Entity::find();
+
+        match id {
+            AmbulanceId::Uuid(value) => {
+                model_option = base_query
+                    .filter(Id.eq(value)) // Assuming `Id` is the Uuid column
+                    .one(&self.conn) // Use self.db_pool if that's your connection
+                    .await
+                    .map_err(|e| {
+                        CustomError::new(
+                            HttpCodeW::InternalServerError,
+                            format!("DB error fetching by UUID: {}", e),
+                        )
+                    })?; // Handle SeaORM errors
+            }
+            AmbulanceId::Integer(value) => {
+                model_option = base_query
+                    .filter(AmbulanceIc.eq(value)) // Assuming `AmbulanceIc` is the i32 column
+                    .one(&self.conn) // Use self.db_pool if that's your connection
+                    .await
+                    .map_err(|e| {
+                        CustomError::new(
+                            HttpCodeW::InternalServerError,
+                            format!("DB error fetching by Integer ID: {}", e),
+                        )
+                    })?; // Handle SeaORM errors
+            }
+        }
+
+        let model = match model_option {
+            Some(m) => m,
             None => {
                 return Err(CustomError::new(
                     HttpCodeW::NotFound,
@@ -66,7 +97,7 @@ impl AmbulanceService {
                         "hospital_name is required for transporting patient".to_string(),
                     ));
                 }
-                self.set_transport_patient(uuid, &mut active_model).await?;
+                self.set_transport_patient(id, &mut active_model).await?;
             }
             Some(status) => {
                 active_model.status = Set(status);
@@ -91,7 +122,7 @@ impl AmbulanceService {
 
     async fn set_transport_patient(
         &self,
-        uuid: Uuid,
+        uuid: AmbulanceId,
         active_model: &mut ActiveModel,
     ) -> Result<(), CustomError> {
         active_model.status = Set(AmbulanceStatusEnum::TransportingPatient);

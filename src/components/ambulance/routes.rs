@@ -1,9 +1,9 @@
 use crate::components::ambulance::services::AmbulanceService;
-use crate::entity::ambulance::AmbulancePayload;
+use crate::entity::ambulance::{AmbulanceId, AmbulancePayload};
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{HttpResponse, get, patch, post, web};
+use actix_web::{get, patch, post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
 use uuid::Uuid;
 
@@ -28,12 +28,30 @@ async fn update(
 ) -> Result<HttpResponse, CustomError> {
     let service = AmbulanceService::new(db_conn.get_ref());
     let ambulance = service
-        .update_ambulance(uuid_ambulance.into_inner(), ambulance_payload.clone())
+        .update_ambulance(
+            AmbulanceId::Uuid(uuid_ambulance.into_inner()),
+            ambulance_payload.clone(),
+        )
         .await?;
     let response = http_response_builder::ok(ambulance);
     Ok(HttpResponse::Ok().json(response))
 }
-
+#[patch("/ambulance/ic/{id_ambulance}")]
+async fn update_by_ic(
+    id_ambulance: web::Path<i32>,
+    ambulance_payload: web::Json<AmbulancePayload>,
+    db_conn: web::Data<DatabaseConnection>,
+) -> Result<HttpResponse, CustomError> {
+    let service = AmbulanceService::new(db_conn.get_ref());
+    let ambulance = service
+        .update_ambulance(
+            AmbulanceId::Integer(id_ambulance.into_inner()),
+            ambulance_payload.clone(),
+        )
+        .await?;
+    let response = http_response_builder::ok(ambulance);
+    Ok(HttpResponse::Ok().json(response))
+}
 #[get("/ambulance")]
 pub async fn find_all(
     query: web::Query<PaginationParams>,
@@ -55,4 +73,5 @@ pub fn init_routes(config: &mut web::ServiceConfig) {
     config.service(update);
     config.service(find_all);
     config.service(create);
+    config.service(update_by_ic);
 }

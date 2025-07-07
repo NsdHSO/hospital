@@ -111,3 +111,7 @@ pub struct CarDetails {
     pub make: Option<AmbulanceCarDetailsMakeEnum>,
     pub model: Option<AmbulanceCarDetailsModelEnum>,
 }
+pub enum AmbulanceId {
+    Uuid(Uuid),
+    Integer(i32),
+}
