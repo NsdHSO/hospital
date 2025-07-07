@@ -29,7 +29,7 @@ jobs:
           node-version: "18"
       
       - name: Install dependencies
-        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/exec conventional-changelog-conventionalcommits
+        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/exec conventional-changelog-conventionalcommits lodash
       
       # Create or update repository URL for proper access
       - name: Set Git credentials
@@ -43,49 +43,16 @@ jobs:
           {
             "branches": ["main", "master"],
             "plugins": [
-              ["@semantic-release/commit-analyzer", {
-                "preset": "conventionalcommits",
-                "releaseRules": [
-                  {"type": "feat", "release": "minor"},
-                  {"type": "fix", "release": "patch"},
-                  {"type": "docs", "release": "patch"},
-                  {"type": "style", "scope": "ui", "release": "patch"},
-                  {"type": "style", "release": false},
-                  {"type": "refactor", "release": "patch"},
-                  {"type": "perf", "release": "patch"},
-                  {"type": "test", "release": "patch"},
-                  {"type": "build", "release": "patch"},
-                  {"type": "ci", "release": false},
-                  {"type": "chore", "release": false}
-                ]
-              }],
-              ["@semantic-release/release-notes-generator", {
-                "preset": "conventionalcommits",
-                "presetConfig": {
-                  "types": [
-                    {"type": "feat", "section": "Features"},
-                    {"type": "fix", "section": "Bug Fixes"},
-                    {"type": "docs", "section": "Documentation"},
-                    {"type": "style", "section": "Styling"},
-                    {"type": "refactor", "section": "Code Refactoring"},
-                    {"type": "perf", "section": "Performance Improvements"},
-                    {"type": "test", "section": "Tests"},
-                    {"type": "build", "section": "Build System"},
-                    {"type": "ci", "section": "Continuous Integration"}
-                  ]
-                }
-              }],
-              ["@semantic-release/changelog", {
-                "changelogFile": "CHANGELOG.md",
-                "changelogTitle": "# Changelog\n\nAll notable changes to this project will be documented in this file."
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              "@semantic-release/changelog",
+              ["@semantic-release/exec", {
+                "prepareCmd": "sed -i 's/version = \".*\"/version = \"${nextRelease.version}\"/g' Cargo.toml"
               }],
               ["@semantic-release/github", {
                 "assets": [
                   {"path": "target/release/emergency", "label": "Binary (Linux)"}
                 ]
-              }],
-              ["@semantic-release/exec", {
-                "prepareCmd": "node .github/scripts/semantic-release-cargo.js ${nextRelease.version}"
               }],
               ["@semantic-release/git", {
                 "assets": ["CHANGELOG.md", "Cargo.toml", "Cargo.lock"],
@@ -102,7 +69,13 @@ jobs:
           profile: minimal
           override: true
       
+      - name: Build release binary
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      
       - name: Semantic Release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: npx semantic-release
