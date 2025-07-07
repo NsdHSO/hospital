@@ -1,0 +1,96 @@
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      
+      - name: Install dependencies
+        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/exec conventional-changelog-conventionalcommits
+      
+      - name: Create .releaserc file
+        run: |
+          cat > .releaserc.json << 'EOF'
+          {
+            "branches": ["main", "master"],
+            "plugins": [
+              ["@semantic-release/commit-analyzer", {
+                "preset": "conventionalcommits",
+                "releaseRules": [
+                  {"type": "feat", "release": "minor"},
+                  {"type": "fix", "release": "patch"},
+                  {"type": "docs", "release": "patch"},
+                  {"type": "style", "scope": "ui", "release": "patch"},
+                  {"type": "style", "release": false},
+                  {"type": "refactor", "release": "patch"},
+                  {"type": "perf", "release": "patch"},
+                  {"type": "test", "release": "patch"},
+                  {"type": "build", "release": "patch"},
+                  {"type": "ci", "release": false},
+                  {"type": "chore", "release": false}
+                ]
+              }],
+              ["@semantic-release/release-notes-generator", {
+                "preset": "conventionalcommits",
+                "presetConfig": {
+                  "types": [
+                    {"type": "feat", "section": "Features"},
+                    {"type": "fix", "section": "Bug Fixes"},
+                    {"type": "docs", "section": "Documentation"},
+                    {"type": "style", "section": "Styling"},
+                    {"type": "refactor", "section": "Code Refactoring"},
+                    {"type": "perf", "section": "Performance Improvements"},
+                    {"type": "test", "section": "Tests"},
+                    {"type": "build", "section": "Build System"},
+                    {"type": "ci", "section": "Continuous Integration"}
+                  ]
+                }
+              }],
+              ["@semantic-release/changelog", {
+                "changelogFile": "CHANGELOG.md",
+                "changelogTitle": "# Changelog\n\nAll notable changes to this project will be documented in this file."
+              }],
+              ["@semantic-release/github", {
+                "assets": [
+                  {"path": "target/release/emergency", "label": "Binary (Linux)"}
+                ]
+              }],
+              ["@semantic-release/exec", {
+                "prepareCmd": "node .github/scripts/semantic-release-cargo.js ${nextRelease.version}"
+              }],
+              ["@semantic-release/git", {
+                "assets": ["CHANGELOG.md", "Cargo.toml", "Cargo.lock"],
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+              }]
+            ]
+          }
+          EOF
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
