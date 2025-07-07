@@ -3,7 +3,7 @@ use crate::entity::ambulance::{AmbulanceId, AmbulancePayload};
 use crate::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
-use actix_web::{get, patch, post, web, HttpResponse};
+use actix_web::{HttpResponse, get, patch, post, web};
 use sea_orm::DatabaseConnection;
 use uuid::Uuid;
 
@@ -69,9 +69,21 @@ pub async fn find_all(
     let response = http_response_builder::ok(ambulance);
     Ok(HttpResponse::Ok().json(response))
 }
+
+#[get("/status")]
+pub async fn find_all_statuses(
+    db_conn: web::Data<DatabaseConnection>,
+) -> Result<HttpResponse, CustomError> {
+    let service_instance = AmbulanceService::new(db_conn.get_ref());
+    let ambulance = service_instance.find_all_status().await?;
+    let response = http_response_builder::ok(ambulance);
+    Ok(HttpResponse::Ok().json(response))
+}
+
 pub fn init_routes(config: &mut web::ServiceConfig) {
     config.service(update);
     config.service(find_all);
     config.service(create);
     config.service(update_by_ic);
+    config.service(find_all_statuses);
 }
