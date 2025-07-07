@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres-test:
+    image: postgres:15
+    container_name: hospital-postgres-test
+    environment:
+      POSTGRES_DB: hospital_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      TZ: Europe/Bucharest
+      POSTGRES_TIMEZONE: Europe/Bucharest
+    ports:
+      - '5450:5432'  # Use a different port to avoid conflicts
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+      # Optional: Add initialization scripts if needed
+      # - ./test-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: pg_isready -U test_user -d hospital_test
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: hospital-test-runner
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://test_user:test_password@postgres-test:5432/hospital_test
+      - TEST_DATABASE_URL=postgres://test_user:test_password@postgres-test:5432/hospital_test
+      - RUST_BACKTRACE=1
+    volumes:
+      - .:/app
+      - cargo-cache:/usr/local/cargo/registry
+      - target-cache:/app/target
+    # Command overrides the default CMD in Dockerfile.test
+    # This is where you'd specify which tests to run
+    command: cargo test -- --nocapture
+
+volumes:
+  postgres-test-data:
+  cargo-cache:
+  target-cache:
