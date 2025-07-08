@@ -12,9 +12,9 @@ use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 
 use crate::components::emergency::EmergencyService;
+use crate::components::hospital::HospitalService;
 use crate::components::patient::PatientService;
 use crate::http_response::HttpCodeW;
-use Column::AmbulanceIc;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
@@ -23,11 +23,13 @@ use sea_orm::prelude::Uuid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, Iterable, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
+use Column::AmbulanceIc;
 
 pub struct AmbulanceService {
     conn: DatabaseConnection,
     emergency_service: EmergencyService,
     patient_service: PatientService,
+    hospital_service: HospitalService,
 }
 
 impl AmbulanceService {
@@ -36,12 +38,13 @@ impl AmbulanceService {
             conn: conn.clone(),
             emergency_service: EmergencyService::new(conn),
             patient_service: PatientService::new(conn),
+            hospital_service: HospitalService::new(conn),
         }
     }
     pub(crate) async fn update_ambulance(
         &self,
         id: AmbulanceId,
-        payload: AmbulancePayload,
+        mut payload: AmbulancePayload,
     ) -> Result<Model, CustomError> {
         let now = now_time();
         // Declare a mutable variable to hold the query result (Option<Model>)
@@ -97,6 +100,20 @@ impl AmbulanceService {
                         "hospital_name is required for transporting patient".to_string(),
                     ));
                 }
+                let mut hospital = self
+                    .hospital_service
+                    .find_by_field("id", payload.hospital_name.unwrap().as_str())
+                    .await?;
+                let hospital_uid: Uuid = match hospital {
+                    None => {
+                        return Err(CustomError::new(
+                            HttpCodeW::BadRequest,
+                            "Invalid Hospital Name".to_string(),
+                        ));
+                    }
+                    Some(value) => value.id,
+                };
+                active_model.hospital_id = Set(hospital_uid);
                 self.set_transport_patient(id, &mut active_model).await?;
             }
             Some(status) => {
