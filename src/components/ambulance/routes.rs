@@ -70,7 +70,7 @@ pub async fn find_all(
     Ok(HttpResponse::Ok().json(response))
 }
 
-#[get("/status")]
+#[get("/ambulance/status")]
 pub async fn find_all_statuses(
     db_conn: web::Data<DatabaseConnection>,
 ) -> Result<HttpResponse, CustomError> {
