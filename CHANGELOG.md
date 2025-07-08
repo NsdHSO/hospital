@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/NsdHSO/hospital/compare/v1.1.0...v1.2.0) (2025-07-08)
+
+
+### Features
+
+* 🎸 added abmulance/status in api endpoint ([7780ad4](https://github.com/NsdHSO/hospital/commit/7780ad46c30723abf79c06d40bd6423c534ebf00))
+* 🎸 added the hospital name when is status change ([454d8ee](https://github.com/NsdHSO/hospital/commit/454d8eeed484c26c974734d0dd854bce8ae14958))
+
 # [1.1.0](https://github.com/NsdHSO/hospital/compare/v1.0.0...v1.1.0) (2025-07-07)
 
 
