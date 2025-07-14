@@ -1,8 +1,8 @@
 use crate::components::patient::PatientService;
 use crate::entity;
-use crate::entity::ambulance::AmbulanceId;
-use crate::entity::emergency;
-use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Model};
+use crate::entity::ambulance::{AmbulanceId};
+use crate::entity::{ambulance, emergency};
+use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Entity, Model};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
 };
@@ -11,10 +11,12 @@ use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use chrono::NaiveDateTime;
-use entity::ambulance;
+use percent_encoding::percent_decode_str;
 use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
+use uuid::Uuid;
+use crate::entity::emergency::Column::{EmergencyIc, Id};
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -35,7 +37,7 @@ impl EmergencyService {
         emergency_ic: &str,
     ) -> Result<Option<serde_json::Value>, CustomError> {
         let result = emergency::Entity::find()
-            .filter(emergency::Column::EmergencyIc.eq(emergency_ic))
+            .filter(EmergencyIc.eq(emergency_ic))
             .find_also_related(ambulance::Entity)
             .one(&self.conn)
             .await
@@ -71,9 +73,36 @@ impl EmergencyService {
         &self,         // Changed to &self as we're not modifying the service state
         page: u64,     // Use u64 for pagination
         per_page: u64, // Use u64 for pagination
+        filter: Option<String>,
     ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
-        let paginator = emergency::Entity::find().paginate(&self.conn, per_page);
+        let mut query = Entity::find();
 
+        if let Some(filter_str) = filter {
+            match filter_str.split_once('=') {
+                Some(("ic", encoded_name)) => {
+                    let emergency_ic = percent_decode_str(encoded_name)
+                        .decode_utf8()
+                        .map(|ic| ic.to_string())
+                        .unwrap_or_else(|_| encoded_name.to_string());
+               
+
+                    query = query.filter(EmergencyIc.eq(emergency_ic));
+                }
+                Some(("id", encoded_name)) => {
+                    let ambulance_id = percent_decode_str(encoded_name)
+                        .decode_utf8()
+                        .map(|id| id.to_string())
+                        .unwrap_or_else(|_| encoded_name.to_string());
+                    let emergency_id = Uuid::parse_str(&ambulance_id).map_err(|_| {
+                        CustomError::new(HttpCodeW::BadRequest, "Invalid UUID".to_string())
+                    })?;
+                    query = query.filter(Id.eq(emergency_id));
+                }
+                _ => {}
+            }
+        }
+        
+        let paginator = query.paginate(&self.conn, per_page);
         let total_items = paginator.num_items().await?;
         let total_pages = paginator.num_pages().await?;
 
