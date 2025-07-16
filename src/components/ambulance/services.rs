@@ -102,7 +102,7 @@ impl AmbulanceService {
                 }
                 let mut hospital = self
                     .hospital_service
-                    .find_by_field("id", payload.hospital_name.unwrap().as_str())
+                    .find_by_field("name", payload.hospital_name.unwrap().as_str())
                     .await?;
                 let hospital_uid: Uuid = match hospital {
                     None => {
