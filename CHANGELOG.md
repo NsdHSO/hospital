@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/NsdHSO/hospital/compare/v1.2.0...v1.3.0) (2025-07-14)
+
+
+### Features
+
+* 🎸 added filter param to emergency ([2d0ef5b](https://github.com/NsdHSO/hospital/commit/2d0ef5beb046b2972a4f6bfb2845cde3df9a9496))
+
 # [1.2.0](https://github.com/NsdHSO/hospital/compare/v1.1.0...v1.2.0) (2025-07-08)
 
 
