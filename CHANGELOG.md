@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/NsdHSO/hospital/compare/v1.3.0...v1.4.0) (2025-07-16)
+
+
+### Bug Fixes
+
+* 🛠️ typo of param ([b3f3367](https://github.com/NsdHSO/hospital/commit/b3f33675ca3ac8ea5e91ee445e339bd17984b805))
+
+
+### Features
+
+* 🎸 merge master with head ([1c0ddce](https://github.com/NsdHSO/hospital/commit/1c0ddce819b13d1265c27790a5c69ee465315114))
+
 # [1.3.0](https://github.com/NsdHSO/hospital/compare/v1.2.0...v1.3.0) (2025-07-14)
 
 
