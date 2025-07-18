@@ -1,3 +1,11 @@
+# [1.5.0](https://github.com/NsdHSO/hospital/compare/v1.4.0...v1.5.0) (2025-07-18)
+
+
+### Features
+
+* 🎸 added cors what contains vercel and https with http ([3764e46](https://github.com/NsdHSO/hospital/commit/3764e4618d192b398ed61648201036b146d397ad))
+* 🎸 added new tags ([87eb613](https://github.com/NsdHSO/hospital/commit/87eb613102073865c9bcc09ddd8f1344c3721423))
+
 # [1.4.0](https://github.com/NsdHSO/hospital/compare/v1.3.0...v1.4.0) (2025-07-16)
 
 
