@@ -3,7 +3,7 @@ use crate::open_api::init;
 use actix_cors::Cors;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{App, HttpServer, web};
+use actix_web::{web, App, HttpServer};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
@@ -53,8 +53,11 @@ async fn main() -> std::io::Result<()> {
     let mut listened = ListenFd::from_env();
     let mut server = HttpServer::new(move || {
         let cors = Cors::default()
-            .allowed_origin("http://localhost:4200")
-            .allowed_origin("https://tevet-troc-client.vercel.app")
+            .allowed_origin_fn(|origin, _req| origin.as_bytes().starts_with(b"http://"))
+            .allowed_origin_fn(|origin, _req| {
+                origin.as_bytes().starts_with(b"https://")
+                    && origin.to_str().unwrap().contains("vercel")
+            })
             .allowed_origin("https://nsdhso.github.io")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
             .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
