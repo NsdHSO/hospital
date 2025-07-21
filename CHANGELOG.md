@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/NsdHSO/hospital/compare/v1.5.0...v1.6.0) (2025-07-21)
+
+
+### Features
+
+* 🎸 added appointment ([2c41236](https://github.com/NsdHSO/hospital/commit/2c41236d5e191ad3ebc3242ab33c9d606e752798))
+
 # [1.5.0](https://github.com/NsdHSO/hospital/compare/v1.4.0...v1.5.0) (2025-07-18)
 
 
