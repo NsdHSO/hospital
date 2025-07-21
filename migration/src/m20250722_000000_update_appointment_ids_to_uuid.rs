@@ -10,9 +10,20 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table("appointment")
-                    .modify_column(ColumnDef::new("patient_id").uuid().not_null())
-                    .modify_column(ColumnDef::new("doctor_id").uuid().not_null())
-                    .modify_column(ColumnDef::new("hospital_id").uuid().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("created_at").timestamp().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("updated_at").timestamp().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("id").uuid().not_null().primary_key())
+                    .add_column_if_not_exists(ColumnDef::new("appointment_ic").integer().unique_key().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("patient_id").uuid().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("doctor_id").uuid().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("hospital_id").uuid().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("appointment_date").timestamp().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("reason").text().null())
+                    .add_column_if_not_exists(ColumnDef::new("notes").text().null())
+                    .add_column_if_not_exists(ColumnDef::new("cost").decimal().not_null())
+                    .add_column_if_not_exists(ColumnDef::new("scheduled_by").string().null())
+                    .add_column_if_not_exists(ColumnDef::new("appointment_type").string().null())
+                    .add_column_if_not_exists(ColumnDef::new("status").string().not_null()) // You may want to use ENUM if defined
                     .to_owned(),
             )
             .await?;

@@ -28,11 +28,50 @@ impl AppointmentService {
         &self,
         appointment_data: AppointmentRequestBody,
     ) -> Result<Model, CustomError> {
-        let mut hospital_id : Uuid = self.hospital_service.find_by_field("name", appointment_data.hospital_name.as_str()).await?.unwrap().id;
-        
+        let hospital_id: Uuid = self
+            .hospital_service
+            .find_by_field("name", appointment_data.hospital_name.as_str())
+            .await?
+            .unwrap()
+            .id;
+        if (hospital_id.is_nil()) {
+            return Err(CustomError::new(
+                HttpCodeW::InternalServerError,
+                "Database error: hospital_id".to_string(),
+            ));
+        }
+        let doctor = self
+            .staff_service
+            .find_by_field("name", appointment_data.doctor_name.as_str())
+            .await?;
+        if (doctor.is_none()) {
+            return Err(CustomError::new(
+                HttpCodeW::InternalServerError,
+                "Database error: doctor_id".to_string(),
+            ));
+        } else {
+            if let Some(doctor_data) = doctor {
+                if doctor_data.hospital_id != hospital_id {
+                    println!("{:?}", doctor_data.hospital_id);
+                    return Err(CustomError::new(
+                        HttpCodeW::InternalServerError,
+                        "Database error: Doctor doesn't work at this hospital".to_string(),
+                    ));
+                }
+            }
+            let patient = self
+                .patient_service
+                .find_by_field("name", appointment_data.patient_name.as_str())
+                .await?;
+            
+            
+            
+
+        }
+
         Err(CustomError::new(
             HttpCodeW::InternalServerError,
-            format!("Database error: "),
+            format!("Database error: {hospital_id}"),
         ))
     }
 }
