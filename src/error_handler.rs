@@ -2,7 +2,7 @@ use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use sea_orm::DbErr;
 // Import SeaORM's database error type
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::error::Error as StdError;
 use std::fmt;
 // Import this
@@ -10,7 +10,7 @@ use std::fmt;
 use crate::http_response::{HttpCodeW, create_response};
 // Import logging macros
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CustomError {
     pub error_status_code: HttpCodeW,
     pub error_message: String,

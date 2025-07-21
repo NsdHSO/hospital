@@ -33,4 +33,15 @@ pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
-pub struct AppointmentRequestBody {}
+pub struct AppointmentRequestBody {
+    patient_name: String,
+    doctor_name: String,
+    hospital_name: String,
+    appointment_date: String,
+    reason: String,
+    notes: String,
+    cost: Option<String>,
+    scheduled_by: String,
+    appointment_type: String,
+    status: String,
+}

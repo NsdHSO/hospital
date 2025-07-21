@@ -1,7 +1,7 @@
 use super::services::AppointmentService;
 use crate::entity::appointment::AppointmentRequestBody;
 use crate::error_handler::CustomError;
-use crate::http_response::http_response_builder;
+use crate::http_response::{http_response_builder, HttpCodeW};
 use actix_web::{post, web, HttpResponse};
 use sea_orm::DatabaseConnection;
 
@@ -17,7 +17,7 @@ async fn create(
             let response = http_response_builder::ok(data);
             Ok(HttpResponse::Ok().json(response))
         }
-        Err(err) => Err(err),
+        Err(err) => Err(CustomError::new(HttpCodeW::InternalServerError, err.to_string())),
     }
 }
 pub fn init_routes(config: &mut web::ServiceConfig) {
