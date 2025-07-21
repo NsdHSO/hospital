@@ -5,6 +5,7 @@ use crate::entity::appointment::{AppointmentRequestBody, Model};
 use crate::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use sea_orm::DatabaseConnection;
+use uuid::Uuid;
 
 pub struct AppointmentService {
     conn: DatabaseConnection,
@@ -27,6 +28,8 @@ impl AppointmentService {
         &self,
         appointment_data: AppointmentRequestBody,
     ) -> Result<Model, CustomError> {
+        let mut hospital_id : Uuid = self.hospital_service.find_by_field("name", appointment_data.hospital_name.as_str()).await?.unwrap().id;
+        
         Err(CustomError::new(
             HttpCodeW::InternalServerError,
             format!("Database error: "),
