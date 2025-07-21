@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/NsdHSO/hospital/compare/v1.6.0...v1.7.0) (2025-07-21)
+
+
+### Features
+
+* 🎸 added payload [#12](https://github.com/NsdHSO/hospital/issues/12) ([413f5f4](https://github.com/NsdHSO/hospital/commit/413f5f4f8c9450db44d6233247cc0944af9a50a5))
+
 # [1.6.0](https://github.com/NsdHSO/hospital/compare/v1.5.0...v1.6.0) (2025-07-21)
 
 
