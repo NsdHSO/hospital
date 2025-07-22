@@ -1,50 +1,189 @@
 use sea_orm_migration::prelude::*;
+use sea_orm::{Iden, sea_query::Expr}; // Import Iden and DeriveIden, and Expr for default timestamp
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
+// It's good practice to define enums for table and column names
+// to avoid magic strings and benefit from type checking.
+#[derive(Iden)]
+enum Appointment {
+    Table,
+    Id,
+    PatientId,
+    DoctorId,
+    HospitalId,
+    AppointmentIc,
+    CreatedAt,
+    UpdatedAt,
+    AppointmentDate,
+    Reason,
+    Notes,
+    Cost,
+    ScheduledBy,
+    AppointmentType,
+    Status,
+}
+
+#[derive(Iden)]
+enum Patient {
+    Table,
+    Id,
+}
+
+#[derive(Iden)]
+enum Staff {
+    Table,
+    Id,
+}
+
+#[derive(Iden)]
+enum Hospital {
+    Table,
+    Id,
+}
+
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        
+        // 1. Alter table to add new columns
         manager
             .alter_table(
                 Table::alter()
-                    .table("appointment")
-                    .drop_column(Alias::new("staff_id"))
-                    .add_column_if_not_exists(ColumnDef::new("created_at").timestamp().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("updated_at").timestamp().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("id").uuid().not_null().primary_key())
-                    .add_column_if_not_exists(ColumnDef::new("appointment_ic").integer().unique_key().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("patient_id").uuid().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("doctor_id").uuid().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("hospital_id").uuid().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("appointment_date").timestamp().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("reason").text().null())
-                    .add_column_if_not_exists(ColumnDef::new("notes").text().null())
-                    .add_column_if_not_exists(ColumnDef::new("cost").decimal().not_null())
-                    .add_column_if_not_exists(ColumnDef::new("scheduled_by").string().null())
-                    .add_column_if_not_exists(ColumnDef::new("appointment_type").string().null())
-                    .add_column_if_not_exists(ColumnDef::new("status").string().not_null()) // You may want to use ENUM if defined
+                    .table(Appointment::Table) // Use the Iden enum for the table name
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::CreatedAt)
+                            .timestamp()
+                            .not_null()
+                            .default(Expr::current_timestamp()), // Add default for created_at
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::UpdatedAt)
+                            .timestamp()
+                            .not_null()
+                            .default(Expr::current_timestamp()), // Add default for updated_at
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::Id)
+                            .uuid()
+                            .not_null()
+                            .primary_key(),
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::AppointmentIc)
+                            .integer()
+                            .unique_key()
+                            .not_null(),
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::PatientId).uuid().not_null(),
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::DoctorId).uuid().not_null(),
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::HospitalId).uuid().not_null(),
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::AppointmentDate)
+                            .timestamp()
+                            .not_null(),
+                    )
+                    .add_column_if_not_exists(ColumnDef::new(Appointment::Reason).text().null())
+                    .add_column_if_not_exists(ColumnDef::new(Appointment::Notes).text().null())
+                    .add_column_if_not_exists(ColumnDef::new(Appointment::Cost).decimal().not_null())
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::ScheduledBy).string().null(),
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::AppointmentType).string().null(),
+                    )
+                    .add_column_if_not_exists(
+                        ColumnDef::new(Appointment::Status).string().not_null(),
+                    ) // You may want to use ENUM if defined
                     .to_owned(),
             )
             .await?;
+
+        // 2. Add foreign key constraints separately
+        manager
+            .create_foreign_key(
+                ForeignKey::create()
+                    .name("fk_appointment_patient")
+                    .from(Appointment::Table, Appointment::PatientId)
+                    .to(Patient::Table, Patient::Id)
+                    .on_delete(ForeignKeyAction::Restrict) // Or SetNull, Cascade, NoAction
+                    .on_update(ForeignKeyAction::Restrict)
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_foreign_key(
+                ForeignKey::create()
+                    .name("fk_appointment_doctor")
+                    .from(Appointment::Table, Appointment::DoctorId)
+                    .to(Staff::Table, Staff::Id)
+                    .on_delete(ForeignKeyAction::Restrict)
+                    .on_update(ForeignKeyAction::Restrict)
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_foreign_key(
+                ForeignKey::create()
+                    .name("fk_appointment_hospital")
+                    .from(Appointment::Table, Appointment::HospitalId)
+                    .to(Hospital::Table, Hospital::Id)
+                    .on_delete(ForeignKeyAction::Restrict)
+                    .on_update(ForeignKeyAction::Restrict)
+                    .to_owned(),
+            )
+            .await?;
+
         Ok(())
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        // When reversing, drop foreign keys *before* modifying or dropping columns that they reference.
+        manager
+            .drop_foreign_key(ForeignKey::drop().name("fk_appointment_patient").to_owned())
+            .await?;
+        manager
+            .drop_foreign_key(ForeignKey::drop().name("fk_appointment_doctor").to_owned())
+            .await?;
+        manager
+            .drop_foreign_key(ForeignKey::drop().name("fk_appointment_hospital").to_owned())
+            .await?;
+
         manager
             .alter_table(
                 Table::alter()
-                    .table("appointment")
-                    .add_column(
-                        ColumnDef::new(Alias::new("staff_id"))
-                            .uuid()
-                            .not_null()
-                    )
-                    .modify_column(ColumnDef::new("patient_id").integer().not_null())
-                    .modify_column(ColumnDef::new("doctor_id").integer().not_null())
-                    .modify_column(ColumnDef::new("hospital_id").integer().not_null())
+                    .table(Appointment::Table)
+                    .drop_column(Appointment::CreatedAt)
+                    .drop_column(Appointment::UpdatedAt)
+                    .drop_column(Appointment::Id)
+                    .drop_column(Appointment::AppointmentIc)
+                    .drop_column(Appointment::PatientId)
+                    .drop_column(Appointment::DoctorId)
+                    .drop_column(Appointment::HospitalId)
+                    .drop_column(Appointment::AppointmentDate)
+                    .drop_column(Appointment::Reason)
+                    .drop_column(Appointment::Notes)
+                    .drop_column(Appointment::Cost)
+                    .drop_column(Appointment::ScheduledBy)
+                    .drop_column(Appointment::AppointmentType)
+                    .drop_column(Appointment::Status)
+                    // Re-add the staff_id if it was dropped in 'up' and should exist in 'down' state
+                    .add_column(ColumnDef::new(Alias::new("staff_id")).uuid().not_null())
+                    // If these columns' types were changed from UUID to INTEGER in 'up',
+                    // you need to change them back here.
+                    // This assumes patient_id, doctor_id, hospital_id were originally INTEGER.
+                    // If they were originally UUID, you should drop and re-add them as UUID.
+                    .modify_column(ColumnDef::new(Appointment::PatientId).integer().not_null())
+                    .modify_column(ColumnDef::new(Appointment::DoctorId).integer().not_null())
+                    .modify_column(ColumnDef::new(Appointment::HospitalId).integer().not_null())
                     .to_owned(),
             )
             .await?;
