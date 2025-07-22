@@ -106,7 +106,7 @@ mod ambulance_status_tests {
         .await;
 
         // Send a GET request to the `/status` endpoint
-        let req = test::TestRequest::get().uri("/status").to_request();
+        let req = test::TestRequest::get().uri("/ambulance/status").to_request();
         let resp = test::call_service(&app, req).await;
 
         // Check that the response is successful
