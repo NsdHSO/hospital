@@ -90,7 +90,7 @@ async fn main() -> std::io::Result<()> {
             let port = env::var("PORT").expect("Please set port in .env");
             server
                 .bind(format!("{host}:{port}"))
-                .expect(format!("host: {}> Port {}", host, port).as_str())
+                .unwrap_or_else(|_| panic!("host: {host}> Port {port}"))
         }
     };
 

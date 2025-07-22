@@ -158,6 +158,6 @@ pub fn parse_date(date_str: &str) -> Result<DateTime<Utc>, CustomError> {
     // If all parsing attempts fail, return an error
     Err(CustomError::new(
         HttpCodeW::BadRequest,
-        format!("Unable to parse date: {}", date_str),
+        format!("Unable to parse date: {date_str}"),
     ))
 }

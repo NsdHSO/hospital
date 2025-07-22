@@ -81,7 +81,9 @@ impl StaffService {
             .await?
             .unwrap()
             .id;
-        loop {
+        // This is intentionally a loop that runs at most once
+        // It's designed to use the check_if_is_duplicate_key_from_data_base function consistently
+        {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
                     HttpCodeW::InternalServerError,

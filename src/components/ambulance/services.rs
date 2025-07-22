@@ -44,41 +44,38 @@ impl AmbulanceService {
     pub(crate) async fn update_ambulance(
         &self,
         id: AmbulanceId,
-        mut payload: AmbulancePayload,
+        payload: AmbulancePayload,
     ) -> Result<Model, CustomError> {
         let now = now_time();
-        // Declare a mutable variable to hold the query result (Option<Model>)
-        let model_option;
-
         // Initialize a base query outside the match if there are common parts
         let base_query = Entity::find();
 
-        match id {
+        let model_option = match id {
             AmbulanceId::Uuid(value) => {
-                model_option = base_query
+                base_query
                     .filter(Id.eq(value)) // Assuming `Id` is the Uuid column
                     .one(&self.conn) // Use self.db_pool if that's your connection
                     .await
                     .map_err(|e| {
                         CustomError::new(
                             HttpCodeW::InternalServerError,
-                            format!("DB error fetching by UUID: {}", e),
+                            format!("DB error fetching by UUID: {e}"),
                         )
-                    })?; // Handle SeaORM errors
+                    })? // Handle SeaORM errors
             }
             AmbulanceId::Integer(value) => {
-                model_option = base_query
+                base_query
                     .filter(AmbulanceIc.eq(value)) // Assuming `AmbulanceIc` is the i32 column
                     .one(&self.conn) // Use self.db_pool if that's your connection
                     .await
                     .map_err(|e| {
                         CustomError::new(
                             HttpCodeW::InternalServerError,
-                            format!("DB error fetching by Integer ID: {}", e),
+                            format!("DB error fetching by Integer ID: {e}"),
                         )
-                    })?; // Handle SeaORM errors
+                    })? // Handle SeaORM errors
             }
-        }
+        };
 
         let model = match model_option {
             Some(m) => m,
@@ -100,7 +97,7 @@ impl AmbulanceService {
                         "hospital_name is required for transporting patient".to_string(),
                     ));
                 }
-                let mut hospital = self
+                let hospital = self
                     .hospital_service
                     .find_by_field("name", payload.hospital_name.unwrap().as_str())
                     .await?;

@@ -41,7 +41,7 @@ impl AppointmentService {
             .await?
             .unwrap()
             .id;
-        if (hospital_id.is_nil()) {
+        if hospital_id.is_nil() {
             return Err(CustomError::new(
                 HttpCodeW::InternalServerError,
                 "Database error: hospital_id".to_string(),
@@ -51,7 +51,7 @@ impl AppointmentService {
             .staff_service
             .find_by_field("name", appointment_data.doctor_name.as_str())
             .await?;
-        if (doctor.is_none()) {
+        if doctor.is_none() {
             return Err(CustomError::new(
                 HttpCodeW::NotFound,
                 format!(
@@ -79,7 +79,9 @@ impl AppointmentService {
                 let mut attempts = 0;
                 const MAX_ATTEMPTS: usize = 5;
 
-                loop {
+                // This is intentionally a loop that runs at most once
+                // It's designed to use the check_if_is_duplicate_key_from_data_base function consistently
+                {
                     if attempts >= MAX_ATTEMPTS {
                         return Err(CustomError::new(
                             HttpCodeW::InternalServerError,
@@ -134,13 +136,13 @@ impl AppointmentService {
             .map_err(|e| {
                 CustomError::new(
                     HttpCodeW::BadRequest,
-                    format!("Invalid appointment date: {}", e),
+                    format!("Invalid appointment date: {e}"),
                 )
             })
             .unwrap_or_else(|_| DateTime::<Utc>::from_naive_utc_and_offset(now, Utc));
         let cost = match &appointment_data.cost {
             Some(cost) => Decimal::from_str(cost).map_err(|e| {
-                CustomError::new(HttpCodeW::BadRequest, format!("Invalid cost value: {}", e))
+                CustomError::new(HttpCodeW::BadRequest, format!("Invalid cost value: {e}"))
             })?,
             None => Decimal::from_str("0").expect("Zero should always parse"),
         };

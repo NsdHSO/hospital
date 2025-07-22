@@ -1,5 +1,4 @@
 use crate::components::patient::PatientService;
-use crate::entity;
 use crate::entity::ambulance::AmbulanceId;
 use crate::entity::emergency::Column::{EmergencyIc, Id};
 use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Entity, Model};
