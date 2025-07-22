@@ -4,8 +4,6 @@ use sea_orm::{Iden, sea_query::Expr}; // Import Iden and DeriveIden, and Expr fo
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
-// It's good practice to define enums for table and column names
-// to avoid magic strings and benefit from type checking.
 #[derive(Iden)]
 enum Appointment {
     Table,
@@ -46,22 +44,21 @@ enum Hospital {
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // 1. Alter table to add new columns
         manager
             .alter_table(
                 Table::alter()
-                    .table(Appointment::Table) // Use the Iden enum for the table name
+                    .table(Appointment::Table) 
                     .add_column_if_not_exists(
                         ColumnDef::new(Appointment::CreatedAt)
                             .timestamp()
                             .not_null()
-                            .default(Expr::current_timestamp()), // Add default for created_at
+                            .default(Expr::current_timestamp()), 
                     )
                     .add_column_if_not_exists(
                         ColumnDef::new(Appointment::UpdatedAt)
                             .timestamp()
                             .not_null()
-                            .default(Expr::current_timestamp()), // Add default for updated_at
+                            .default(Expr::current_timestamp()),
                     )
                     .add_column_if_not_exists(
                         ColumnDef::new(Appointment::Id)
@@ -146,7 +143,6 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // When reversing, drop foreign keys *before* modifying or dropping columns that they reference.
         manager
             .drop_foreign_key(ForeignKey::drop().name("fk_appointment_patient").to_owned())
             .await?;
@@ -175,12 +171,7 @@ impl MigrationTrait for Migration {
                     .drop_column(Appointment::ScheduledBy)
                     .drop_column(Appointment::AppointmentType)
                     .drop_column(Appointment::Status)
-                    // Re-add the staff_id if it was dropped in 'up' and should exist in 'down' state
                     .add_column(ColumnDef::new(Alias::new("staff_id")).uuid().not_null())
-                    // If these columns' types were changed from UUID to INTEGER in 'up',
-                    // you need to change them back here.
-                    // This assumes patient_id, doctor_id, hospital_id were originally INTEGER.
-                    // If they were originally UUID, you should drop and re-add them as UUID.
                     .modify_column(ColumnDef::new(Appointment::PatientId).integer().not_null())
                     .modify_column(ColumnDef::new(Appointment::DoctorId).integer().not_null())
                     .modify_column(ColumnDef::new(Appointment::HospitalId).integer().not_null())

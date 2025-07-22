@@ -150,8 +150,9 @@ pub fn parse_date(date_str: &str) -> Result<DateTime<Utc>, CustomError> {
 
     // Try date-only format and assume midnight time
     if let Ok(date) = chrono::NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
-        let datetime = date.and_hms_opt(0, 0, 0).unwrap();
-        return Ok(DateTime::from_naive_utc_and_offset(datetime, Utc));
+        if let Some(datetime) = date.and_hms_opt(0, 0, 0) {
+            return Ok(DateTime::from_naive_utc_and_offset(datetime, Utc));
+        }
     }
 
     // If all parsing attempts fail, return an error

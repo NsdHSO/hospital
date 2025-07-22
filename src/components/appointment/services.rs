@@ -53,16 +53,21 @@ impl AppointmentService {
             .await?;
         if (doctor.is_none()) {
             return Err(CustomError::new(
-                HttpCodeW::InternalServerError,
-                "Database error: doctor_id".to_string(),
+                HttpCodeW::NotFound,
+                format!(
+                    "Doctor with name '{}' not found",
+                    appointment_data.doctor_name
+                ),
             ));
         } else {
             let doctor_data = doctor.unwrap();
             if doctor_data.hospital_id != hospital_id {
-                println!("{:?}", doctor_data.hospital_id);
                 return Err(CustomError::new(
-                    HttpCodeW::InternalServerError,
-                    "Database error: Doctor doesn't work at this hospital".to_string(),
+                    HttpCodeW::NotFound,
+                    format!(
+                        "Doctor with name '{}' not found",
+                        appointment_data.doctor_name
+                    ),
                 ));
             }
             let patient = self
@@ -91,13 +96,21 @@ impl AppointmentService {
                     );
 
                     // Insert the record into the database
-                    let result = active_model.insert(&self.conn).await;
+                    let result = active_model?.insert(&self.conn).await;
 
-                    if let Some(value) =
+                    return if let Some(value) =
                         check_if_is_duplicate_key_from_data_base(&mut attempts, result)
                     {
-                        return value;
-                    }
+                        value
+                    } else {
+                        Err(CustomError::new(
+                            HttpCodeW::NotFound,
+                            format!(
+                                "Patient with name '{}' not found",
+                                appointment_data.patient_name
+                            ),
+                        ))
+                    };
                 }
             }
         }
@@ -114,23 +127,26 @@ impl AppointmentService {
         hospital_id: Uuid,
         doctor_data: &entity::staff::Model,
         patient_data: &entity::patient::Model,
-    ) -> ActiveModel {
+    ) -> Result<ActiveModel, CustomError> {
         let now = now_time();
 
         // Parse the appointment date and handle potential errors
         let appointment_date = parse_date(appointment_data.appointment_date.as_str())
             .map_err(|e| {
-                // Log the error or handle it appropriately
-                println!("Error parsing appointment date: {}", e);
-                // Return a default date or handle as needed for your application
                 CustomError::new(
                     HttpCodeW::BadRequest,
                     format!("Invalid appointment date: {}", e),
                 )
             })
             .unwrap_or_else(|_| DateTime::<Utc>::from_naive_utc_and_offset(now, Utc));
+        let cost = match &appointment_data.cost {
+            Some(cost) => Decimal::from_str(cost).map_err(|e| {
+                CustomError::new(HttpCodeW::BadRequest, format!("Invalid cost value: {}", e))
+            })?,
+            None => Decimal::from_str("0").expect("Zero should always parse"),
+        };
 
-        ActiveModel {
+        Ok(ActiveModel {
             created_at: Set(now),
             updated_at: Set(now),
             id: Set(Uuid::new_v4()),
@@ -141,13 +157,10 @@ impl AppointmentService {
             appointment_date: Set(appointment_date.naive_utc()),
             reason: Set(Option::from(appointment_data.reason.clone())),
             notes: Set(Option::from(appointment_data.notes.clone())),
-            cost: match &appointment_data.cost {
-                Some(cost) => Set(Decimal::from_str(cost).unwrap()),
-                None => Set(Decimal::from_str("0").unwrap()),
-            },
+            cost: Set(cost),
             scheduled_by: Set(Option::from(appointment_data.scheduled_by.clone())),
             appointment_type: Set(Option::from(appointment_data.appointment_type.clone())),
-            status: Set(Option::from(appointment_data.status.clone()).expect("REASON")),
-        }
+            status: Set(appointment_data.status.clone()),
+        })
     }
 }
