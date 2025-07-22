@@ -90,12 +90,11 @@ impl AppointmentService {
 
                     let active_model = self.generate_model(
                         &appointment_data,
-                        hospital_id, // Copy types like Uuid don't need &
+                        hospital_id, 
                         &doctor_data,
                         &patient_data,
                     );
 
-                    // Insert the record into the database
                     let result = active_model?.insert(&self.conn).await;
 
                     return if let Some(value) =
