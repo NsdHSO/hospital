@@ -13,9 +13,9 @@ pub struct Model {
     pub id: Uuid,
     #[sea_orm(unique)]
     pub appointment_ic: i32,
-    pub patient_id: i32,
-    pub doctor_id: i32,
-    pub hospital_id: i32,
+    pub patient_id: Uuid,
+    pub doctor_id: Uuid,
+    pub hospital_id: Uuid,
     pub appointment_date: DateTime,
     #[sea_orm(column_type = "Text", nullable)]
     pub reason: Option<String>,
@@ -43,5 +43,5 @@ pub struct AppointmentRequestBody {
     pub cost: Option<String>,
     pub scheduled_by: String,
     pub appointment_type: String,
-    pub status: String,
+    pub status: AppointmentStatusEnum,
 }
