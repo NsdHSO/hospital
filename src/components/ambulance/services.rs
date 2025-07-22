@@ -15,6 +15,7 @@ use crate::components::emergency::EmergencyService;
 use crate::components::hospital::HospitalService;
 use crate::components::patient::PatientService;
 use crate::http_response::HttpCodeW;
+use Column::AmbulanceIc;
 use hospital::Column::Name as HospitalName;
 use hospital::Entity as HospitalEntity;
 use percent_encoding::percent_decode_str;
@@ -23,7 +24,6 @@ use sea_orm::prelude::Uuid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, Iterable, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{NotSet, QueryFilter, Set};
-use Column::AmbulanceIc;
 
 pub struct AmbulanceService {
     conn: DatabaseConnection,

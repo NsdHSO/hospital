@@ -90,7 +90,7 @@ impl AppointmentService {
 
                     let active_model = self.generate_model(
                         &appointment_data,
-                        hospital_id, 
+                        hospital_id,
                         &doctor_data,
                         &patient_data,
                     );

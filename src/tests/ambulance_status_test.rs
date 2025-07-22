@@ -1,7 +1,7 @@
 #[cfg(test)]
-/// Tests for ambulance status functionality, verifying both the AmbulanceStatusEnum 
+/// Tests for ambulance status functionality, verifying both the AmbulanceStatusEnum
 /// and the /status API endpoint.
-/// 
+///
 /// These tests ensure that:
 /// 1. The AmbulanceStatusEnum contains exactly 18 status values as expected
 /// 2. The /status endpoint successfully returns all 18 statuses
@@ -16,7 +16,7 @@ mod ambulance_status_tests {
     use serde_json::Value;
 
     /// Tests that the AmbulanceStatusEnum has exactly 18 variants.
-    /// 
+    ///
     /// This test ensures that our enum definition contains all expected ambulance statuses
     /// and matches the number of statuses that should be returned by the API.
     /// It also prints all variants for debugging and verifies that all expected status
@@ -76,7 +76,7 @@ mod ambulance_status_tests {
         }
     }
     /// Tests the /status API endpoint for ambulance statuses.
-    /// 
+    ///
     /// This integration test:
     /// 1. Sets up a real database connection
     /// 2. Configures an Actix-Web test server with the ambulance routes
@@ -85,7 +85,7 @@ mod ambulance_status_tests {
     /// 5. Checks that exactly 18 statuses are returned
     /// 6. Validates that each status has both 'value' and 'label' fields
     /// 7. Confirms all expected statuses are present in the response
-    /// 
+    ///
     /// Note: This test requires a working database connection as the routes
     /// are configured to use the database, even though the actual method
     /// doesn't query the database (it uses enum iteration).
@@ -106,7 +106,9 @@ mod ambulance_status_tests {
         .await;
 
         // Send a GET request to the `/status` endpoint
-        let req = test::TestRequest::get().uri("/ambulance/status").to_request();
+        let req = test::TestRequest::get()
+            .uri("/ambulance/status")
+            .to_request();
         let resp = test::call_service(&app, req).await;
 
         // Check that the response is successful

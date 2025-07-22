@@ -29,7 +29,6 @@ pub async fn find_all(
             query.page.try_into().unwrap(),
             query.per_page.try_into().unwrap(),
             query.filter.clone(),
-
         )
         .await?;
     let response = http_response_builder::ok(ambulance);

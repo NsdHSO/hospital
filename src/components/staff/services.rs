@@ -4,7 +4,9 @@ use crate::components::person::PersonService;
 use crate::entity::person;
 use crate::entity::person::PersonRequestBody;
 use crate::entity::sea_orm_active_enums::StaffRoleEnum;
-use crate::entity::staff::{ActiveModel, Column, Entity, Model, Relation, StaffRequestBody, StaffWithPerson};
+use crate::entity::staff::{
+    ActiveModel, Column, Entity, Model, Relation, StaffRequestBody, StaffWithPerson,
+};
 use crate::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};

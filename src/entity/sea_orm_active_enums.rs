@@ -210,7 +210,9 @@ pub enum AmenitiesNameEnum {
     View,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize, Default)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize, Default,
+)]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
