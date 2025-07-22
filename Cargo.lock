@@ -833,6 +833,7 @@ dependencies = [
  "nanoid",
  "once_cell",
  "percent-encoding",
+ "rust_decimal",
  "sea-orm",
  "serde",
  "serde_json",

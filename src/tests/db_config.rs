@@ -2,6 +2,7 @@ use sea_orm::{Database, DatabaseConnection};
 use std::env;
 
 // Database connection for tests - using either Docker or existing infrastructure
+#[allow(dead_code)]
 pub async fn get_test_db() -> Result<DatabaseConnection, String> {
     // Use TEST_DATABASE_URL if set (which it will be in Docker)
     let db_url = match env::var("TEST_DATABASE_URL") {
@@ -41,7 +42,7 @@ pub async fn get_test_db() -> Result<DatabaseConnection, String> {
             .unwrap_or(""),
         "****",
     );
-    println!("Connecting to test database at: {}", safe_url);
+    println!("Connecting to test database at: {safe_url}");
 
     // Connect to the database
     match Database::connect(&db_url).await {
@@ -50,14 +51,15 @@ pub async fn get_test_db() -> Result<DatabaseConnection, String> {
             Ok(conn)
         }
         Err(e) => {
-            let error_msg = format!("Failed to connect to test database: {}", e);
-            println!("{}", error_msg);
+            let error_msg = format!("Failed to connect to test database: {e}");
+            println!("{error_msg}");
             Err(error_msg)
         }
     }
 }
 
 // Helper function to setup a clean test database state
+#[allow(dead_code)]
 pub async fn setup_test_db() -> DatabaseConnection {
     // Try to connect to the test database
     match get_test_db().await {
@@ -70,10 +72,7 @@ pub async fn setup_test_db() -> DatabaseConnection {
         }
         Err(e) => {
             // If we can't connect to the test database, try connecting to the development database
-            println!(
-                "Couldn't connect to test database, trying development database: {}",
-                e
-            );
+            println!("Couldn't connect to test database, trying development database: {e}");
 
             // Set TEST_DB_ENV to "ide" to use development database
             // This is unsafe because it modifies global process state and could cause
@@ -87,10 +86,7 @@ pub async fn setup_test_db() -> DatabaseConnection {
                 Ok(db) => db,
                 Err(e) => {
                     // If we still can't connect, panic with a helpful message
-                    panic!(
-                        "Cannot connect to any database for testing. Make sure you have a database available or Docker running. Error: {}",
-                        e
-                    );
+                    panic!("Cannot connect to any database for testing. Make sure you have a database available or Docker running. Error: {e}");
                 }
             }
         }
@@ -98,7 +94,8 @@ pub async fn setup_test_db() -> DatabaseConnection {
 }
 
 // Helper function to clean up test database after tests
-pub async fn cleanup_after_test(db: &DatabaseConnection) {
+#[allow(dead_code)]
+pub async fn cleanup_after_test(_db: &DatabaseConnection) {
     // Delete all test data after test runs
     // This is a simple approach, you might want to implement more sophisticated cleanup
     // based on your specific test needs

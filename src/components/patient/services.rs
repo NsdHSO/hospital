@@ -1,5 +1,5 @@
 use crate::components::person::PersonService;
-use crate::entity::patient::{ActiveModel, Model, PatientRequestBody, PatientWithPerson};
+use crate::entity::patient::{ActiveModel, Model, PatientRequestBody, PatientWithPerson, Relation};
 use crate::entity::patient::{Column, Entity};
 use crate::entity::person;
 use crate::entity::person::PersonRequestBody;
@@ -9,7 +9,7 @@ use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
 use chrono::{Local, NaiveDateTime};
 use percent_encoding::percent_decode_str;
-use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
+use sea_orm::{ActiveModelTrait, PaginatorTrait, QuerySelect, RelationTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
@@ -132,6 +132,9 @@ impl PatientService {
     ) -> Result<Option<Model>, CustomError> {
         let query = match field {
             "patient_ic" => Entity::find().filter(Column::PatientIc.like(value)),
+            "name" => Entity::find()
+                .join(sea_orm::JoinType::InnerJoin, Relation::Person.def())
+                .filter(person::Column::FirstName.like(value)),
             // "first_name" => Entity::find().filter(Column::FirstName.like(value)),
             _ => {
                 return Err(CustomError::new(

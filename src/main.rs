@@ -3,7 +3,7 @@ use crate::open_api::init;
 use actix_cors::Cors;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
@@ -88,7 +88,9 @@ async fn main() -> std::io::Result<()> {
         None => {
             let host = env::var("HOST").expect("Please set host in .env");
             let port = env::var("PORT").expect("Please set port in .env");
-            server.bind(format!("{host}:{port}"))?
+            server
+                .bind(format!("{host}:{port}"))
+                .unwrap_or_else(|_| panic!("host: {host}> Port {port}"))
         }
     };
 
