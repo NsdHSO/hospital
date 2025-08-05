@@ -1,6 +1,6 @@
 use crate::components::patient::PatientService;
 use crate::entity::patient::PatientRequestBody;
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
 use actix_web::{HttpResponse, get, post, web};

@@ -1,6 +1,6 @@
 use crate::entity::card::{ActiveModel, CardPayload, Model};
 use crate::entity::{card, dashboard};
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils;

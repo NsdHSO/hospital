@@ -15,7 +15,6 @@ use utoipa_swagger_ui::SwaggerUi;
 mod components;
 mod db;
 mod entity;
-mod error_handler;
 mod http_response;
 mod open_api;
 mod shared;
@@ -88,7 +87,9 @@ async fn main() -> std::io::Result<()> {
         None => {
             let host = env::var("HOST").expect("Please set host in .env");
             let port = env::var("PORT").expect("Please set port in .env");
-            server.bind(format!("{host}:{port}"))?
+            server
+                .bind(format!("{host}:{port}"))
+                .unwrap_or_else(|_| panic!("host: {host}> Port {port}"))
         }
     };
 
