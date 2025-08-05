@@ -1,5 +1,5 @@
 use crate::entity::person::{ActiveModel, Column, Entity, Model, PersonRequestBody};
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;

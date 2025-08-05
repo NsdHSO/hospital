@@ -1,6 +1,6 @@
 use crate::entity::dashboard;
 use crate::entity::dashboard::{ActiveModel, Model, PayloadBodyDashboard};
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};

@@ -3,7 +3,7 @@ use crate::entity::patient::{ActiveModel, Model, PatientRequestBody, PatientWith
 use crate::entity::patient::{Column, Entity};
 use crate::entity::person;
 use crate::entity::person::PersonRequestBody;
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};

@@ -1,4 +1,4 @@
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use chrono_tz::Europe;

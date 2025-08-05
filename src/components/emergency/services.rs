@@ -6,7 +6,7 @@ use crate::entity::sea_orm_active_enums::{
     AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
 };
 use crate::entity::{ambulance, emergency};
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};

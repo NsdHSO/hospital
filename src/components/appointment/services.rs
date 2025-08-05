@@ -3,7 +3,7 @@ use crate::components::patient::PatientService;
 use crate::components::staff::StaffService;
 use crate::entity;
 use crate::entity::appointment::{ActiveModel, AppointmentRequestBody, Model};
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::utils::helpers::{
     check_if_is_duplicate_key_from_data_base, generate_ic, now_time, parse_date,
