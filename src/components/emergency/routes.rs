@@ -1,6 +1,6 @@
 use crate::components::emergency::services::EmergencyService;
 use crate::entity::emergency::EmergencyRequestBody;
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
 use actix_web::{HttpResponse, get, post, web};
@@ -29,7 +29,6 @@ pub async fn find_all(
             query.page.try_into().unwrap(),
             query.per_page.try_into().unwrap(),
             query.filter.clone(),
-
         )
         .await?;
     let response = http_response_builder::ok(ambulance);

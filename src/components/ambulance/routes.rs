@@ -1,6 +1,6 @@
 use crate::components::ambulance::services::AmbulanceService;
 use crate::entity::ambulance::{AmbulanceId, AmbulancePayload};
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
 use actix_web::{HttpResponse, get, patch, post, web};

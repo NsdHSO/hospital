@@ -1,4 +1,4 @@
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use once_cell::sync::OnceCell;
 use sea_orm::{Database, DatabaseConnection};

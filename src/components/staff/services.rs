@@ -4,12 +4,14 @@ use crate::components::person::PersonService;
 use crate::entity::person;
 use crate::entity::person::PersonRequestBody;
 use crate::entity::sea_orm_active_enums::StaffRoleEnum;
-use crate::entity::staff::{ActiveModel, Column, Entity, Model, StaffRequestBody, StaffWithPerson};
-use crate::error_handler::CustomError;
+use crate::entity::staff::{
+    ActiveModel, Column, Entity, Model, Relation, StaffRequestBody, StaffWithPerson,
+};
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{Local, NaiveDateTime};
-use sea_orm::ActiveModelTrait;
+use sea_orm::{ActiveModelTrait, QuerySelect, RelationTrait};
 use sea_orm::{ColumnTrait, QueryFilter, Set};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
@@ -79,7 +81,9 @@ impl StaffService {
             .await?
             .unwrap()
             .id;
-        loop {
+        // This is intentionally a loop that runs at most once
+        // It's designed to use the check_if_is_duplicate_key_from_data_base function consistently
+        {
             if attempts >= MAX_ATTEMPTS {
                 return Err(CustomError::new(
                     HttpCodeW::InternalServerError,
@@ -121,6 +125,9 @@ impl StaffService {
     ) -> Result<Option<Model>, CustomError> {
         let query = match field {
             "staff_ic" => Entity::find().filter(Column::StaffIc.like(value)),
+            "name" => Entity::find()
+                .join(sea_orm::JoinType::InnerJoin, Relation::Person.def())
+                .filter(person::Column::FirstName.like(value)),
             _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
@@ -134,12 +141,12 @@ impl StaffService {
                 format!("Database error: {e}"),
             )
         })?;
-        if let Some(patient_model) = staff {
-            Ok(Some(patient_model))
+        if let Some(staff_model) = staff {
+            Ok(Some(staff_model))
         } else {
             Err(CustomError::new(
                 HttpCodeW::NotFound,
-                format!("Patient not found for {field} = '{value}'"),
+                format!("Staff not found for {field} = '{value}'"),
             ))
         }
     }

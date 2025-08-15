@@ -1,12 +1,12 @@
 use crate::components::patient::PatientService;
-use crate::entity;
-use crate::entity::ambulance::{AmbulanceId};
-use crate::entity::{ambulance, emergency};
+use crate::entity::ambulance::AmbulanceId;
+use crate::entity::emergency::Column::{EmergencyIc, Id};
 use crate::entity::emergency::{ActiveModel, EmergencyRequestBody, Entity, Model};
 use crate::entity::sea_orm_active_enums::{
     AmbulanceStatusEnum, EmergencySeverityEnum, EmergencyStatusEnum,
 };
-use crate::error_handler::CustomError;
+use crate::entity::{ambulance, emergency};
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic, now_time};
@@ -16,7 +16,6 @@ use sea_orm::{ActiveModelTrait, ColumnTrait, NotSet, PaginatorTrait};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use sea_orm::{QueryFilter, Set};
 use uuid::Uuid;
-use crate::entity::emergency::Column::{EmergencyIc, Id};
 // Adjust the path if needed
 
 pub struct EmergencyService {
@@ -84,7 +83,6 @@ impl EmergencyService {
                         .decode_utf8()
                         .map(|ic| ic.to_string())
                         .unwrap_or_else(|_| encoded_name.to_string());
-               
 
                     query = query.filter(EmergencyIc.eq(emergency_ic));
                 }
@@ -101,7 +99,7 @@ impl EmergencyService {
                 _ => {}
             }
         }
-        
+
         let paginator = query.paginate(&self.conn, per_page);
         let total_items = paginator.num_items().await?;
         let total_pages = paginator.num_pages().await?;

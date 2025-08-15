@@ -1,6 +1,6 @@
 use crate::components::dashboard::DashboardService;
 use crate::entity::dashboard::PayloadBodyDashboard;
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
 use actix_web::{HttpResponse, get, post, web};
