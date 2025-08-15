@@ -20,6 +20,7 @@ mod open_api;
 mod shared;
 mod tests;
 mod utils;
+mod security;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -50,6 +51,7 @@ async fn main() -> std::io::Result<()> {
     let data_base_conn = conn.clone();
 
     let mut listened = ListenFd::from_env();
+    let auth_base_url = env::var("AUTH_BASE_URL").expect("Please set AUTH_BASE_URL in .env (e.g., http://localhost:8081)");
     let mut server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin_fn(|origin, _req| origin.as_bytes().starts_with(b"http://"))
@@ -62,22 +64,29 @@ async fn main() -> std::io::Result<()> {
             .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
             .supports_credentials();
 
+        use crate::security::jwt::JwtAuth;
+
         App::new()
             .wrap(cors)
             .app_data(web::Data::new(data_base_conn.clone()))
             .wrap(Logger::default())
             .service(
                 web::scope("/v1")
-                    .configure(components::ambulance::init_routes)
-                    .configure(components::emergency::init_routes)
-                    .configure(components::dashboard::init_routes)
-                    .configure(components::card::init_routes)
-                    .configure(components::patient::init_routes)
-                    .configure(components::person::init_routes)
-                    .configure(components::staff::init_routes)
-                    .configure(components::department::init_routes)
-                    .configure(components::hospital::init_routes)
-                    .configure(components::appointment::init_routes),
+                    // Public routes can be added here before the protected scope if needed
+                    .service(
+                        web::scope("")
+                            .wrap(JwtAuth::new(auth_base_url.clone()))
+                            .configure(components::ambulance::init_routes)
+                            .configure(components::emergency::init_routes)
+                            .configure(components::dashboard::init_routes)
+                            .configure(components::card::init_routes)
+                            .configure(components::patient::init_routes)
+                            .configure(components::person::init_routes)
+                            .configure(components::staff::init_routes)
+                            .configure(components::department::init_routes)
+                            .configure(components::hospital::init_routes)
+                            .configure(components::appointment::init_routes)
+                    )
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))
     });
