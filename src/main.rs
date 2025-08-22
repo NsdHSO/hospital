@@ -1,9 +1,10 @@
 use crate::components::emergency::start_scheduler;
 use crate::open_api::init;
+use crate::security::jwt::JwtAuth;
 use actix_cors::Cors;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
@@ -17,10 +18,10 @@ mod db;
 mod entity;
 mod http_response;
 mod open_api;
+mod security;
 mod shared;
 mod tests;
 mod utils;
-mod security;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -51,7 +52,8 @@ async fn main() -> std::io::Result<()> {
     let data_base_conn = conn.clone();
 
     let mut listened = ListenFd::from_env();
-    let auth_base_url = env::var("AUTH_BASE_URL").expect("Please set AUTH_BASE_URL in .env (e.g., http://localhost:8081)");
+    let auth_base_url = env::var("AUTH_BASE_URL")
+        .expect("Please set AUTH_BASE_URL in .env (e.g., http://localhost:8081)");
     let mut server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin_fn(|origin, _req| origin.as_bytes().starts_with(b"http://"))
@@ -63,8 +65,6 @@ async fn main() -> std::io::Result<()> {
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
             .allowed_headers(vec![header::CONTENT_TYPE, header::AUTHORIZATION])
             .supports_credentials();
-
-        use crate::security::jwt::JwtAuth;
 
         App::new()
             .wrap(cors)
@@ -85,8 +85,8 @@ async fn main() -> std::io::Result<()> {
                             .configure(components::staff::init_routes)
                             .configure(components::department::init_routes)
                             .configure(components::hospital::init_routes)
-                            .configure(components::appointment::init_routes)
-                    )
+                            .configure(components::appointment::init_routes),
+                    ),
             )
             .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", init()))
     });
