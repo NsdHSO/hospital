@@ -1,6 +1,6 @@
 use crate::components::card::CardService;
 use crate::entity::card::CardPayload;
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use crate::shared::PaginationParams;
 use actix_web::{HttpResponse, get, post, web};

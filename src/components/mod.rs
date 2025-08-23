@@ -1,4 +1,5 @@
 pub mod ambulance;
+pub mod appointment;
 pub mod card;
 pub mod dashboard;
 pub mod department;
@@ -7,4 +8,4 @@ pub mod hospital;
 pub mod patient;
 pub mod person;
 pub mod staff;
-pub mod appointment;
+pub mod config;

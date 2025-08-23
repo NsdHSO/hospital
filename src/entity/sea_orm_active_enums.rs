@@ -210,7 +210,9 @@ pub enum AmenitiesNameEnum {
     View,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize, Default,
+)]
 #[sea_orm(
     rs_type = "String",
     db_type = "Enum",
@@ -219,6 +221,7 @@ pub enum AmenitiesNameEnum {
 pub enum AppointmentStatusEnum {
     #[sea_orm(string_value = "SCHEDULED")]
     Scheduled,
+    #[default]
     #[sea_orm(string_value = "CONFIRMED")]
     Confirmed,
     #[sea_orm(string_value = "COMPLETED")]

@@ -1,5 +1,6 @@
-use crate::error_handler::CustomError;
-use chrono::NaiveDateTime;
+use crate::http_response::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
+use chrono::{DateTime, NaiveDateTime, Utc};
 use chrono_tz::Europe;
 use nanoid::nanoid;
 use sea_orm::DbErr;
@@ -104,4 +105,59 @@ pub fn now_time() -> NaiveDateTime {
     chrono::Utc::now()
         .with_timezone(&Europe::Bucharest)
         .naive_local()
+}
+
+/// Parses a date string from AppointmentRequestBody into a DateTime<Utc> object.
+///
+/// This function attempts to parse the string using common date formats:
+/// - ISO 8601: "2025-07-22T14:30:00"
+/// - Standard format: "2025-07-22 14:30:00"
+/// - Alternative formats if needed
+///
+/// # Arguments
+///
+/// * `date_str`: The date string to parse
+///
+/// # Returns
+///
+/// * `Result<DateTime<Utc>, CustomError>`: The parsed DateTime or a formatting error
+///
+/// # Examples
+///
+/// ```rust
+/// let appointment_data = AppointmentRequestBody {
+///     appointment_date: "2025-07-22 14:30:00".to_string(),
+///     // other fields...
+/// };
+///
+/// let date = parse_appointment_date(&appointment_data.appointment_date)?;
+/// ```
+pub fn parse_date(date_str: &str) -> Result<DateTime<Utc>, CustomError> {
+    // Try parsing as standard format "YYYY-MM-DD HH:MM:SS"
+    if let Ok(naive) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%d %H:%M:%S") {
+        return Ok(DateTime::from_naive_utc_and_offset(naive, Utc));
+    }
+
+    // Try parsing as ISO 8601 format
+    if let Ok(dt) = DateTime::parse_from_rfc3339(date_str) {
+        return Ok(dt.with_timezone(&Utc));
+    }
+
+    // Try alternative format "DD/MM/YYYY HH:MM:SS"
+    if let Ok(naive) = NaiveDateTime::parse_from_str(date_str, "%d/%m/%Y %H:%M:%S") {
+        return Ok(DateTime::from_naive_utc_and_offset(naive, Utc));
+    }
+
+    // Try date-only format and assume midnight time
+    if let Ok(date) = chrono::NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
+        if let Some(datetime) = date.and_hms_opt(0, 0, 0) {
+            return Ok(DateTime::from_naive_utc_and_offset(datetime, Utc));
+        }
+    }
+
+    // If all parsing attempts fail, return an error
+    Err(CustomError::new(
+        HttpCodeW::BadRequest,
+        format!("Unable to parse date: {date_str}"),
+    ))
 }

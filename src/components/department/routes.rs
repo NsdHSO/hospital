@@ -1,6 +1,6 @@
 use super::services::DepartmentService;
 use crate::entity::department::DepartmentRequestBody;
-use crate::error_handler::CustomError;
+use crate::http_response::error_handler::CustomError;
 use crate::http_response::http_response_builder;
 use actix_web::{HttpResponse, post, web};
 use sea_orm::DatabaseConnection;
@@ -17,6 +17,7 @@ async fn create(
     let response = http_response_builder::ok(hospital);
     Ok(HttpResponse::Ok().json(response))
 }
+
 pub fn init_routes(config: &mut web::ServiceConfig) {
     config.service(create);
 }
