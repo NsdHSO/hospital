@@ -12,7 +12,7 @@ async fn create(
     staff: web::Json<AppointmentRequestBody>,
     db_conn: web::Data<DatabaseConnection>, // Inject the database connection
 ) -> Result<HttpResponse, CustomError> {
-    require_permission(&claims, PermissionCode::ProjectRead).expect("You don't Have allow here");
+    require_permission(&claims, PermissionCode::AppointmentCreate).expect("You don't Have allow here");
     let service = AppointmentService::new(db_conn.get_ref());
     let appointment = service.create(staff.into_inner()).await;
     match appointment {
