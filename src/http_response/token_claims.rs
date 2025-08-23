@@ -12,7 +12,7 @@ use serde::Deserialize;
 /// derived from the standard JWT claims, with custom fields for permissions
 /// and roles.
 #[derive(Debug, Deserialize)]
-struct TokenClaims {
+pub struct TokenClaims {
     /// The subject of the token, typically a user's unique identifier.
     sub: String,
     /// A unique identifier for the token itself.
@@ -23,7 +23,7 @@ struct TokenClaims {
     /// vector if it is missing from the JWT payload, preventing deserialization
     /// errors.
     #[serde(default)]
-    perms: Vec<String>,
+    pub(crate) perms: Vec<String>,
     /// A list of roles assigned to the subject.
     roles: Vec<String>,
     /// The token's expiration timestamp (in seconds since the epoch).
@@ -38,7 +38,7 @@ struct TokenClaims {
 ///
 /// This struct is an **extractor** that automatically handles JWT authentication
 /// by decoding and validating a bearer token from the request's `Authorization` header.
-pub struct Claims(TokenClaims);
+pub struct Claims(pub(crate) TokenClaims);
 
 impl FromRequest for Claims {
     /// The type of error returned if authentication fails.
