@@ -9,11 +9,11 @@ use sea_orm::DatabaseConnection;
 #[post("/appointment")]
 async fn create(
     _perm: Require<AppointmentCreatePermission>,
-    staff: web::Json<AppointmentRequestBody>,
+    appointment_body: web::Json<AppointmentRequestBody>,
     db_conn: web::Data<DatabaseConnection>, // Inject the database connection
 ) -> Result<HttpResponse, CustomError> {
     let service = AppointmentService::new(db_conn.get_ref());
-    let appointment = service.create(staff.into_inner()).await;
+    let appointment = service.create(appointment_body.into_inner()).await;
     match appointment {
         Ok(data) => {
             let response = http_response_builder::ok(data);
