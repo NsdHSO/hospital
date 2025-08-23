@@ -11,7 +11,11 @@ use env_logger::{Builder, Env};
 use listenfd::ListenFd;
 use log::error;
 use std::env;
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
+use jsonwebtoken::DecodingKey;
 use utoipa_swagger_ui::SwaggerUi;
+use crate::components::config::ConfigService;
 
 mod components;
 mod db;
@@ -22,7 +26,9 @@ mod security;
 mod shared;
 mod tests;
 mod utils;
-
+fn config_service() -> ConfigService {
+    ConfigService::new().clone()
+}
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -54,6 +60,11 @@ async fn main() -> std::io::Result<()> {
     let mut listened = ListenFd::from_env();
     let auth_base_url = env::var("AUTH_BASE_URL")
         .expect("Please set AUTH_BASE_URL in .env (e.g., http://localhost:8081)");
+    let pem_bytes = STANDARD
+        .decode(config_service().access_token_public_key)
+        .expect("ACCESS_TOKEN_PUBLIC_KEY is not valid base64");
+    let decoding_key = DecodingKey::from_rsa_pem(&pem_bytes)
+        .expect("ACCESS_TOKEN_PUBLIC_KEY is not a valid PEM");
     let mut server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin_fn(|origin, _req| origin.as_bytes().starts_with(b"http://"))
@@ -76,6 +87,7 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("")
                             .wrap(JwtAuth::new(auth_base_url.clone()))
+                            .app_data(web::Data::new(decoding_key.clone()))
                             .configure(components::ambulance::init_routes)
                             .configure(components::emergency::init_routes)
                             .configure(components::dashboard::init_routes)
