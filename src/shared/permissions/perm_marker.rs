@@ -1,6 +1,6 @@
 use crate::http_response::error_handler::CustomError;
 use crate::http_response::{Claims, HttpCodeW};
-use crate::shared::Require;
+use crate::shared::{PermissionCode, Require};
 use actix_web::dev::Payload;
 use actix_web::{FromRequest, HttpRequest};
 use futures_util::future::{ready, Ready};
@@ -32,5 +32,13 @@ impl<M: PermMarker> FromRequest for Require<M> {
             }
             Err(e) => ready(Err(e)),
         }
+    }
+}
+
+// markers
+pub struct AppointmentCreatePermission;
+impl PermMarker for AppointmentCreatePermission {
+    fn code() -> &'static str {
+        PermissionCode::AppointmentCreate.as_str()
     }
 }
