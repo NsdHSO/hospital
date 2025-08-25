@@ -7,6 +7,8 @@ use actix_web::{http::header::AUTHORIZATION, Error, HttpMessage, HttpResponse};
 use awc::Client;
 use futures_util::future::LocalBoxFuture;
 use serde::{Deserialize, Serialize};
+use crate::http_response::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 
 #[derive(Clone)]
 pub struct JwtAuth {
@@ -93,23 +95,27 @@ where
 
             let client = Client::default();
             let url = format!("{}/v1/auth/introspect", auth_base_url.trim_end_matches('/'));
-            let mut resp = match client.post(url).send_json(&IntrospectRequest { token: token.clone() }).await {
-                Ok(r) => r,
-                Err(_) => return Ok(req.into_response(HttpResponse::Unauthorized().finish()).map_into_right_body()),
-            };
+            let mut resp = client
+                .post(url)
+                .send_json(&IntrospectRequest { token: token.clone() })
+                .await
+                // Map the awc error to your custom error
+                .map_err(|_| CustomError::new(HttpCodeW::Unauthorized, "Failed to connect to auth service".to_string()))?;
+
             if !resp.status().is_success() {
-                return Ok(req
-                    .into_response(HttpResponse::Unauthorized().finish())
-                    .map_into_right_body());
+                // Return CustomError for non-success status
+                return Err(Error::from(CustomError::new(HttpCodeW::Unauthorized, "Introspection API returned non-success status".to_string())));
             }
-            let body: IntrospectResponse = match resp.json().await {
-                Ok(b) => b,
-                Err(_) => return Ok(req.into_response(HttpResponse::Unauthorized().finish()).map_into_right_body()),
-            };
+
+            let body: IntrospectResponse = resp
+                .json()
+                .await
+                // Map the JSON deserialization error to your custom error
+                .map_err(|_| CustomError::new(HttpCodeW::Unauthorized, "Failed to parse JSON response from introspection API".to_string()))?;
+
             if !body.active {
-                return Ok(req
-                    .into_response(HttpResponse::Unauthorized().finish())
-                    .map_into_right_body());
+                // Return CustomError for an inactive token
+                return Err(Error::from(CustomError::new(HttpCodeW::Unauthorized, "Token is not active".to_string())));
             }
 
             if let Some(sub) = body.sub {

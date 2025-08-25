@@ -84,7 +84,7 @@ impl ResponseError for CustomError {
     fn error_response(&self) -> HttpResponse {
         // Log the error when it's being converted to an HTTP response
         print!(
-            "Responding with error: Status={:?}, Message={}",
+            "Responding with error: Status={:?}, Message={} ",
             self.error_status_code, self.error_message
         );
 
