@@ -1,3 +1,11 @@
+# [1.9.0](https://github.com/NsdHSO/hospital/compare/v1.8.1...v1.9.0) (2025-08-25)
+
+
+### Features
+
+* 🎸 rename the appointment_create.rs into require.rs [#15](https://github.com/NsdHSO/hospital/issues/15) ([597a103](https://github.com/NsdHSO/hospital/commit/597a103fef0c9fd8ce0bf0193563ef8899fc4fcb))
+* 🎸 rename the appointment_create.rs into require.rs [#15](https://github.com/NsdHSO/hospital/issues/15) ([9b95f9c](https://github.com/NsdHSO/hospital/commit/9b95f9c1bfd467819db9f47d366b50bc1d73729a))
+
 ## [1.8.1](https://github.com/NsdHSO/hospital/compare/v1.8.0...v1.8.1) (2025-08-25)
 
 
