@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/NsdHSO/hospital/compare/v1.8.0...v1.8.1) (2025-08-25)
+
+
+### Bug Fixes
+
+* 🛠️ remove the modifier [#15](https://github.com/NsdHSO/hospital/issues/15) ([f7df733](https://github.com/NsdHSO/hospital/commit/f7df7339b9d8a20ed04542aeb88f134af9544c05))
+
 # [1.8.0](https://github.com/NsdHSO/hospital/compare/v1.7.0...v1.8.0) (2025-08-23)
 
 
