@@ -10,7 +10,7 @@ pub trait PermMarker {
     fn code() -> &'static str;
 }
 
-pub impl<M: PermMarker> FromRequest for Require<M> {
+impl<M: PermMarker> FromRequest for Require<M> {
     type Error = CustomError;
     type Future = Ready<Result<Self, CustomError>>;
 
