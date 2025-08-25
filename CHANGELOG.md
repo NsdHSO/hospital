@@ -1,3 +1,11 @@
+## [1.9.1](https://github.com/NsdHSO/hospital/compare/v1.9.0...v1.9.1) (2025-08-25)
+
+
+### Bug Fixes
+
+* 🛠️ Cargo.lock ([18b0dac](https://github.com/NsdHSO/hospital/commit/18b0daca4a7eba25200432e8418f06204f131759))
+* 🛠️ Cargo.lock ([bd241ea](https://github.com/NsdHSO/hospital/commit/bd241ea48b34db2d66b959c02607352ef175914a))
+
 # [1.9.0](https://github.com/NsdHSO/hospital/compare/v1.8.1...v1.9.0) (2025-08-25)
 
 
