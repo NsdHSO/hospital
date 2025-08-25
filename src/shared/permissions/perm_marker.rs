@@ -34,11 +34,3 @@ impl<M: PermMarker> FromRequest for Require<M> {
         }
     }
 }
-
-// markers
-pub struct AppointmentCreatePermission;
-impl PermMarker for AppointmentCreatePermission {
-    fn code() -> &'static str {
-        PermissionCode::AppointmentCreate.as_str()
-    }
-}
