@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/NsdHSO/hospital/compare/v1.9.1...v1.10.0) (2025-08-25)
+
+
+### Features
+
+* 🎸 use custome error from jwt ([0d8f69f](https://github.com/NsdHSO/hospital/commit/0d8f69fb108939187d2aa8cf21a3e1f0b540478a))
+
 ## [1.9.1](https://github.com/NsdHSO/hospital/compare/v1.9.0...v1.9.1) (2025-08-25)
 
 
