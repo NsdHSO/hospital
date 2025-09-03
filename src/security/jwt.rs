@@ -103,8 +103,9 @@ where
                 .map_err(|_| CustomError::new(HttpCodeW::Unauthorized, "Failed to connect to auth service".to_string()))?;
 
             if !resp.status().is_success() {
-                // Return CustomError for non-success status
-                return Err(Error::from(CustomError::new(HttpCodeW::Unauthorized, "Introspection API returned non-success status".to_string())));
+                return Ok(req
+                    .into_response(HttpResponse::Unauthorized().finish())
+                    .map_into_right_body());
             }
 
             let body: IntrospectResponse = resp
