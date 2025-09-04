@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/NsdHSO/hospital/compare/v1.11.0...v1.12.0) (2025-09-04)
+
+
+### Features
+
+* 🎸 use Ok response  [#15](https://github.com/NsdHSO/hospital/issues/15) ([f974a8d](https://github.com/NsdHSO/hospital/commit/f974a8d88c324974032096766a74a66eaae6cba0))
+
 # [1.11.0](https://github.com/NsdHSO/hospital/compare/v1.10.0...v1.11.0) (2025-09-03)
 
 
