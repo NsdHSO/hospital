@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/NsdHSO/hospital/compare/v1.10.0...v1.11.0) (2025-09-03)
+
+
+### Features
+
+* 🎸 added OK to introspect ([321d969](https://github.com/NsdHSO/hospital/commit/321d96906afad6a5e7a8961ee4282ed898e7c933))
+
 # [1.10.0](https://github.com/NsdHSO/hospital/compare/v1.9.1...v1.10.0) (2025-08-25)
 
 
