@@ -108,15 +108,14 @@ where
                     .map_into_right_body());
             }
 
-            let body: IntrospectResponse = resp
-                .json()
-                .await
-                // Map the JSON deserialization error to your custom error
-                .map_err(|_| CustomError::new(HttpCodeW::Unauthorized, "Failed to parse JSON response from introspection API".to_string()))?;
+            let body: IntrospectResponse = match resp.json().await {
+                Ok(b) => b,
+                Err(_) => return Ok(req.into_response(HttpResponse::Unauthorized().finish()).map_into_right_body()),
+            };
 
             if !body.active {
                 // Return CustomError for an inactive token
-                return Err(Error::from(CustomError::new(HttpCodeW::Unauthorized, "Token is not active".to_string())));
+                return Ok(req.into_response(HttpResponse::Unauthorized().finish()).map_into_right_body());
             }
 
             if let Some(sub) = body.sub {
