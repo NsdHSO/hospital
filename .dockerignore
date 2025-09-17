@@ -4,3 +4,4 @@ target
 Dockerfile
 .dockerignore
 *.md
+*.DS*
