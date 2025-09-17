@@ -21,6 +21,9 @@ pub struct Model {
     pub photo_url: Option<String>,
     pub created_at: DateTime,
     pub updated_at: DateTime,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[sea_orm(ignore)]
+    pub search_tsv: Option<String>
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -6,6 +6,7 @@ use crate::utils::helpers::check_if_is_duplicate_key_from_data_base;
 use chrono::{Local, NaiveDateTime};
 use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait};
 use sea_orm::{QueryFilter, Set};
+use sea_orm::sea_query::Expr;
 use uuid::Uuid;
 
 pub struct PersonService {
@@ -54,6 +55,13 @@ impl PersonService {
                     }
                     "marital_status" => {
                         query_builder.filter(Column::MaritalStatus.like(format!("%{v}%")))
+                    }
+                    "fts" => {
+                        // Apply the full-text search filter using the 'search_tsv' column
+                        query_builder.filter(Expr::cust_with_values(
+                            "search_tsv @@ plainto_tsquery('simple', $1)",
+                            vec![sea_orm::Value::from(v)],
+                        ))
                     }
                     _ => {
                         // If field is provided but unsupported
