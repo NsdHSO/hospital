@@ -276,6 +276,16 @@ The system provides RESTful API endpoints for all core entities. Here's a summar
 - `GET /v1/user/profile` - Get user profile information
 - `PUT /v1/user/profile` - Update user profile
 
+### Person Endpoints
+
+- `GET /v1/person` - List/query persons (supports `field`, `value`, `page`, `per_page`).
+  - Supported `field` values: `id`, `first_name`, `date_of_birth`, `gender`, `phone`, `email`, `address`, `nationality`, `marital_status`, `fts` (full‑text search via `search_tsv`).
+  - Required permission: `person.read`
+- `POST /v1/person` - Create a new person
+  - Required permission: `person.create`
+- `PUT /v1/person/{id}` - Update an existing person (planned)
+  - Required permission: `person.update`
+
 ### Emergency Allocation Endpoints
 
 - `POST /v1/emergency/allocate` - Allocate an ambulance to an emergency
@@ -629,5 +639,61 @@ This section outlines the target architecture for a comprehensive Hospital Manag
     - Certification and accreditation management
 
 This comprehensive architecture provides a roadmap for expanding the current system into a full-featured Hospital Management System that addresses all aspects of hospital operations, from clinical care to administrative functions.
+
+## 9. Authentication & Authorization (Permissions & Roles)
+
+The API uses JWT for authentication. Authorization is enforced using permission codes carried in the token claims under the `perms` array and optional `roles` array. See `src/http_response/token_claims.rs` for the claim shape.
+
+- Authorization header: `Authorization: Bearer <token>`
+- A request is permitted if the token contains the required permission code.
+
+### Permission codes
+Below are the primary permission codes used by this service. Not every route enforces all of them yet, but they are available for policy and gateway checks.
+
+- user.read, user.write
+- session.read, session.terminate
+- token.read, token.revoke
+- project.read, project.write, project.delete
+- appointment.create, appointment.read, appointment.update
+- person.create, person.read, person.update  ← new
+- dashboard.create, dashboard.read, dashboard.update
+- emergency.create
+
+### Person permissions (new)
+- person.create — create a person record
+- person.read — read person records (query and list)
+- person.update — update a person record
+
+Default role mapping (as provisioned in the seed/DB):
+- ADMIN: person.create, person.read, person.update
+- MODERATOR: person.create, person.read
+- OPERATOR: person.read
+- USER: person.read
+- GUEST: person.read
+
+Example requests
+
+- List persons (requires person.read):
+  curl example
+  ```bash
+  curl -H "Authorization: Bearer $TOKEN" \
+       "http://localhost:8080/v1/person?field=first_name&value=Ann&page=1&per_page=10"
+  ```
+
+- Create a person (requires person.create):
+  ```bash
+  curl -X POST -H "Content-Type: application/json" \
+       -H "Authorization: Bearer $TOKEN" \
+       -d '{
+            "first_name":"Ann",
+            "last_name":"Smith",
+            "email":"ann@example.com"
+          }' \
+       http://localhost:8080/v1/person
+  ```
+
+Notes
+- The full‑text search is available via `field=fts&value=<query>`.
+- The update route is planned; the `person.update` permission is already provisioned for policy consistency.
 
 # hospital
