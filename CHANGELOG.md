@@ -1,3 +1,11 @@
+# [1.13.0](https://github.com/NsdHSO/hospital/compare/v1.12.0...v1.13.0) (2025-09-17)
+
+
+### Features
+
+* 🎸  added the fts search for person [#15](https://github.com/NsdHSO/hospital/issues/15) ([24552c2](https://github.com/NsdHSO/hospital/commit/24552c2501f1749a444001a7b396d1cdf5e14791))
+* 🎸 added DS in ignore ([46bc268](https://github.com/NsdHSO/hospital/commit/46bc268dd4d5a25833a92a06a94c01a969e49a9a))
+
 # [1.12.0](https://github.com/NsdHSO/hospital/compare/v1.11.0...v1.12.0) (2025-09-04)
 
 
