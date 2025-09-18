@@ -57,10 +57,22 @@ impl PersonService {
                         query_builder.filter(Column::MaritalStatus.like(format!("%{v}%")))
                     }
                     "fts" => {
-                        // Apply the full-text search filter using the 'search_tsv' column
+                        let tsquery_str = v
+                            .split_whitespace()
+                            .map(|t| t.chars().filter(|c| c.is_alphanumeric()).collect::<String>())
+                            .filter(|s| !s.is_empty())
+                            .map(|t| format!("{}:*", t.to_lowercase()))
+                            .collect::<Vec<String>>()
+                            .join(" & ");
+                        if tsquery_str.is_empty() {
+                            return Err(CustomError::new(
+                                HttpCodeW::BadRequest,
+                                "Invalid full-text search input".to_string(),
+                            ));
+                        }
                         query_builder.filter(Expr::cust_with_values(
-                            "search_tsv @@ plainto_tsquery('simple', $1)",
-                            vec![sea_orm::Value::from(v)],
+                            "search_tsv @@ to_tsquery('simple', $1)",
+                            vec![sea_orm::Value::from(tsquery_str)],
                         ))
                     }
                     _ => {
