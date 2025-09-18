@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/NsdHSO/hospital/compare/v1.14.0...v1.15.0) (2025-09-18)
+
+
+### Features
+
+* 🎸 added the find_departments based on name and hospital_id [#15](https://github.com/NsdHSO/hospital/issues/15) ([7bfa401](https://github.com/NsdHSO/hospital/commit/7bfa401baf6894bb202ba39f3d8531a466fcb954))
+
 # [1.14.0](https://github.com/NsdHSO/hospital/compare/v1.13.0...v1.14.0) (2025-09-18)
 
 
