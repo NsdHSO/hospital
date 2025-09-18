@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/NsdHSO/hospital/compare/v1.13.0...v1.14.0) (2025-09-18)
+
+
+### Features
+
+* 🎸 added at all Cargo.lock Cargo.toml CHANGELOG.md CONTRIBUTING.md docker-compose.test.yml Dockerfile Dockerfile.test fly.toml img.png migration README.md run_tests_docker.sh scripts src target ([29ea9d6](https://github.com/NsdHSO/hospital/commit/29ea9d690a920b4ec2cea51bfb42ff81b31439bc))
+
 # [1.13.0](https://github.com/NsdHSO/hospital/compare/v1.12.0...v1.13.0) (2025-09-17)
 
 
