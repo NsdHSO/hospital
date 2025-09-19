@@ -12,7 +12,7 @@ use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{Local, NaiveDateTime};
-use sea_orm::{ActiveModelTrait, PaginatorTrait, QuerySelect, RelationTrait};
+use sea_orm::{ActiveModelTrait, Condition, PaginatorTrait, QuerySelect, RelationTrait};
 use sea_orm::{ColumnTrait, QueryFilter, Set};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
@@ -25,39 +25,41 @@ pub struct StaffService {
 }
 
 impl StaffService {
-    pub(crate) async fn find_staff(
+    pub(crate) async fn find_staff_with_person(
         &self,
-        field: Option<&str>,       // field can now be None
-        value: Option<&str>,       // value can now be None
-        hospital_id: Option<&str>, // value can now be None
-        page: Option<u64>,         // page number (1-based)
-        limit: Option<u64>,        // number of records per page
-    ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
-        let query_builder = Entity::find();
-        let query = match (field, value, hospital_id) {
-            (Some(field), Some(value), Some(hospital_id)) => match field {
+        field: Option<&str>,
+        value: Option<&str>,
+        hospital_id: Option<&str>,
+        page: Option<u64>,
+        limit: Option<u64>,
+    ) -> Result<PaginatedResponse<Vec<(Model, Option<person::Model>)>>, CustomError> {
+        let mut query_builder = Entity::find().find_with_related(person::Entity);
+
+        // Build the query with a Condition
+        let mut condition = Condition::all();
+
+        if let (Some(field), Some(value)) = (field, value) {
+            match field {
                 "hospital_id" => match Uuid::parse_str(value) {
-                    Ok(uuid_val) => query_builder.filter(Column::HospitalId.eq(uuid_val)),
+                    Ok(uuid_val) => {
+                        condition = condition.add(Column::HospitalId.eq(uuid_val));
+                    }
                     Err(_) => {
                         return Err(CustomError::new(
                             HttpCodeW::BadRequest,
-                            format!("Invalid UUID format for id: {value}"),
+                            format!("Invalid UUID format for hospital_id: {value}"),
                         ));
                     }
                 },
                 "role" => {
-                    let hospital_id_uuid = match Uuid::parse_str(hospital_id) {
-                        Ok(uuid) => uuid,
-                        Err(e) => {
-                            return Err(CustomError::new(
-                                HttpCodeW::BadRequest,
-                                format!("Invalid UUID format: {}", e),
-                            ));
-                        }
-                    };
-                    query_builder
-                        .filter(Column::Role.eq(value))
-                        .filter(Column::HospitalId.eq(hospital_id_uuid))
+                    condition = condition.add(Column::Role.eq(value));
+                },
+                "name" => {
+                    // If the field is name, we must apply the filter to the related person entity
+                    // This requires a manual join filter
+                    query_builder = query_builder.filter(
+                        Condition::all().add(person::Column::FirstName.like(&format!("%{}%", value)))
+                    );
                 }
                 _ => {
                     return Err(CustomError::new(
@@ -65,50 +67,57 @@ impl StaffService {
                         format!("Unsupported field: {field}"),
                     ));
                 }
-            },
-            _ => {
-                println!(
-                    "No specific field or value provided, returning all persons with pagination."
-                );
-                query_builder
             }
-        };
+        }
+
+        if let Some(hospital_id_str) = hospital_id {
+            let hospital_id_uuid = match Uuid::parse_str(hospital_id_str) {
+                Ok(uuid) => uuid,
+                Err(e) => {
+                    return Err(CustomError::new(
+                        HttpCodeW::BadRequest,
+                        format!("Invalid UUID format for hospital_id: {}", e),
+                    ));
+                }
+            };
+            condition = condition.add(Column::HospitalId.eq(hospital_id_uuid));
+        }
+
+        // Apply the constructed condition
+        query_builder = query_builder.filter(condition);
 
         // Default pagination values
         let page_num = page.unwrap_or(1);
         let per_page = limit.unwrap_or(10);
-
-        // Convert to 0-based indexing for SeaORM paginator
         let page_index = page_num.saturating_sub(1);
+        let offset = page_index * per_page;
 
-        // Create paginator
-        let paginator = query.paginate(&self.conn, per_page);
-
-        // Get pagination metadata
-        let total_items = paginator.num_items().await.map_err(|e| {
-            CustomError::new(
-                HttpCodeW::InternalServerError,
-                format!("Database error getting total items: {e}"),
-            )
-        })?;
-
-        let total_pages = paginator.num_pages().await.map_err(|e| {
-            CustomError::new(
-                HttpCodeW::InternalServerError,
-                format!("Database error getting total pages: {e}"),
-            )
-        })?;
-
-        // Fetch the records for the current page
-        let records = paginator
-            .fetch_page(page_index) // Page is 0-indexed in SeaORM
+        // First query: Get the total count
+        let total_items = query_builder
+            .clone()
+            .all(&self.conn)
             .await
-            .map_err(|e| {
-                CustomError::new(
-                    HttpCodeW::InternalServerError,
-                    format!("Database error fetching page: {e}"),
-                )
-            })?;
+            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error getting total items: {e}")))?
+            .len() as u64; // Count the number of items after fetching them all
+
+        let tuples: Vec<(Model, Vec<person::Model>)> = query_builder
+            .offset(offset)
+            .limit(per_page)
+            .all(&self.conn)
+            .await
+            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error fetching page: {e}")))?;
+
+        // Map the returned Vec<(Staff, Vec<Person>)> to Vec<(Staff, Option<Person>)>
+        let records: Vec<(Model, Option<person::Model>)> = tuples
+            .into_iter()
+            .map(|(staff, persons)| {
+                // Take the first element of the inner vector, or None if it's empty
+                (staff, persons.into_iter().next())
+            })
+            .collect();
+
+        // Calculate total pages
+        let total_pages = (total_items as f64 / per_page as f64).ceil() as u64;
 
         // Create pagination info
         let pagination = PaginationInfo {

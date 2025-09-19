@@ -37,7 +37,7 @@ pub async fn find_all(
     let per_page = params.get("per_page").and_then(|l| l.parse::<u64>().ok());
     // *** THE FIX IS HERE: Use field_str and value_str ***
     let person = service_instance
-        .find_staff(field_str, value_str,hospital_str, page, per_page)
+        .find_staff_with_person(field_str, value_str,hospital_str, page, per_page)
         .await?;
 
     let response = http_response_builder::ok(person);
