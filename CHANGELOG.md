@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/NsdHSO/hospital/compare/v1.16.0...v1.17.0) (2025-09-19)
+
+
+### Features
+
+* 🎸 added info about person   [#15](https://github.com/NsdHSO/hospital/issues/15) ([4de14de](https://github.com/NsdHSO/hospital/commit/4de14de54d1873d02a7eb971978478a4f87374b6))
+
 # [1.16.0](https://github.com/NsdHSO/hospital/compare/v1.15.0...v1.16.0) (2025-09-19)
 
 
