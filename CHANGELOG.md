@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/NsdHSO/hospital/compare/v1.15.0...v1.16.0) (2025-09-19)
+
+
+### Features
+
+* 🎸 added the find staff  [#15](https://github.com/NsdHSO/hospital/issues/15) ([1676287](https://github.com/NsdHSO/hospital/commit/167628710a7c4a66050f9f369eba33808c81ab8f))
+
 # [1.15.0](https://github.com/NsdHSO/hospital/compare/v1.14.0...v1.15.0) (2025-09-18)
 
 
