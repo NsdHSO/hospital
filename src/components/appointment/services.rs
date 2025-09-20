@@ -65,8 +65,8 @@ impl AppointmentService {
                 return Err(CustomError::new(
                     HttpCodeW::NotFound,
                     format!(
-                        "Doctor with name '{}' not found",
-                        appointment_data.doctor_name
+                        "Doctor with name '{}' not found in this hospital {}",
+                        appointment_data.doctor_name, appointment_data.hospital_name
                     ),
                 ));
             }
