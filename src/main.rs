@@ -1,21 +1,21 @@
+use crate::components::config::ConfigService;
 use crate::components::emergency::start_scheduler;
 use crate::open_api::init;
 use crate::security::jwt::JwtAuth;
 use actix_cors::Cors;
 use actix_web::http::header;
 use actix_web::middleware::Logger;
-use actix_web::{App, HttpServer, web};
+use actix_web::{web, App, HttpServer};
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
 use chrono::Local;
 use dotenv::dotenv;
 use env_logger::{Builder, Env};
+use jsonwebtoken::DecodingKey;
 use listenfd::ListenFd;
 use log::error;
 use std::env;
-use base64::Engine;
-use base64::engine::general_purpose::STANDARD;
-use jsonwebtoken::DecodingKey;
 use utoipa_swagger_ui::SwaggerUi;
-use crate::components::config::ConfigService;
 
 mod components;
 mod db;
@@ -63,20 +63,24 @@ async fn main() -> std::io::Result<()> {
     let pem_bytes = STANDARD
         .decode(config_service().access_token_public_key)
         .expect("ACCESS_TOKEN_PUBLIC_KEY is not valid base64");
-    let decoding_key = DecodingKey::from_rsa_pem(&pem_bytes)
-        .expect("ACCESS_TOKEN_PUBLIC_KEY is not a valid PEM");
+    let decoding_key =
+        DecodingKey::from_rsa_pem(&pem_bytes).expect("ACCESS_TOKEN_PUBLIC_KEY is not a valid PEM");
     let mut server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin_fn(|origin, _req| origin.as_bytes().starts_with(b"http://"))
             .allowed_origin_fn(|origin, _req| {
                 origin.as_bytes().starts_with(b"https://")
-                    && origin.to_str().unwrap().contains("vercel") ||
-                    origin.as_bytes().starts_with(b"https://")
+                    && origin.to_str().unwrap().contains("vercel")
+                    || origin.as_bytes().starts_with(b"https://")
                         && origin.to_str().unwrap().contains("tevet-troc-client")
             })
             .allowed_origin("https://nsdhso.github.io")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
-            .allowed_headers(vec![header::CONTENT_TYPE, header::ACCEPT, header::AUTHORIZATION])
+            .allowed_headers(vec![
+                header::CONTENT_TYPE,
+                header::ACCEPT,
+                header::AUTHORIZATION,
+            ])
             .supports_credentials();
 
         App::new()
