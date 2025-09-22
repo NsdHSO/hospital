@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/NsdHSO/hospital/compare/v1.18.0...v1.19.0) (2025-09-22)
+
+
+### Features
+
+* 🎸 added the tevet-troc-client like allowed origin   [#15](https://github.com/NsdHSO/hospital/issues/15) ([e2fefef](https://github.com/NsdHSO/hospital/commit/e2fefeff685d8d7671a5bf589c076786ba454562))
+
 # [1.18.0](https://github.com/NsdHSO/hospital/compare/v1.17.0...v1.18.0) (2025-09-22)
 
 
