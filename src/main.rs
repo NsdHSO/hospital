@@ -72,7 +72,7 @@ async fn main() -> std::io::Result<()> {
                 origin.as_bytes().starts_with(b"https://")
                     && origin.to_str().unwrap().contains("vercel") ||
                     origin.as_bytes().starts_with(b"https://")
-                        && origin.to_str().unwrap().contains("hospital")
+                        && origin.to_str().unwrap().contains("tevet-troc-client")
             })
             .allowed_origin("https://nsdhso.github.io")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
