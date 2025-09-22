@@ -1,4 +1,4 @@
-name: Test and Lint - Master
+name: FMT and Clippy and TEST - Master
 
 on:
   push:
@@ -10,8 +10,8 @@ on:
       - '**.md'
 
 jobs:
-  test-lint:
-    name: Test and Lint
+  fmy-clipy-test:
+    name: Rust FMT and Clippy
     runs-on: ubuntu-latest
     
     steps:
