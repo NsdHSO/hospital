@@ -70,7 +70,9 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin_fn(|origin, _req| origin.as_bytes().starts_with(b"http://"))
             .allowed_origin_fn(|origin, _req| {
                 origin.as_bytes().starts_with(b"https://")
-                    && origin.to_str().unwrap().contains("vercel")
+                    && origin.to_str().unwrap().contains("vercel") ||
+                    origin.as_bytes().starts_with(b"https://")
+                        && origin.to_str().unwrap().contains("hospital")
             })
             .allowed_origin("https://nsdhso.github.io")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
