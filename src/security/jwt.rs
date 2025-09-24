@@ -118,11 +118,14 @@ where
                 return Ok(req.into_response(HttpResponse::Unauthorized().finish()).map_into_right_body());
             }
 
-            if let Some(sub) = body.sub {
-                req.extensions_mut().insert(sub);
-            }
-            if let Some(uuid) = body.token_uuid {
-                req.extensions_mut().insert(uuid);
+            // Insert subject details into request extensions for downstream handlers
+            if let (Some(sub), Some(uuid)) = (body.sub, body.token_uuid) {
+                // Keep backward compatibility by inserting raw strings
+                req.extensions_mut().insert(sub.clone());
+                req.extensions_mut().insert(uuid.clone());
+                // Also insert a typed Subject for ergonomic extraction
+                let subject = crate::security::subject::Subject { sub, token_uuid: uuid };
+                req.extensions_mut().insert(subject);
             }
 
             svc.call(req).await.map(|res| res.map_into_left_body())

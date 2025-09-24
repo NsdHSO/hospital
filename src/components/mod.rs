@@ -9,3 +9,4 @@ pub mod patient;
 pub mod person;
 pub mod staff;
 pub mod config;
+pub mod me;

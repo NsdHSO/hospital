@@ -30,3 +30,4 @@ pub mod staff;
 pub mod staff_schedule;
 pub mod supplier;
 pub mod treatment;
+pub mod user_profile;
