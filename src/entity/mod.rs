@@ -31,3 +31,4 @@ pub mod staff_schedule;
 pub mod supplier;
 pub mod treatment;
 pub mod user_profile;
+pub mod auth_identity;

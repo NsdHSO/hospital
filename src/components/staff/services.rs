@@ -222,10 +222,10 @@ impl StaffService {
                 .ok_or_else(|| {
                     CustomError::new(HttpCodeW::BadRequest, "Staff not found".to_string())
                 })?;
-            return Ok(StaffWithPerson {
+             Ok(StaffWithPerson {
                 staff,
                 person: person.unwrap(),
-            });
+            })
         }
     }
 
