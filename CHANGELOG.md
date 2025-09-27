@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/NsdHSO/hospital/compare/v1.19.0...v1.20.0) (2025-09-25)
+
+
+### Features
+
+* 🎸 tried to handle in child system the some staff regarding of context ([ec8a8cb](https://github.com/NsdHSO/hospital/commit/ec8a8cb8634ec9ba657a4e3b758491e1d5ffbb8e))
+
 # [1.19.0](https://github.com/NsdHSO/hospital/compare/v1.18.0...v1.19.0) (2025-09-22)
 
 
