@@ -2,15 +2,20 @@ use crate::components::hospital::HospitalService;
 use crate::components::patient::PatientService;
 use crate::components::staff::StaffService;
 use crate::entity;
-use crate::entity::appointment::{ActiveModel, AppointmentRequestBody, Model};
+use crate::entity::appointment::Column::HospitalId;
+use crate::entity::appointment::{ActiveModel, AppointmentRequestBody, Entity, Model};
 use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
+use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{
     check_if_is_duplicate_key_from_data_base, generate_ic, now_time, parse_date,
 };
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, Set};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
+    Set,
+};
 use std::str::FromStr;
 use uuid::Uuid;
 
@@ -29,6 +34,50 @@ impl AppointmentService {
             patient_service: PatientService::new(conn),
             hospital_service: HospitalService::new(conn),
         }
+    }
+
+    pub async fn get_appointments(
+        &self,     // Changed to &self as we're not modifying the service state
+        page: u64, // Use u64 for pagination
+        per_page: u64,
+        filter: Option<String>,
+    ) -> Result<PaginatedResponse<Vec<Model>>, CustomError> {
+        let mut query = Entity::find();
+        if let Some(filter_str) = filter {
+            match filter_str.split_once('=') {
+                Some(("hospital_id", encoded_name)) => match Uuid::parse_str(encoded_name) {
+                    Ok(uuid_val) => query = query.filter(HospitalId.eq(uuid_val)),
+                    Err(_) => {
+                        return Err(CustomError::new(
+                            HttpCodeW::BadRequest,
+                            format!("Invalid UUID format for id: {encoded_name}"),
+                        ));
+                    }
+                },
+                _ => {}
+            }
+        }
+        let paginator = query.paginate(&self.conn, per_page);
+        let total_items = paginator.num_items().await?;
+        let total_pages = paginator.num_pages().await?;
+
+        let records = paginator
+            .fetch_page(page) // Page is 0-indexed in SeaORM
+            .await?;
+
+        let pagination = PaginationInfo {
+            current_page: page as i64, // Convert back to i64 if needed for your PaginatedResponse
+            page_size: per_page as i64, // Convert back to i64
+            total_items: total_items as i64, // Convert back to i64
+            total_pages: total_pages as i64, // Convert back to i64
+            has_next_page: page < total_pages,
+            has_previous_page: page > 1,
+        };
+
+        Ok(PaginatedResponse {
+            data: records,
+            pagination,
+        })
     }
 
     pub async fn create(

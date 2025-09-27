@@ -12,7 +12,7 @@ use crate::http_response::HttpCodeW;
 use crate::shared::{PaginatedResponse, PaginationInfo};
 use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_ic};
 use chrono::{Local, NaiveDateTime};
-use sea_orm::{ActiveModelTrait, Condition, PaginatorTrait, QuerySelect, RelationTrait};
+use sea_orm::{ActiveModelTrait, Condition, QuerySelect, RelationTrait};
 use sea_orm::{ColumnTrait, QueryFilter, Set};
 use sea_orm::{DatabaseConnection, EntityTrait};
 use uuid::Uuid;
@@ -53,12 +53,13 @@ impl StaffService {
                 },
                 "role" => {
                     condition = condition.add(Column::Role.eq(value));
-                },
+                }
                 "name" => {
                     // If the field is name, we must apply the filter to the related person entity
                     // This requires a manual join filter
                     query_builder = query_builder.filter(
-                        Condition::all().add(person::Column::FirstName.like(&format!("%{}%", value)))
+                        Condition::all()
+                            .add(person::Column::FirstName.like(&format!("%{}%", value))),
                     );
                 }
                 _ => {
@@ -97,7 +98,12 @@ impl StaffService {
             .clone()
             .all(&self.conn)
             .await
-            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error getting total items: {e}")))?
+            .map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Database error getting total items: {e}"),
+                )
+            })?
             .len() as u64; // Count the number of items after fetching them all
 
         let tuples: Vec<(Model, Vec<person::Model>)> = query_builder
@@ -105,7 +111,12 @@ impl StaffService {
             .limit(per_page)
             .all(&self.conn)
             .await
-            .map_err(|e| CustomError::new(HttpCodeW::InternalServerError, format!("Database error fetching page: {e}")))?;
+            .map_err(|e| {
+                CustomError::new(
+                    HttpCodeW::InternalServerError,
+                    format!("Database error fetching page: {e}"),
+                )
+            })?;
 
         // Map the returned Vec<(Staff, Vec<Person>)> to Vec<(Staff, Option<Person>)>
         let records: Vec<(Model, Option<person::Model>)> = tuples
@@ -222,7 +233,7 @@ impl StaffService {
                 .ok_or_else(|| {
                     CustomError::new(HttpCodeW::BadRequest, "Staff not found".to_string())
                 })?;
-             Ok(StaffWithPerson {
+            Ok(StaffWithPerson {
                 staff,
                 person: person.unwrap(),
             })
@@ -237,6 +248,15 @@ impl StaffService {
         value: &str,
     ) -> Result<Option<Model>, CustomError> {
         let query = match field {
+            "id" => match Uuid::parse_str(value) {
+                Ok(uuid_val) => Entity::find().filter(Column::Id.eq(uuid_val)),
+                Err(_) => {
+                    return Err(CustomError::new(
+                        HttpCodeW::BadRequest,
+                        format!("Invalid UUID format for id: {value}"),
+                    ));
+                }
+            },
             "staff_ic" => Entity::find().filter(Column::StaffIc.like(value)),
             "name" => Entity::find()
                 .join(sea_orm::JoinType::InnerJoin, Relation::Person.def())
@@ -249,6 +269,7 @@ impl StaffService {
             }
         };
         let staff = query.one(&self.conn).await.map_err(|e| {
+            println!("Error: {}", e);
             CustomError::new(
                 HttpCodeW::InternalServerError,
                 format!("Database error: {e}"),
