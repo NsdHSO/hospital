@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/NsdHSO/hospital/compare/v1.21.0...v1.22.0) (2025-09-29)
+
+
+### Features
+
+* 🎸 added desc order  [#15](https://github.com/NsdHSO/hospital/issues/15) ([3f8933c](https://github.com/NsdHSO/hospital/commit/3f8933c7b58578739c2c59fbc2195de3a479cefb))
+
 # [1.21.0](https://github.com/NsdHSO/hospital/compare/v1.20.0...v1.21.0) (2025-09-27)
 
 
