@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/NsdHSO/hospital/compare/v1.20.0...v1.21.0) (2025-09-27)
+
+
+### Features
+
+* 🎸 added appointment_read_perm added find after id on staff  [#15](https://github.com/NsdHSO/hospital/issues/15) ([7e5c6f0](https://github.com/NsdHSO/hospital/commit/7e5c6f0f9f21af087bc934d393de6741a82b71f5))
+
 # [1.20.0](https://github.com/NsdHSO/hospital/compare/v1.19.0...v1.20.0) (2025-09-25)
 
 
