@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/NsdHSO/hospital/compare/v1.22.0...v1.23.0) (2025-09-29)
+
+
+### Features
+
+* 🎸 added scheduled_by in payload for appointment  [#15](https://github.com/NsdHSO/hospital/issues/15) ([7dfe53e](https://github.com/NsdHSO/hospital/commit/7dfe53e44be62ecdc1290a7da200e07a899ee16a))
+
 # [1.22.0](https://github.com/NsdHSO/hospital/compare/v1.21.0...v1.22.0) (2025-09-29)
 
 
