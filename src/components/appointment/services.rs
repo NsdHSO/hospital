@@ -2,7 +2,7 @@ use crate::components::hospital::HospitalService;
 use crate::components::patient::PatientService;
 use crate::components::staff::StaffService;
 use crate::entity;
-use crate::entity::appointment::Column::HospitalId;
+use crate::entity::appointment::Column::{CreatedAt, HospitalId};
 use crate::entity::appointment::{ActiveModel, AppointmentRequestBody, Entity, Model};
 use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
@@ -12,10 +12,7 @@ use crate::utils::helpers::{
 };
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
-use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter,
-    Set,
-};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder, Set};
 use std::str::FromStr;
 use uuid::Uuid;
 
@@ -57,6 +54,7 @@ impl AppointmentService {
                 _ => {}
             }
         }
+        query = query.order_by_desc(CreatedAt);
         let paginator = query.paginate(&self.conn, per_page);
         let total_items = paginator.num_items().await?;
         let total_pages = paginator.num_pages().await?;
