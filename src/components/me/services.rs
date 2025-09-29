@@ -178,12 +178,13 @@ impl MeService {
         // First, map auth user_sub -> person_id if present
         if let Some(map) = self.auth_identity_service.find_by_user_sub(user_sub).await? {
             let pid = map.person_id;
-            if let Ok(Some(st)) = self.staff_service.find_by_field("id", &pid.to_string()).await {
-                let role_str = serde_json::to_value(&st.role)
+            if let Ok(Some(staff_model)) = self.staff_service.find_by_field("id", &pid.to_string()).await {
+                let role_str = serde_json::to_value(&staff_model.role)
                     .unwrap_or(serde_json::Value::String("USER".into()));
                 let obj = serde_json::json!({
-                    "hospital_id": st.hospital_id.to_string(),
-                    "department_id": st.department_id.to_string(),
+                    "hospital_id": staff_model.hospital_id.to_string(),
+                    "department_id": staff_model.department_id.to_string(),
+                    "staff_name": staff_model.id,
                     "role": role_str,
                     "on_call": false
                 });
