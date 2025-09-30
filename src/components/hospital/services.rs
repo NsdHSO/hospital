@@ -8,6 +8,8 @@ use crate::utils::helpers::{check_if_is_duplicate_key_from_data_base, generate_i
 use sea_orm::{ActiveModelTrait, PaginatorTrait, Set};
 use sea_orm::{ColumnTrait, QueryFilter};
 use sea_orm::{DatabaseConnection, EntityTrait};
+use uuid::Uuid;
+use crate::entity::hospital::Column::Id;
 
 pub struct HospitalService {
     conn: DatabaseConnection,
@@ -104,7 +106,15 @@ impl HospitalService {
     ) -> Result<Option<Model>, CustomError> {
         let query = match field {
             "name" => Entity::find().filter(Column::Name.like(value)),
-            _ => {
+            "id" => match Uuid::parse_str(value) {
+                Ok(uuid_val) => Entity::find().filter(Id.eq(uuid_val)),
+                Err(_) => {
+                    return Err(CustomError::new(
+                        HttpCodeW::BadRequest,
+                        format!("Invalid UUID format for id: {value}"),
+                    ));
+                }
+            },            _ => {
                 return Err(CustomError::new(
                     HttpCodeW::BadRequest,
                     format!("Unsupported field: {field}"),

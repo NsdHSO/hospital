@@ -84,7 +84,7 @@ impl AppointmentService {
     ) -> Result<Model, CustomError> {
         let hospital_id: Uuid = self
             .hospital_service
-            .find_by_field("name", appointment_data.hospital_name.as_str())
+            .find_by_field("id", appointment_data.hospital_name.as_str())
             .await?
             .unwrap()
             .id;
