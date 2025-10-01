@@ -10,7 +10,7 @@ actix-rt = "2.10.0"
 actix-web = "4.10.2"
 chrono = { version = "0.4.41", features = ["serde"] }
 dotenv = "0.15.0"
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+tokio = { version = "1", features = ["full"] }
 env_logger = "0.11.8"
 listenfd = "1.0.2"
 log = "0.4.27"
@@ -28,5 +28,7 @@ percent-encoding = "2.3.1"
 actix-cors = "0.7.1"
 chrono-tz = "0.10.3"
 rust_decimal = "1.37.2"
-jsonwebtoken = "9.3.1"
+jsonwebtoken = { version = "10.0.0", features = ["rust_crypto"] }
 base64 = "0.22.1"
+doppler-rs = "0.0.2"
+reqwest = { version = "0.12", features = ["rustls-tls", "json"] }

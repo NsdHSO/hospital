@@ -7,9 +7,7 @@ use std::io::Write;
 
 static DB: OnceCell<DatabaseConnection> = OnceCell::new();
 
-pub async fn init() -> Result<DatabaseConnection, CustomError> {
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-
+pub async fn init(db_url:String) -> Result<DatabaseConnection, CustomError> {
     println!("Attempting to connect to database...");
 
     // Create a task to display progress while connecting
@@ -29,7 +27,7 @@ pub async fn init() -> Result<DatabaseConnection, CustomError> {
     });
 
     // Attempt the actual connection
-    let connection_result = Database::connect(&db_url).await;
+    let connection_result = Database::connect(db_url).await;
 
     // Cancel the progress display
     progress_task.abort();

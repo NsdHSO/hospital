@@ -14,7 +14,6 @@ use env_logger::{Builder, Env};
 use jsonwebtoken::DecodingKey;
 use listenfd::ListenFd;
 use log::error;
-use std::env;
 use utoipa_swagger_ui::SwaggerUi;
 
 mod components;
@@ -26,13 +25,11 @@ mod security;
 mod shared;
 mod tests;
 mod utils;
-fn config_service() -> ConfigService {
-    ConfigService::new().clone()
-}
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    let conn: sea_orm::DatabaseConnection = db::config::init()
+    let cfg = ConfigService::new().await;
+    let conn: sea_orm::DatabaseConnection = db::config::init(cfg.database_url)
         .await
         .expect("Failed to initialize database connection"); // Initialize connection here
     Builder::from_env(Env::default().default_filter_or("debug"))
@@ -58,10 +55,9 @@ async fn main() -> std::io::Result<()> {
     let data_base_conn = conn.clone();
 
     let mut listened = ListenFd::from_env();
-    let auth_base_url = env::var("AUTH_BASE_URL")
-        .expect("Please set AUTH_BASE_URL in .env (e.g., http://localhost:8081)");
+    let auth_base_url = cfg.auth_base_url;
     let pem_bytes = STANDARD
-        .decode(config_service().access_token_public_key)
+        .decode(cfg.access_token_public_key)
         .expect("ACCESS_TOKEN_PUBLIC_KEY is not valid base64");
     let decoding_key =
         DecodingKey::from_rsa_pem(&pem_bytes).expect("ACCESS_TOKEN_PUBLIC_KEY is not a valid PEM");
@@ -113,8 +109,8 @@ async fn main() -> std::io::Result<()> {
     server = match listened.take_tcp_listener(0)? {
         Some(listener) => server.listen(listener)?,
         None => {
-            let host = env::var("HOST").expect("Please set host in .env");
-            let port = env::var("PORT").expect("Please set port in .env");
+            let host = cfg.host;
+            let port = cfg.port;
             server
                 .bind(format!("{host}:{port}"))
                 .unwrap_or_else(|_| panic!("host: {host}> Port {port}"))

@@ -12,6 +12,7 @@ use serde::Deserialize;
 /// derived from the standard JWT claims, with custom fields for permissions
 /// and roles.
 #[derive(Debug, Deserialize)]
+#[derive(Clone)]
 pub struct TokenClaims {
     /// The subject of the token, typically a user's unique identifier.
     sub: String,
