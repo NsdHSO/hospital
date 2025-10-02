@@ -1,3 +1,11 @@
+# [1.26.0](https://github.com/NsdHSO/hospital/compare/v1.25.0...v1.26.0) (2025-10-02)
+
+
+### Features
+
+* 🎸 added good cors [#17](https://github.com/NsdHSO/hospital/issues/17) ([85f9c35](https://github.com/NsdHSO/hospital/commit/85f9c355a59554a6ccbc25b8f3ac0e80990208e9))
+* 🎸 added good cors [#17](https://github.com/NsdHSO/hospital/issues/17) ([824fa2c](https://github.com/NsdHSO/hospital/commit/824fa2cab221db955ef9c1e96a6dfcd2aaf618b1))
+
 # [1.25.0](https://github.com/NsdHSO/hospital/compare/v1.24.0...v1.25.0) (2025-10-02)
 
 
