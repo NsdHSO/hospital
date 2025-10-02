@@ -1,3 +1,11 @@
+# [1.25.0](https://github.com/NsdHSO/hospital/compare/v1.24.0...v1.25.0) (2025-10-02)
+
+
+### Features
+
+* 🎸 added doppler ([dcc7844](https://github.com/NsdHSO/hospital/commit/dcc78446fa1d7d3714004bd626765dfe6c26849c))
+* 🎸 added doppler  [#17](https://github.com/NsdHSO/hospital/issues/17) ([ba03fb0](https://github.com/NsdHSO/hospital/commit/ba03fb0c096a24db4237e92a5a38441d8a456ad0))
+
 # [1.24.0](https://github.com/NsdHSO/hospital/compare/v1.23.0...v1.24.0) (2025-09-30)
 
 
