@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/NsdHSO/hospital/compare/v1.26.0...v1.27.0) (2025-10-02)
+
+
+### Features
+
+* 🎸 tried to check the cors ([2b72c39](https://github.com/NsdHSO/hospital/commit/2b72c3960c3b7d7cbed6d43e67f6877a14528145))
+
 # [1.26.0](https://github.com/NsdHSO/hospital/compare/v1.25.0...v1.26.0) (2025-10-02)
 
 
