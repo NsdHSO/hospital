@@ -67,17 +67,12 @@ async fn main() -> std::io::Result<()> {
             .allowed_origin_fn(|origin, _req| {
                 origin.as_bytes().starts_with(b"https://")
                     && origin.to_str().unwrap().contains("vercel")
-                    || origin.as_bytes().starts_with(b"https://")
-                        && origin.to_str().unwrap().contains("tevet-troc-client")
             })
             .allowed_origin("https://nsdhso.github.io")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
-            .allowed_headers(vec![
-                header::CONTENT_TYPE,
-                header::ACCEPT,
-                header::AUTHORIZATION,
-            ])
+            .allowed_headers(vec![header::CONTENT_TYPE, header::ACCEPT, header::AUTHORIZATION])
             .supports_credentials();
+
 
         App::new()
             .wrap(cors)
@@ -90,7 +85,7 @@ async fn main() -> std::io::Result<()> {
                         web::scope("")
                             .wrap(JwtAuth::new(auth_base_url.clone()))
                             .app_data(web::Data::new(decoding_key.clone()))
-                            .configure(components::ambulance::init_routes)
+                            .configure(components::ambulance::init_routes)d 
                             .configure(components::emergency::init_routes)
                             .configure(components::dashboard::init_routes)
                             .configure(components::card::init_routes)
