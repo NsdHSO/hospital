@@ -11,6 +11,7 @@ pub struct ConfigService {
     pub database_url_uat: String,
     pub auth_base_url: String,
     pub access_token_public_key: String,
+    pub sqlx_log: bool,
 }
 
 impl ConfigService {
@@ -51,88 +52,141 @@ impl ConfigService {
     /// assert_eq!(config.host, "127.0.0.1");
     /// ```
     pub async fn new() -> Self {
-
         let mut config = Configuration::new();
-        config.bearer_access_token = Some(
-            std::env::var("DOPPLER_TOKEN")
-                .expect("DOPPLER_TOKEN must be set"),
-        );
+        config.bearer_access_token =
+            Some(std::env::var("DOPPLER_TOKEN").expect("DOPPLER_TOKEN must be set"));
 
         let project = "tevet-troc";
         let config_name = "dev";
-        
+
         // Fetch all secrets concurrently - clone config for each future
         let config_clone = config.clone();
         let rust_log_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "RUST_LOG").await
+            let secret = default_api::secrets_get(&config_clone, project, config_name, "RUST_LOG")
+                .await
                 .expect("Failed to get RUST_LOG from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("RUST_LOG value not found in Doppler")
         };
 
         let config_clone = config.clone();
         let host_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "HOST").await
+            let secret = default_api::secrets_get(&config_clone, project, config_name, "HOST")
+                .await
                 .expect("Failed to get HOST from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("HOST value not found in Doppler")
         };
 
         let config_clone = config.clone();
         let port_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "PORT").await
+            let secret = default_api::secrets_get(&config_clone, project, config_name, "PORT")
+                .await
                 .expect("Failed to get PORT from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("PORT value not found in Doppler")
         };
 
         let config_clone = config.clone();
         let app_env_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "APP_ENV").await
+            let secret = default_api::secrets_get(&config_clone, project, config_name, "APP_ENV")
+                .await
                 .expect("Failed to get APP_ENV from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("APP_ENV value not found in Doppler")
         };
 
         let config_clone = config.clone();
         let database_url_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "DATABASE_URL").await
-                .expect("Failed to get DATABASE_URL from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            let secret =
+                default_api::secrets_get(&config_clone, project, config_name, "DATABASE_URL")
+                    .await
+                    .expect("Failed to get DATABASE_URL from Doppler");
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("DATABASE_URL value not found in Doppler")
         };
 
         let config_clone = config.clone();
         let prod_db_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "PROD_DATABASE_URL").await
-                .expect("Failed to get PROD_DATABASE_URL from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            let secret =
+                default_api::secrets_get(&config_clone, project, config_name, "PROD_DATABASE_URL")
+                    .await
+                    .expect("Failed to get PROD_DATABASE_URL from Doppler");
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("PROD_DATABASE_URL value not found in Doppler")
         };
 
         let config_clone = config.clone();
         let uat_db_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "DATABASE_URL_UAT").await
-                .expect("Failed to get DATABASE_URL_UAT from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            let secret =
+                default_api::secrets_get(&config_clone, project, config_name, "DATABASE_URL_UAT")
+                    .await
+                    .expect("Failed to get DATABASE_URL_UAT from Doppler");
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("DATABASE_URL_UAT value not found in Doppler")
         };
 
-
         let config_clone = config.clone();
         let auth_url_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "AUTH_BASE_URL").await
-                .expect("Failed to get AUTH_BASE_URL from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            let secret =
+                default_api::secrets_get(&config_clone, project, config_name, "AUTH_BASE_URL")
+                    .await
+                    .expect("Failed to get AUTH_BASE_URL from Doppler");
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("AUTH_BASE_URL value not found in Doppler")
         };
 
         let config_clone = config.clone();
         let access_token_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "ACCESS_TOKEN_PUBLIC_KEY").await
-                .expect("Failed to get ACCESS_TOKEN_PUBLIC_KEY from Doppler");
-            secret.value.as_ref().map(|v| v.computed.clone())
+            let secret = default_api::secrets_get(
+                &config_clone,
+                project,
+                config_name,
+                "ACCESS_TOKEN_PUBLIC_KEY",
+            )
+            .await
+            .expect("Failed to get ACCESS_TOKEN_PUBLIC_KEY from Doppler");
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
                 .expect("ACCESS_TOKEN_PUBLIC_KEY value not found in Doppler")
+        };
+
+        let config_clone = config.clone();
+        let sqlx = async {
+            let secret = default_api::secrets_get(&config_clone, project, config_name, "SQLX_LOG")
+                .await
+                .expect("Failed to get SQLX_LOG from Doppler");
+            secret
+                .value
+                .as_ref()
+                .map(|v| v.computed.clone())
+                .expect("SQLX_LOG value not found in Doppler")
         };
 
         let (
@@ -144,7 +198,8 @@ impl ConfigService {
             prod_database_url,
             database_url_uat,
             auth_base_url,
-            access_token_public_key
+            access_token_public_key,
+            sqlx_log,
         ) = tokio::join!(
             rust_log_future,
             host_future,
@@ -154,9 +209,9 @@ impl ConfigService {
             prod_db_future,
             uat_db_future,
             auth_url_future,
-            access_token_future
+            access_token_future,
+            sqlx
         );
-
 
         ConfigService {
             rust_log: rust_log.unwrap(),
@@ -167,7 +222,8 @@ impl ConfigService {
             prod_database_url: prod_database_url.unwrap(),
             database_url_uat: database_url_uat.unwrap(),
             auth_base_url: auth_base_url.unwrap(),
-            access_token_public_key:access_token_public_key.unwrap()
+            access_token_public_key: access_token_public_key.unwrap(),
+            sqlx_log: sqlx_log.unwrap().parse().unwrap(),
         }
     }
 }

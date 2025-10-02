@@ -1,13 +1,13 @@
 use crate::http_response::error_handler::CustomError;
 use crate::http_response::HttpCodeW;
 use once_cell::sync::OnceCell;
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::env;
 use std::io::Write;
 
 static DB: OnceCell<DatabaseConnection> = OnceCell::new();
 
-pub async fn init(db_url:String) -> Result<DatabaseConnection, CustomError> {
+pub async fn init(db_url:String, logging: bool) -> Result<DatabaseConnection, CustomError> {
     println!("Attempting to connect to database...");
 
     // Create a task to display progress while connecting
@@ -26,8 +26,10 @@ pub async fn init(db_url:String) -> Result<DatabaseConnection, CustomError> {
         }
     });
 
-    // Attempt the actual connection
-    let connection_result = Database::connect(db_url).await;
+
+    let mut opt = ConnectOptions::new(db_url);
+    opt.sqlx_logging(logging);
+    let connection_result = Database::connect(opt).await;
 
     // Cancel the progress display
     progress_task.abort();

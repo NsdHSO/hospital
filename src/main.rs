@@ -29,7 +29,7 @@ mod utils;
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let cfg = ConfigService::new().await;
-    let conn: sea_orm::DatabaseConnection = db::config::init(cfg.database_url)
+    let conn: sea_orm::DatabaseConnection = db::config::init(cfg.database_url, cfg.sqlx_log)
         .await
         .expect("Failed to initialize database connection"); // Initialize connection here
     Builder::from_env(Env::default().default_filter_or("debug"))
