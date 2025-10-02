@@ -85,7 +85,7 @@ async fn main() -> std::io::Result<()> {
                         web::scope("")
                             .wrap(JwtAuth::new(auth_base_url.clone()))
                             .app_data(web::Data::new(decoding_key.clone()))
-                            .configure(components::ambulance::init_routes)d 
+                            .configure(components::ambulance::init_routes)
                             .configure(components::emergency::init_routes)
                             .configure(components::dashboard::init_routes)
                             .configure(components::card::init_routes)
