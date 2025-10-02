@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/NsdHSO/hospital/compare/v1.23.0...v1.24.0) (2025-09-30)
+
+
+### Features
+
+* 🎸 added search after id not after hospital_name accordingly with profile response   [#15](https://github.com/NsdHSO/hospital/issues/15) ([22dd359](https://github.com/NsdHSO/hospital/commit/22dd35970490f59a9b1a12969fbe3ad8a8719d8f))
+
 # [1.23.0](https://github.com/NsdHSO/hospital/compare/v1.22.0...v1.23.0) (2025-09-29)
 
 
