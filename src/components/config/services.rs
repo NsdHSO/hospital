@@ -1,5 +1,7 @@
 use doppler_rs::apis::{configuration::Configuration, default_api};
-
+fn get_env_var(var_name: &str) -> String {
+    std::env::var(var_name).unwrap_or_else(|_| panic!("{} must be set", var_name))
+}
 #[derive(Debug, Clone)]
 pub struct ConfigService {
     pub rust_log: String,
@@ -56,13 +58,14 @@ impl ConfigService {
         config.bearer_access_token =
             Some(std::env::var("DOPPLER_TOKEN").expect("DOPPLER_TOKEN must be set"));
 
+
         let project = "tevet-troc";
-        let config_name = "dev";
+        let doppler_env = get_env_var("DOPPLER_ENV");
 
         // Fetch all secrets concurrently - clone config for each future
         let config_clone = config.clone();
         let rust_log_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "RUST_LOG")
+            let secret = default_api::secrets_get(&config_clone, project, &doppler_env, "RUST_LOG")
                 .await
                 .expect("Failed to get RUST_LOG from Doppler");
             secret
@@ -74,7 +77,7 @@ impl ConfigService {
 
         let config_clone = config.clone();
         let host_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "HOST")
+            let secret = default_api::secrets_get(&config_clone, project, &doppler_env, "HOST")
                 .await
                 .expect("Failed to get HOST from Doppler");
             secret
@@ -86,7 +89,7 @@ impl ConfigService {
 
         let config_clone = config.clone();
         let port_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "PORT")
+            let secret = default_api::secrets_get(&config_clone, project, &doppler_env, "PORT")
                 .await
                 .expect("Failed to get PORT from Doppler");
             secret
@@ -98,7 +101,7 @@ impl ConfigService {
 
         let config_clone = config.clone();
         let app_env_future = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "APP_ENV")
+            let secret = default_api::secrets_get(&config_clone, project, &doppler_env, "APP_ENV")
                 .await
                 .expect("Failed to get APP_ENV from Doppler");
             secret
@@ -111,7 +114,7 @@ impl ConfigService {
         let config_clone = config.clone();
         let database_url_future = async {
             let secret =
-                default_api::secrets_get(&config_clone, project, config_name, "DATABASE_URL")
+                default_api::secrets_get(&config_clone, project, &doppler_env, "DATABASE_URL")
                     .await
                     .expect("Failed to get DATABASE_URL from Doppler");
             secret
@@ -124,7 +127,7 @@ impl ConfigService {
         let config_clone = config.clone();
         let prod_db_future = async {
             let secret =
-                default_api::secrets_get(&config_clone, project, config_name, "PROD_DATABASE_URL")
+                default_api::secrets_get(&config_clone, project, &doppler_env, "PROD_DATABASE_URL")
                     .await
                     .expect("Failed to get PROD_DATABASE_URL from Doppler");
             secret
@@ -137,7 +140,7 @@ impl ConfigService {
         let config_clone = config.clone();
         let uat_db_future = async {
             let secret =
-                default_api::secrets_get(&config_clone, project, config_name, "DATABASE_URL_UAT")
+                default_api::secrets_get(&config_clone, project, &doppler_env, "DATABASE_URL_UAT")
                     .await
                     .expect("Failed to get DATABASE_URL_UAT from Doppler");
             secret
@@ -150,7 +153,7 @@ impl ConfigService {
         let config_clone = config.clone();
         let auth_url_future = async {
             let secret =
-                default_api::secrets_get(&config_clone, project, config_name, "AUTH_BASE_URL")
+                default_api::secrets_get(&config_clone, project, &doppler_env, "AUTH_BASE_URL")
                     .await
                     .expect("Failed to get AUTH_BASE_URL from Doppler");
             secret
@@ -165,7 +168,7 @@ impl ConfigService {
             let secret = default_api::secrets_get(
                 &config_clone,
                 project,
-                config_name,
+                &doppler_env,
                 "ACCESS_TOKEN_PUBLIC_KEY",
             )
             .await
@@ -179,7 +182,7 @@ impl ConfigService {
 
         let config_clone = config.clone();
         let sqlx = async {
-            let secret = default_api::secrets_get(&config_clone, project, config_name, "SQLX_LOG")
+            let secret = default_api::secrets_get(&config_clone, project, &doppler_env, "SQLX_LOG")
                 .await
                 .expect("Failed to get SQLX_LOG from Doppler");
             secret
