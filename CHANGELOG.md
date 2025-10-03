@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/NsdHSO/hospital/compare/v1.27.0...v1.28.0) (2025-10-03)
+
+
+### Features
+
+* 🎸 added env for config ([c25d26d](https://github.com/NsdHSO/hospital/commit/c25d26dcfc053a15085d87b4a391f6d6d8a274d4))
+
 # [1.27.0](https://github.com/NsdHSO/hospital/compare/v1.26.0...v1.27.0) (2025-10-02)
 
 
