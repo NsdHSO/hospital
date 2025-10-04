@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/NsdHSO/hospital/compare/v1.28.0...v1.29.0) (2025-10-04)
+
+
+### Features
+
+* 🎸 remove awc and use reqwest ([11fa083](https://github.com/NsdHSO/hospital/commit/11fa083243d71db590c42cafd6770a27b5f90463))
+
 # [1.28.0](https://github.com/NsdHSO/hospital/compare/v1.27.0...v1.28.0) (2025-10-03)
 
 
