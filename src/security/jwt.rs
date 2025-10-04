@@ -6,7 +6,7 @@ use crate::http_response::HttpCodeW;
 use actix_web::body::EitherBody;
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{http::header::AUTHORIZATION, Error, HttpMessage, HttpResponse};
-use awc::Client;
+use reqwest::Client;
 use futures_util::future::LocalBoxFuture;
 use serde::{Deserialize, Serialize};
 
@@ -95,15 +95,13 @@ where
                     .map_into_right_body());
             };
 
-            let client = Client::default();
+            let client = Client::new();
             let url = format!("{}/v1/auth/introspect", auth_base_url.trim_end_matches('/'));
-            let mut resp = client
-                .post(url)
-                .send_json(&IntrospectRequest {
-                    token: token.clone(),
-                })
+            let resp = client
+                .post(&url)
+                .json(&IntrospectRequest { token: token.clone() })
+                .send()
                 .await
-                // Map the awc error to your custom error
                 .map_err(|e| {
                     CustomError::new(
                         HttpCodeW::Unauthorized,
