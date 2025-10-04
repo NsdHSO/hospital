@@ -1,14 +1,14 @@
 use std::future::{ready, Ready};
 use std::rc::Rc;
 
-use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
+use crate::http_response::error_handler::CustomError;
+use crate::http_response::HttpCodeW;
 use actix_web::body::EitherBody;
+use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{http::header::AUTHORIZATION, Error, HttpMessage, HttpResponse};
 use awc::Client;
 use futures_util::future::LocalBoxFuture;
 use serde::{Deserialize, Serialize};
-use crate::http_response::error_handler::CustomError;
-use crate::http_response::HttpCodeW;
 
 #[derive(Clone)]
 pub struct JwtAuth {
@@ -17,7 +17,9 @@ pub struct JwtAuth {
 
 impl JwtAuth {
     pub fn new(auth_base_url: impl Into<String>) -> Self {
-        Self { auth_base_url: auth_base_url.into() }
+        Self {
+            auth_base_url: auth_base_url.into(),
+        }
     }
 }
 
@@ -97,10 +99,17 @@ where
             let url = format!("{}/v1/auth/introspect", auth_base_url.trim_end_matches('/'));
             let mut resp = client
                 .post(url)
-                .send_json(&IntrospectRequest { token: token.clone() })
+                .send_json(&IntrospectRequest {
+                    token: token.clone(),
+                })
                 .await
                 // Map the awc error to your custom error
-                .map_err(|_| CustomError::new(HttpCodeW::Unauthorized, "Failed to connect to auth service".to_string()))?;
+                .map_err(|e| {
+                    CustomError::new(
+                        HttpCodeW::Unauthorized,
+                        format!("Failed to connect to auth service, {}", e),
+                    )
+                })?;
 
             if !resp.status().is_success() {
                 return Ok(req
@@ -110,12 +119,18 @@ where
 
             let body: IntrospectResponse = match resp.json().await {
                 Ok(b) => b,
-                Err(_) => return Ok(req.into_response(HttpResponse::Unauthorized().finish()).map_into_right_body()),
+                Err(_) => {
+                    return Ok(req
+                        .into_response(HttpResponse::Unauthorized().finish())
+                        .map_into_right_body());
+                }
             };
 
             if !body.active {
                 // Return CustomError for an inactive token
-                return Ok(req.into_response(HttpResponse::Unauthorized().finish()).map_into_right_body());
+                return Ok(req
+                    .into_response(HttpResponse::Unauthorized().finish())
+                    .map_into_right_body());
             }
 
             // Insert subject details into request extensions for downstream handlers
@@ -124,7 +139,10 @@ where
                 req.extensions_mut().insert(sub.clone());
                 req.extensions_mut().insert(uuid.clone());
                 // Also insert a typed Subject for ergonomic extraction
-                let subject = crate::security::subject::Subject { sub, token_uuid: uuid };
+                let subject = crate::security::subject::Subject {
+                    sub,
+                    token_uuid: uuid,
+                };
                 req.extensions_mut().insert(subject);
             }
 
@@ -132,4 +150,3 @@ where
         })
     }
 }
-
